@@ -108,9 +108,13 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
         poseStack.mulPose(Axis.YP.rotationDegrees(205.0F));
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.translate(0.0F, -1.501F, 0.0F);
+        Identifier texture = state.skin().body().texturePath();
         dispatcher.getSubmitNodeStorage().submitModel(state.playerModel(), avatar, poseStack,
-                GhostRenderTypes.ghostPreview(state.skin().body().texturePath()), FULL_BRIGHT,
-                OverlayTexture.NO_OVERLAY, ARGB.color(235, 255, 255, 255), null, 0, null);
+                RenderTypes.entityTranslucentEmissive(texture), FULL_BRIGHT,
+                OverlayTexture.NO_OVERLAY, ARGB.color(245, 255, 255, 255), null, 0, null);
+        dispatcher.getSubmitNodeStorage().submitModel(state.playerModel(), avatar, poseStack,
+                GhostRenderTypes.ghostPreview(texture), FULL_BRIGHT,
+                OverlayTexture.NO_OVERLAY, ARGB.color(80, 160, 235, 255), null, 0, null);
         poseStack.popPose();
         dispatcher.renderAllFeatures();
     }

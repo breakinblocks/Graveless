@@ -159,6 +159,7 @@ public class DeathCaptureEvents {
             return;
         }
         MinecraftServer server = player.level().getServer();
+        record.setTerrain(GraveMenuHandlers.captureTerrainSnapshot(server, record));
         GraveStore store = GraveStore.get(server);
         GraveProfile profile = store.profile(player.getUUID());
         profile.records().add(record);

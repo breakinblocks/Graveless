@@ -193,7 +193,7 @@ public class GraveMenuHandlers {
         GraveStore store = GraveStore.get(server);
         GraveProfile profile = store.profile(ownerId);
         DeathRecord revived = new DeathRecord(UUID.randomUUID(), record.pos(), record.gameTime(),
-                record.epochMillis(), record.cause(), record.xp(), record.entries());
+                record.epochMillis(), record.cause(), record.xp(), record.entries(), record.terrain());
         profile.records().add(revived);
         int max = GravelessConfig.SERVER.maxRecordsPerPlayer.get();
         while (profile.records().size() > max) {
@@ -248,9 +248,28 @@ public class GraveMenuHandlers {
                     items.add(entry.stack().copy());
                 }
             }
+            int total = TERRAIN_SIZE * TERRAIN_SIZE * TERRAIN_HEIGHT;
+            List<Integer> terrain;
+            if (record.terrain().length == total) {
+                terrain = new ArrayList<>(total);
+                for (int id : record.terrain()) {
+                    terrain.add(id);
+                }
+            } else {
+                terrain = buildTerrain(server, record);
+            }
             PacketDistributor.sendToPlayer(player, new GravelessNetworking.GraveDetailPayload(
-                    record.id(), items, buildTerrain(server, record)));
+                    record.id(), items, terrain));
         });
+    }
+
+    public static int[] captureTerrainSnapshot(MinecraftServer server, DeathRecord record) {
+        List<Integer> terrain = buildTerrain(server, record);
+        int[] snapshot = new int[terrain.size()];
+        for (int i = 0; i < snapshot.length; i++) {
+            snapshot[i] = terrain.get(i);
+        }
+        return snapshot;
     }
 
     public static void handleAction(GravelessNetworking.GraveActionPayload payload, IPayloadContext context) {
