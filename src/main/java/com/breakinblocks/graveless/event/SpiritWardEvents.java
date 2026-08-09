@@ -48,6 +48,10 @@ public class SpiritWardEvents {
         boolean was = IN_RANGE.contains(player.getUUID());
         if (near && !was) {
             apply(player, GravelessConfig.SERVER.protectionDuration.get() * 20);
+        } else if (!near && was && player.hasEffect(ModEffects.SPIRIT_WARD)) {
+            for (Holder<MobEffect> effect : wardEffects()) {
+                player.removeEffect(effect);
+            }
         }
         if (near) {
             IN_RANGE.add(player.getUUID());
@@ -109,7 +113,7 @@ public class SpiritWardEvents {
         if (profile.records().isEmpty()) {
             return false;
         }
-        int radius = GravelessConfig.SERVER.visibilityRadius.get();
+        int radius = GravelessConfig.SERVER.protectionRange.get();
         double radiusSqr = (double) radius * radius;
         for (DeathRecord record : profile.records()) {
             if (!record.pos().dimension().equals(player.level().dimension())) {

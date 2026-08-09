@@ -244,7 +244,7 @@ public class GraveBrowserScreen extends Screen {
         int gridY = contentY + 24;
         int buttonCount = Math.max(1, (admin ? 3 : 0) + (viewingSelf() ? 1 : 0));
         int topButtonY = bottom - BUTTON_H - (buttonCount - 1) * BUTTON_STEP;
-        int gridBottom = topButtonY - 6;
+        int gridBottom = topButtonY - 14;
         int rightX = midX + midW + 7;
         int rightW = left + panelW - 8 - rightX;
         int terrainX = rightX + (rightW - TERRAIN_PX - 4) / 2;
@@ -458,10 +458,15 @@ public class GraveBrowserScreen extends Screen {
         if (maxScroll > 0) {
             int trackX = l.gridX() + GRID_COLS * SLOT_SIZE + 2;
             int trackH = viewRows * SLOT_SIZE;
-            graphics.fill(trackX, l.gridY(), trackX + 3, l.gridY() + trackH, 0xFF0A1013);
+            graphics.fill(trackX, l.gridY(), trackX + 4, l.gridY() + trackH, SLOT_FILL);
+            graphics.outline(trackX, l.gridY(), 4, trackH, SLOT_EDGE);
             int thumbH = Math.max(8, trackH * viewRows / totalRows);
             int thumbY = l.gridY() + (trackH - thumbH) * gridScroll / maxScroll;
-            graphics.fill(trackX, thumbY, trackX + 3, thumbY + thumbH, EDGE_DIM);
+            graphics.fill(trackX, thumbY, trackX + 4, thumbY + thumbH, EDGE);
+            int shownFrom = gridScroll * GRID_COLS + 1;
+            int shownTo = Math.min(items.size(), (gridScroll + viewRows) * GRID_COLS);
+            graphics.centeredText(font, Component.translatable("graveless.menu.grid_window",
+                    shownFrom, shownTo, items.size()), centerX, l.gridBottom() + 2, TEXT_MUTED);
         }
         if (detail == null && selectedId != null) {
             graphics.centeredText(font, Component.translatable("graveless.menu.loading"),
@@ -1084,8 +1089,12 @@ public class GraveBrowserScreen extends Screen {
             clampScroll();
             return true;
         }
-        if (hovered((int) mouseX, (int) mouseY, l.midX(), l.gridY(), l.midW(), l.gridBottom() - l.gridY())) {
-            gridScroll -= (int) Math.signum(scrollY);
+        int[] metrics = gridMetrics(l);
+        boolean overMid = hovered((int) mouseX, (int) mouseY, l.midX(), l.top() + 24, l.midW(),
+                l.gridBottom() - l.top() - 24);
+        boolean overPanel = hovered((int) mouseX, (int) mouseY, l.left(), l.top(), l.panelW(), l.panelH());
+        if (metrics[2] > 0 && (overMid || overPanel)) {
+            gridScroll = Mth.clamp(gridScroll - (int) Math.signum(scrollY), 0, metrics[2]);
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);

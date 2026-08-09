@@ -64,21 +64,19 @@ public class GhostEffects {
                         -Mth.sin(angle) * 0.012, 0.014, Mth.cos(angle) * 0.012);
             }
 
-            if (gameTime % 7 == 0) {
-                double orbitAngle = random.nextDouble() * Math.PI * 2.0;
-                double orbitRadius = 0.9 + random.nextDouble() * 0.7;
-                double x = cx + Math.cos(orbitAngle) * orbitRadius;
-                double z = cz + Math.sin(orbitAngle) * orbitRadius;
-                double y = cy + 0.4 + random.nextDouble() * 1.6;
-                level.addParticle(ParticleTypes.END_ROD, x, y, z,
-                        (cx - x) * 0.004, 0.006 + random.nextDouble() * 0.008, (cz - z) * 0.004);
-            }
-
-            if (gameTime % 60 == 0) {
-                for (int i = 0; i < 6; i++) {
-                    level.addParticle(ParticleTypes.END_ROD,
-                            cx, cy + 1.5 + i * 2.0, cz,
-                            0.0, 0.04, 0.0);
+            if (gameTime % 2 == 0) {
+                double swirl = gameTime * 0.09 + phase;
+                for (int i = 0; i < 2; i++) {
+                    double angle = swirl + i * Math.PI;
+                    double radius = 1.1 + 0.4 * Mth.sin(gameTime * 0.03F + i * 1.7F);
+                    double targetX = cx + Math.cos(angle) * 0.15;
+                    double targetY = cy + 0.4 + random.nextDouble() * 1.6;
+                    double targetZ = cz + Math.sin(angle) * 0.15;
+                    double offsetX = Math.cos(angle + 0.9) * radius;
+                    double offsetY = 0.4 - random.nextDouble() * 0.8;
+                    double offsetZ = Math.sin(angle + 0.9) * radius;
+                    level.addParticle(ParticleTypes.ENCHANT, targetX, targetY, targetZ,
+                            offsetX, offsetY, offsetZ);
                 }
             }
 

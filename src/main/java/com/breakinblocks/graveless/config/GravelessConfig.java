@@ -29,6 +29,7 @@ public class GravelessConfig {
         public final ModConfigSpec.IntValue claimRange;
         public final ModConfigSpec.BooleanValue requireLineOfSight;
         public final ModConfigSpec.BooleanValue protectionEnabled;
+        public final ModConfigSpec.IntValue protectionRange;
         public final ModConfigSpec.IntValue protectionDuration;
         public final ModConfigSpec.IntValue protectionLinger;
 
@@ -45,15 +46,18 @@ public class GravelessConfig {
                     .defineInRange("visibility_radius", 256, 16, 512);
             claimRange = builder
                     .comment("Maximum distance in blocks from which a ghost can be claimed. The claim aim passes through blocks.")
-                    .defineInRange("claim_range", 64, 2, 128);
+                    .defineInRange("claim_range", 16, 2, 128);
             requireLineOfSight = builder
                     .comment("Require an unobstructed line of sight to the ghost to claim it. When enabled, claims no longer work through walls.")
                     .define("require_line_of_sight", false);
             builder.pop();
             builder.push("protection");
             protectionEnabled = builder
-                    .comment("Grant Spirit Ward (invisibility, night vision, mobs ignore you) when entering visibility range of your own grave.")
+                    .comment("Grant Spirit Ward (invisibility, night vision, mobs ignore you) when approaching your own grave.")
                     .define("protection_enabled", true);
+            protectionRange = builder
+                    .comment("Distance in blocks from your own grave at which Spirit Ward is granted.")
+                    .defineInRange("protection_range", 256, 8, 512);
             protectionDuration = builder
                     .comment("How long Spirit Ward lasts in seconds if the grave is not claimed.")
                     .defineInRange("protection_duration", 120, 5, 600);

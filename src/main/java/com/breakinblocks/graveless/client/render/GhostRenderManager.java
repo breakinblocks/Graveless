@@ -187,15 +187,25 @@ public class GhostRenderManager {
 
     private static void beamQuad(Matrix4f matrix, VertexConsumer buffer,
                                  float x1, float z1, float x2, float z2, float alpha) {
-        buffer.addVertex(matrix, x1, 0.0F, z1).setColor(0.78F, 0.9F, 1.0F, alpha);
-        buffer.addVertex(matrix, x2, 0.0F, z2).setColor(0.78F, 0.9F, 1.0F, alpha);
-        buffer.addVertex(matrix, x2, BEAM_FADE_START, z2).setColor(0.78F, 0.9F, 1.0F, alpha);
-        buffer.addVertex(matrix, x1, BEAM_FADE_START, z1).setColor(0.78F, 0.9F, 1.0F, alpha);
+        effectVertex(matrix, buffer, x1, 0.0F, z1, alpha);
+        effectVertex(matrix, buffer, x2, 0.0F, z2, alpha);
+        effectVertex(matrix, buffer, x2, BEAM_FADE_START, z2, alpha);
+        effectVertex(matrix, buffer, x1, BEAM_FADE_START, z1, alpha);
 
-        buffer.addVertex(matrix, x1, BEAM_FADE_START, z1).setColor(0.78F, 0.9F, 1.0F, alpha);
-        buffer.addVertex(matrix, x2, BEAM_FADE_START, z2).setColor(0.78F, 0.9F, 1.0F, alpha);
-        buffer.addVertex(matrix, x2, BEAM_HEIGHT, z2).setColor(0.78F, 0.9F, 1.0F, 0.0F);
-        buffer.addVertex(matrix, x1, BEAM_HEIGHT, z1).setColor(0.78F, 0.9F, 1.0F, 0.0F);
+        effectVertex(matrix, buffer, x1, BEAM_FADE_START, z1, alpha);
+        effectVertex(matrix, buffer, x2, BEAM_FADE_START, z2, alpha);
+        effectVertex(matrix, buffer, x2, BEAM_HEIGHT, z2, 0.0F);
+        effectVertex(matrix, buffer, x1, BEAM_HEIGHT, z1, 0.0F);
+    }
+
+    private static void effectVertex(Matrix4f matrix, VertexConsumer buffer,
+                                     float x, float y, float z, float alpha) {
+        buffer.addVertex(matrix, x, y, z)
+                .setColor(0.78F, 0.9F, 1.0F, alpha)
+                .setUv(0.5F, 0.5F)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(FULL_BRIGHT)
+                .setNormal(0.0F, 1.0F, 0.0F);
     }
 
     private static void submitStrands(PoseStack poseStack, SubmitNodeCollector collector, Vec3 camPos,
@@ -293,7 +303,11 @@ public class GhostRenderManager {
 
     private static void addRibbonVertex(Matrix4f matrix, VertexConsumer buffer, float x, float y, float z, float alpha) {
         buffer.addVertex(matrix, x, y, z)
-                .setColor(0.88F, 0.94F, 1.0F, alpha);
+                .setColor(0.88F, 0.94F, 1.0F, alpha)
+                .setUv(0.5F, 0.5F)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(FULL_BRIGHT)
+                .setNormal(0.0F, 1.0F, 0.0F);
     }
 
     public static void resetModels() {

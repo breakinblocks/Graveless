@@ -101,8 +101,10 @@ public final class GhostRenderTypes {
         }
     }
 
+    private static final Identifier WHITE_TEXTURE = Graveless.id("textures/misc/white.png");
+
     public static RenderType thread() {
-        return shaderPackActive() ? RenderTypes.lightning() : THREAD;
+        return shaderPackActive() ? RenderTypes.entityTranslucentEmissive(WHITE_TEXTURE) : THREAD;
     }
 
     public static RenderType ghostPreview(Identifier texture) {

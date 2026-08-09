@@ -4,7 +4,7 @@ Death in Minecraft usually means watching your items burn in the lava that kille
 
 There is no grave block to break, no chest to dig up, and nothing that can be destroyed, buried, or lost. Your items are held by the world itself until you come back for them.
 
-<!-- image: ghost standing at a death site with the light pillar behind it -->
+![A ghost standing at its death site with a pillar of light rising into the night sky](metadata/images/hero-ghost.png)
 
 ## Your ghost is waiting for you
 
@@ -16,13 +16,13 @@ When you are close enough, a whisper tells you your spirit is within reach, how 
 - Your experience comes back too.
 - If your bags are already partly full, the ghost keeps whatever does not fit. Come back with space and claim the rest. Nothing is ever thrown on the ground or lost.
 
-<!-- image: closeup of the ghost with the silver thread reaching toward the player -->
+![The silver astral thread reaching from the ghost toward the player](metadata/images/astral-thread.png)
 
 ## Don't fear the reaper
 
 Corpse runs are miserable when the thing that killed you is still waiting there. As you approach your own grave a Spirit Ward settles over you. You turn invisible, monsters ignore you completely, and night vision lets you see into whatever dark place you died in. The ward holds for up to two minutes, long enough to walk in, take back what is yours, and walk out. Once you claim your grave it fades quickly though, so you'll need to get out quick. This is a configurable feature in both duration or disabling completely if you choose.
 
-<!-- image: player under spirit ward, invisible with effect icons showing, mobs standing passive nearby -->
+![Spirit Ward active: the player invisible while nearby monsters stand passive](metadata/images/spirit-ward.png)
 
 ## The Spirit Compass
 
@@ -30,7 +30,7 @@ Every death places a Spirit Compass in your hand when you respawn. Its needle po
 
 Right click the compass to commune with your graves and select the one you want to track and live preview its location and contents.
 
-<!-- image: spirit compass item in hand, needle pointing toward a distant beam -->
+![The Spirit Compass pointing toward a distant grave beam](metadata/images/spirit-compass.png)
 
 ## Browse your deaths
 
@@ -43,7 +43,7 @@ The compass (or the `/graveless` command) opens a view of every outstanding grav
 
 You can also attune your Spirit Compass to any grave in the list, if the one you want back first is not the most recent. The same screen manages who may see your graves and your personal graves on/off switch, so you never need to memorize a command.
 
-<!-- image: the grave browser screen showing the death list, inventory preview, and terrain diorama -->
+![The grave browser: death list, inventory preview, and the 3D terrain diorama](metadata/images/browser.png)
 
 ## Bring friends, or don't
 
@@ -63,7 +63,7 @@ Graveless was built around one promise; your items survive. A few of the ways th
 - Every death is also written to a permanent backup on the server, and staff can revive any backup as a fresh grave in a couple of clicks, even for graves that were already claimed or deleted.
 - Server operators get the full toolkit in the same browser: view any player's graves, preview the exact contents, restore everything remotely, pull out a single item, teleport to the site, or bring back a backup.
 
-<!-- image: admin view of the browser showing another player's grave with the backups overlay open -->
+![Admin view of the grave browser with the backups overlay open](metadata/images/browser-admin.png)
 
 ## Commands
 
@@ -83,7 +83,17 @@ Almost everything lives in the grave browser, but every action has a command too
 
 ## For server owners
 
-Everything meaningful is configurable: how many graves each player keeps (default 30), how far ghosts are visible (default 256 blocks), how far away a grave can be claimed (default 64 blocks, through walls unless you enable the line of sight requirement), and the Spirit Ward's duration or whether it exists at all. Running keepInventory? Graveless respects the gamerule and stays out of the way, and players who prefer vanilla drops can opt out individually.
+Everything meaningful is configurable. The defaults:
+
+| Setting | Default |
+|---|---|
+| Graves kept per player | 30, oldest dropped first (disk backups keep everything) |
+| Ghost visibility range | 256 blocks |
+| Claim range | 16 blocks, working through walls unless you enable the line of sight requirement |
+| Spirit Ward | On, granted within 256 blocks of your own grave |
+| Spirit Ward duration | 2 minutes, fading 1 second after you claim |
+
+Running keepInventory? Graveless respects the gamerule and stays out of the way, and players who prefer vanilla drops can opt out individually.
 
 ## Requirements
 
