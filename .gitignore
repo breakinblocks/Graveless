@@ -1,21 +1,71 @@
-.gradle
-**/build/
-!**/src/**/build/
+# Gradle
+.gradle/
+build/
+out/
+classes/
 
-# Ignore Gradle GUI config
-gradle-app.setting
+# Gradle Wrapper (tracked on purpose)
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
-# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
-!gradle-wrapper.jar
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
 
-# Avoid ignore Gradle wrappper properties
-!gradle-wrapper.properties
-
-# Cache of project
-.gradletasknamecache
-
-# Eclipse Gradle plugin generated files
-# Eclipse Core
-.project
-# JDT-specific (Eclipse Java Development Tools)
+# Eclipse
 .classpath
+.eclipse/
+.project
+.settings/
+bin/
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Minecraft mod development
+run/
+run-gametest/
+runs/
+logs/
+*.log
+crash-reports/
+
+# NeoForge — ignore datagen cache/scratch but keep the resources output tracked
+src/generated/*
+!src/generated/resources/
+src/generated/resources/.cache/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Java
+*.class
+hs_err_pid*
+replay_pid*
+
+# Misc
+*.bak
+*.tmp
+*.swp
+*~
+local.properties
+
+# Markdown — only README.md, LICENSE.md and CHANGELOG.md are tracked
+*.md
+!README.md
+!LICENSE.md
+!CHANGELOG.md
+
+*.bat
+!gradlew.bat

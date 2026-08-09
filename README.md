@@ -1,1 +1,94 @@
 # Graveless
+
+Death in Minecraft usually means watching your items burn in the lava that killed you, or turning on keepInventory and losing the tension that makes the game fun. Graveless is the middle path. When you die, your belongings are kept safe at the place you fell, and a ghost of your own character waits there for you to come reclaim them.
+
+There is no grave block to break, no chest to dig up, and nothing that can be destroyed, buried, or lost. Your items are held by the world itself until you come back for them.
+
+<!-- image: ghost standing at a death site with the light pillar behind it -->
+
+## Your ghost is waiting for you
+
+When you die anywhere a spectral copy of you, wearing your own skin, appears at the spot and is visible only to you and those you give permission to. A tall pillar of light rises above it so you can spot it from hundreds of blocks away, and a glowing outline shows through terrain as you get closer. Walk toward it and a single silver thread reaches out from the ghost's heart to yours, guiding you the last stretch.
+
+When you are close enough, a whisper tells you your spirit is within reach, how far away it lingers, and which direction to walk. Look at the ghost and click. That's all you have to do.
+
+- Items return to the exact slots they were in when you died. Your pickaxe is back on the same hotbar slot, your armor is back on your body, your offhand is back in your offhand and your curios are in the slot you assigned them to.
+- Your experience comes back too.
+- If your bags are already partly full, the ghost keeps whatever does not fit. Come back with space and claim the rest. Nothing is ever thrown on the ground or lost.
+
+<!-- image: closeup of the ghost with the silver thread reaching toward the player -->
+
+## Don't fear the reaper
+
+Corpse runs are miserable when the thing that killed you is still waiting there. As you approach your own grave a Spirit Ward settles over you. You turn invisible, monsters ignore you completely, and night vision lets you see into whatever dark place you died in. The ward holds for up to two minutes, long enough to walk in, take back what is yours, and walk out. Once you claim your grave it fades quickly though, so you'll need to get out quick. This is a configurable feature in both duration or disabling completely if you choose.
+
+<!-- image: player under spirit ward, invisible with effect icons showing, mobs standing passive nearby -->
+
+## The Spirit Compass
+
+Every death places a Spirit Compass in your hand when you respawn. Its needle points across the world toward your grave. It disappears on its own once you have nothing left to recover, and a fresh one arrives with every death so you wont end up with multiple of them cluttering your inventory for multiple deaths. It never takes up space in your grave and it can never be lost with your other belongings.
+
+Right click the compass to commune with your graves and select the one you want to track and live preview its location and contents.
+
+<!-- image: spirit compass item in hand, needle pointing toward a distant beam -->
+
+## Browse your deaths
+
+The compass (or the `/graveless` command) opens a view of every outstanding grave you have. For each one you can see:
+
+- When and where you died, and what killed you
+- Every item waiting in the grave, down to the stack counts
+- A miniature 3D diorama of the terrain around your ghost, with your ghost standing in it, so you know whether you are walking into a cave, a shoreline, or the middle of a lava lake. Drag to rotate it, scroll to zoom.
+- How far away it is, and how much experience is stored
+
+You can also attune your Spirit Compass to any grave in the list, if the one you want back first is not the most recent. The same screen manages who may see your graves and your personal graves on/off switch, so you never need to memorize a command.
+
+<!-- image: the grave browser screen showing the death list, inventory preview, and terrain diorama -->
+
+## Bring friends, or don't
+
+Your graves are yours. Other players cannot see your ghost, cannot loot your items, and cannot even tell where you died. If you want help recovering something dangerous, grant a friend access right from the grave browser (or with a command), and they can claim your grave for you. Revoke it just as easily.
+
+Prefer the old ways? Turn Graveless off for yourself entirely and your items will drop on death like vanilla, no questions asked. Each player on a server can decide
+if they want this feature enabled or not.
+
+## Nothing is ever lost
+
+Graveless was built around one promise; your items survive. A few of the ways the mod tries to keeps that promise are:
+
+- Graves never expire. Log in a month later and your ghost is still waiting.
+- Items from other mods are captured too, including equipped Curios accessories, which return to the exact accessory slots they came from.
+- Strange modded items with oversized stacks or broken data cannot corrupt your graves. They are corrected on capture, and even an unreadable item only costs that one item, never the rest of the grave.
+- Deaths in the void leave the ghost floating at a reachable height instead of at the bottom of the world.
+- Every death is also written to a permanent backup on the server, and staff can revive any backup as a fresh grave in a couple of clicks, even for graves that were already claimed or deleted.
+- Server operators get the full toolkit in the same browser: view any player's graves, preview the exact contents, restore everything remotely, pull out a single item, teleport to the site, or bring back a backup.
+
+<!-- image: admin view of the browser showing another player's grave with the backups overlay open -->
+
+## Commands
+
+Almost everything lives in the grave browser, but every action has a command too, which is handy for console use or players who are offline.
+
+| Command | What it does |
+|---|---|
+| `/graveless` | Open the grave browser |
+| `/graveless allow <player>` | Let a friend see and claim your graves |
+| `/graveless deny <player>` | Take that permission back |
+| `/graveless clear` | Remove everyone from your access list |
+| `/graveless disable` / `enable` | Opt out of graves (vanilla drops) or back in |
+| `/graveless list` | List your graves in chat |
+| `/graveless restore <player>` | Operators: restore a grave to a player from anywhere |
+| `/graveless backups <player>` | Operators: list a player's death backups |
+| `/graveless restorebackup <player> <#>` | Operators: revive a backup as a live grave |
+
+## For server owners
+
+Everything meaningful is configurable: how many graves each player keeps (default 30), how far ghosts are visible (default 256 blocks), how far away a grave can be claimed (default 64 blocks, through walls unless you enable the line of sight requirement), and the Spirit Ward's duration or whether it exists at all. Running keepInventory? Graveless respects the gamerule and stays out of the way, and players who prefer vanilla drops can opt out individually.
+
+## Requirements
+
+Minecraft 26.1 with NeoForge. Works in singleplayer and on servers. No other mods required; Curios is supported when present.
+
+## License
+
+MIT. See [LICENSE.md](LICENSE.md).
