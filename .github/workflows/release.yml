@@ -2,9 +2,14 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      maven_only:
+        description: Publish to the BreakInBlocks Maven only, skipping CurseForge and Modrinth
+        type: boolean
+        default: false
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   release:
@@ -23,20 +28,21 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build
-        run: chmod +x gradlew && ./gradlew clean build
+        run: chmod +x gradlew && ./gradlew build
 
-      - name: Resolve version
-        id: version
-        run: |
-          version=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Upload jars as workflow artifacts
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          files: |
+          name: jars
+          path: |
             neoforge/build/libs/graveless-neoforge-*.jar
             fabric/build/libs/graveless-fabric-*.jar
-          body_path: CHANGELOG.md
-          fail_on_unmatched_files: true
+          if-no-files-found: error
+
+      - name: Publish
+        run: ./gradlew ${{ inputs.maven_only && 'publishMaven' || 'publishMod' }}
+        env:
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          MAVEN_USER: ${{ secrets.MAVEN_USER }}
+          MAVEN_TOKEN: ${{ secrets.MAVEN_TOKEN }}

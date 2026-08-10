@@ -52,16 +52,30 @@ dependencies {
 
 publishMods {
     file = tasks.named('jar', Jar).flatMap { it.archiveFile }
+    version = "${project.version}+neoforge"
+    displayName = "${mod_name} ${mod_version} for NeoForge ${minecraft_version}"
     def changelogFile = rootProject.file('CHANGELOG.md')
-    changelog = changelogFile.exists() ? changelogFile.text : "Release ${version}"
-    type = STABLE
+    changelog = changelogFile.exists() ? changelogFile.text : "Release ${mod_version}"
     modLoaders.add('neoforge')
+
+    def channel = mod_version.toLowerCase()
+    if (channel.contains('alpha')) {
+        type = ALPHA
+    } else if (channel.contains('beta') || channel.contains('snapshot') || channel.contains('rc')) {
+        type = BETA
+    } else {
+        type = STABLE
+    }
 
     if (curseforge_project_id) {
         curseforge {
             projectId = curseforge_project_id
             accessToken = providers.environmentVariable('CURSEFORGE_TOKEN')
             minecraftVersions.add(minecraft_version)
+            javaVersions.add(JavaVersion.toVersion(java_version))
+            clientRequired = true
+            serverRequired = true
+            optional { slug = 'curios' }
         }
     }
 
@@ -70,14 +84,8 @@ publishMods {
             projectId = modrinth_project_id
             accessToken = providers.environmentVariable('MODRINTH_TOKEN')
             minecraftVersions.add(minecraft_version)
+            optional('curios')
         }
-    }
-}
-
-tasks.named('publishMods') {
-    def mavenUser = providers.environmentVariable('MAVEN_USER')
-    if (mavenUser.isPresent()) {
-        dependsOn 'publishMavenJavaPublicationToBreakInBlocksRepository'
     }
 }
 

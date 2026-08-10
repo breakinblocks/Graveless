@@ -43,3 +43,21 @@ tasks.named('sourcesJar', Jar) {
     dependsOn(configurations.commonResources)
     from(configurations.commonResources)
 }
+
+tasks.register('publishMaven') {
+    description = 'Publishes the mod JAR and sources JAR to the BreakInBlocks Maven repository.'
+    group = 'publishing'
+    dependsOn 'publishMavenJavaPublicationToBreakInBlocksRepository'
+}
+
+plugins.withId('me.modmuss50.mod-publish-plugin') {
+    tasks.register('publishMod') {
+        description = 'Publishes the mod to CurseForge, Modrinth and the BreakInBlocks Maven repository.'
+        group = 'publishing'
+        dependsOn 'publishMods', 'publishMaven'
+    }
+
+    tasks.named('publishMods') {
+        finalizedBy 'publishMaven'
+    }
+}

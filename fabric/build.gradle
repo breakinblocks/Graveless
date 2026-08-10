@@ -36,17 +36,30 @@ def fabricOutputJar = tasks.names.contains('remapJar') ? tasks.named('remapJar',
 
 publishMods {
     file = fabricOutputJar.flatMap { it.archiveFile }
+    version = "${project.version}+fabric"
+    displayName = "${mod_name} ${mod_version} for Fabric ${minecraft_version}"
     def changelogFile = rootProject.file('CHANGELOG.md')
-    changelog = changelogFile.exists() ? changelogFile.text : "Release ${version}"
-    type = STABLE
+    changelog = changelogFile.exists() ? changelogFile.text : "Release ${mod_version}"
     modLoaders.add('fabric')
+
+    def channel = mod_version.toLowerCase()
+    if (channel.contains('alpha')) {
+        type = ALPHA
+    } else if (channel.contains('beta') || channel.contains('snapshot') || channel.contains('rc')) {
+        type = BETA
+    } else {
+        type = STABLE
+    }
 
     if (curseforge_project_id) {
         curseforge {
             projectId = curseforge_project_id
             accessToken = providers.environmentVariable('CURSEFORGE_TOKEN')
             minecraftVersions.add(minecraft_version)
-            requires { slug = 'fabric-api' }
+            javaVersions.add(JavaVersion.toVersion(java_version))
+            clientRequired = true
+            serverRequired = true
+            requires('fabric-api', 'forge-config-api-port')
         }
     }
 
@@ -55,15 +68,8 @@ publishMods {
             projectId = modrinth_project_id
             accessToken = providers.environmentVariable('MODRINTH_TOKEN')
             minecraftVersions.add(minecraft_version)
-            requires { slug = 'fabric-api' }
+            requires('fabric-api', 'forge-config-api-port')
         }
-    }
-}
-
-tasks.named('publishMods') {
-    def mavenUser = providers.environmentVariable('MAVEN_USER')
-    if (mavenUser.isPresent()) {
-        dependsOn 'publishMavenJavaPublicationToBreakInBlocksRepository'
     }
 }
 
