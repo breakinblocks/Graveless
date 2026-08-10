@@ -72,7 +72,20 @@ public class GravelessCommands {
                         .then(Commands.argument("player", GameProfileArgument.gameProfile())
                                 .then(Commands.argument("index", IntegerArgumentType.integer(1))
                                         .executes(context -> restoreBackup(context,
-                                                IntegerArgumentType.getInteger(context, "index")))))));
+                                                IntegerArgumentType.getInteger(context, "index"))))))
+                .then(Commands.literal("prune")
+                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(Commands.literal("all")
+                                .executes(context -> pruneAll(context, GraveBackups.retentionLimit()))
+                                .then(Commands.argument("keep", IntegerArgumentType.integer(0))
+                                        .executes(context -> pruneAll(context,
+                                                IntegerArgumentType.getInteger(context, "keep")))))
+                        .then(Commands.literal("player")
+                                .then(Commands.argument("player", GameProfileArgument.gameProfile())
+                                        .executes(context -> prunePlayer(context, GraveBackups.retentionLimit()))
+                                        .then(Commands.argument("keep", IntegerArgumentType.integer(0))
+                                                .executes(context -> prunePlayer(context,
+                                                        IntegerArgumentType.getInteger(context, "keep"))))))));
     }
 
     private static int openMenu(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -218,6 +231,41 @@ public class GravelessCommands {
         context.getSource().sendSuccess(() -> Component.translatable("graveless.command.restorebackup.done",
                 index, revived.itemCount(), target.name()), true);
         return revived.itemCount();
+    }
+
+    private static int prunePlayer(CommandContext<CommandSourceStack> context, int keep) throws CommandSyntaxException {
+        if (keep < 0) {
+            context.getSource().sendFailure(Component.translatable("graveless.command.prune.unlimited"));
+            return 0;
+        }
+        NameAndId target = backupTarget(context);
+        int deleted = GraveBackups.prune(context.getSource().getServer(), target.id(), keep);
+        context.getSource().sendSuccess(() -> Component.translatable("graveless.command.prune.player",
+                deleted, target.name(), keep), true);
+        return deleted;
+    }
+
+    private static int pruneAll(CommandContext<CommandSourceStack> context, int keep) {
+        if (keep < 0) {
+            context.getSource().sendFailure(Component.translatable("graveless.command.prune.unlimited"));
+            return 0;
+        }
+        MinecraftServer server = context.getSource().getServer();
+        List<UUID> owners = GraveBackups.owners(server);
+        int deleted = 0;
+        int touched = 0;
+        for (UUID owner : owners) {
+            int removed = GraveBackups.prune(server, owner, keep);
+            if (removed > 0) {
+                deleted += removed;
+                touched++;
+            }
+        }
+        int total = deleted;
+        int players = touched;
+        context.getSource().sendSuccess(() -> Component.translatable("graveless.command.prune.all",
+                total, players, owners.size(), keep), true);
+        return deleted;
     }
 
     private static int restore(CommandContext<CommandSourceStack> context, int index) throws CommandSyntaxException {

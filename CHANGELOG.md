@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.0
+
+Added a retention policy for the per-death backup files under `world/graveless/<uuid>/`. The new server setting
+`max_backups_per_player` defaults to `-1`, which keeps every file exactly as before. Set it to a number and the
+oldest files are deleted as soon as a new death pushes a player over the limit.
+
+Added `/graveless prune player <player> [keep]` and `/graveless prune all [keep]` for operators, so an existing
+archive can be trimmed without waiting for the next death. With no keep count the command uses the configured
+limit and refuses to run while retention is unlimited.
+
+Added a game test suite covering capture, restore, claiming, ghost sync, Spirit Ward, the spirit compass, the
+admin actions, the backup archive and the commands. Run it with `./gradlew :neoforge:runGameTestServer`.
+
 ## 1.1.0
 
 Added Fabric support. Graveless now ships two jars, `graveless-neoforge-*` and `graveless-fabric-*`.

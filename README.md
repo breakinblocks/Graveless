@@ -80,6 +80,8 @@ Almost everything lives in the grave browser, but every action has a command too
 | `/graveless restore <player>` | Operators: restore a grave to a player from anywhere |
 | `/graveless backups <player>` | Operators: list a player's death backups |
 | `/graveless restorebackup <player> <#>` | Operators: revive a backup as a live grave |
+| `/graveless prune player <player> [keep]` | Operators: delete a player's oldest backup files |
+| `/graveless prune all [keep]` | Operators: do the same for everyone on the server |
 
 ## For server owners
 
@@ -87,13 +89,19 @@ Everything meaningful is configurable. The defaults:
 
 | Setting | Default |
 |---|---|
-| Graves kept per player | 30, oldest dropped first (disk backups keep everything) |
+| Graves kept per player | 30, oldest dropped first |
+| Archived backups kept per player | Unlimited (`-1`). Set a number to cap the folder on disk |
 | Ghost visibility range | 256 blocks |
 | Claim range | 16 blocks, working through walls unless you enable the line of sight requirement |
 | Spirit Ward | Off. Turn it on to be granted the ward within 256 blocks of your own grave |
 | Spirit Ward duration | 2 minutes, fading 1 second after you claim |
 
 Running keepInventory? Graveless respects the gamerule and stays out of the way, and players who prefer vanilla drops can opt out individually.
+
+Every death also writes a backup file under `world/graveless/<uuid>/`. Those files are never removed by claiming or
+deleting a grave, so on a long-running server the folder only grows. Set `max_backups_per_player` to cap it: the
+oldest files are deleted as soon as a new death pushes a player over the limit. `/graveless prune` applies the same
+limit on demand, or a one-off limit if you pass a keep count.
 
 ## Requirements
 

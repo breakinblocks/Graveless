@@ -25,6 +25,7 @@ public class GravelessConfig {
     public static class ServerConfig {
         public final ModConfigSpec.BooleanValue enabled;
         public final ModConfigSpec.IntValue maxRecordsPerPlayer;
+        public final ModConfigSpec.IntValue maxBackupsPerPlayer;
         public final ModConfigSpec.IntValue visibilityRadius;
         public final ModConfigSpec.IntValue claimRange;
         public final ModConfigSpec.BooleanValue requireLineOfSight;
@@ -41,6 +42,9 @@ public class GravelessConfig {
             maxRecordsPerPlayer = builder
                     .comment("Maximum death records retained per player. Oldest records are dropped first (backup files on disk are kept).")
                     .defineInRange("max_records_per_player", 30, 1, 1000);
+            maxBackupsPerPlayer = builder
+                    .comment("Maximum archived grave backup files kept on disk per player. The oldest files are deleted once a new death pushes a player over the limit. -1 keeps every backup forever.")
+                    .defineInRange("max_backups_per_player", -1, -1, 10000);
             visibilityRadius = builder
                     .comment("Distance in blocks at which grave ghosts are sent to nearby players and remain visible.")
                     .defineInRange("visibility_radius", 256, 16, 512);
