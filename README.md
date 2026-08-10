@@ -20,7 +20,7 @@ When you are close enough, a whisper tells you your spirit is within reach, how 
 
 ## Don't fear the reaper
 
-Corpse runs are miserable when the thing that killed you is still waiting there. As you approach your own grave a Spirit Ward settles over you. You turn invisible, monsters ignore you completely, and night vision lets you see into whatever dark place you died in. The ward holds for up to two minutes, long enough to walk in, take back what is yours, and walk out. Once you claim your grave it fades quickly though, so you'll need to get out quick. This is a configurable feature in both duration or disabling completely if you choose.
+Corpse runs are miserable when the thing that killed you is still waiting there. As you approach your own grave a Spirit Ward settles over you. You turn invisible, monsters ignore you completely, and night vision lets you see into whatever dark place you died in. The ward holds for up to two minutes, long enough to walk in, take back what is yours, and walk out. Once you claim your grave it fades quickly though, so you'll need to get out quick. The ward is off by default. Turn it on in the config, where you can also tune its duration and range.
 
 ![Spirit Ward active: the player invisible while nearby monsters stand passive](metadata/images/spirit-ward.png)
 
@@ -90,14 +90,21 @@ Everything meaningful is configurable. The defaults:
 | Graves kept per player | 30, oldest dropped first (disk backups keep everything) |
 | Ghost visibility range | 256 blocks |
 | Claim range | 16 blocks, working through walls unless you enable the line of sight requirement |
-| Spirit Ward | On, granted within 256 blocks of your own grave |
+| Spirit Ward | Off. Turn it on to be granted the ward within 256 blocks of your own grave |
 | Spirit Ward duration | 2 minutes, fading 1 second after you claim |
 
 Running keepInventory? Graveless respects the gamerule and stays out of the way, and players who prefer vanilla drops can opt out individually.
 
 ## Requirements
 
-Minecraft 26.1 with NeoForge. Works in singleplayer and on servers. No other mods required; Curios is supported when present.
+Minecraft 26.1 on either NeoForge or Fabric. Works in singleplayer and on servers.
+
+| Loader | Jar | Also needs |
+|---|---|---|
+| NeoForge | `graveless-neoforge-<mc>-<version>.jar` | nothing |
+| Fabric | `graveless-fabric-<mc>-<version>.jar` | Fabric API, Forge Config API Port |
+
+Curios is supported on NeoForge when present. Accessories support on Fabric is waiting on an Accessories build for 26.1.
 
 ## License
 
