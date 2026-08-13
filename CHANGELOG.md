@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.1
+
+Fixed grave claiming often taking several clicks. Clicks aimed at a ghost now register even when a block is
+behind it, and right-click claiming works while holding an item.
+
+Added a `show_beam` client setting to turn off the vertical light beam above graves.
+
 ## 1.2.0
 
 Added a retention policy for the per-death backup files under `world/graveless/<uuid>/`. The new server setting

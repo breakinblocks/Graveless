@@ -24,6 +24,8 @@
   "graveless.configuration.protection_linger.tooltip": "How long Spirit Ward lingers in seconds after claiming the grave.",
   "graveless.configuration.use_shaders": "Ghost Shaders",
   "graveless.configuration.use_shaders.tooltip": "Use the custom ghost shader. Disable to fall back to plain translucent rendering.",
+  "graveless.configuration.show_beam": "Grave Beam",
+  "graveless.configuration.show_beam.tooltip": "Render the vertical light beam above your grave.",
   "graveless.configuration.debug_logging": "Debug Logging",
   "graveless.configuration.debug_logging.tooltip": "Log extra client-side diagnostic information.",
   "graveless.death.saved": "Your belongings (%s items) rest where you fell: %s, %s, %s in %s",

@@ -5,11 +5,13 @@ import com.breakinblocks.graveless.client.render.GhostRenderManager;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.FrameGraphSetupEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 @EventBusSubscriber(modid = Graveless.MOD_ID, value = Dist.CLIENT)
 public class NeoForgeClientEvents {
@@ -30,13 +32,18 @@ public class NeoForgeClientEvents {
     }
 
     @SubscribeEvent
-    public static void onRightClickEmpty(PlayerInteractEvent.RightClickEmpty event) {
-        GhostInteraction.onRightClickEmpty(event.getEntity(), event.getHand());
-    }
-
-    @SubscribeEvent
-    public static void onLeftClickEmpty(PlayerInteractEvent.LeftClickEmpty event) {
-        GhostInteraction.onLeftClickEmpty(event.getEntity());
+    public static void onInteractionKey(InputEvent.InteractionKeyMappingTriggered event) {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) {
+            return;
+        }
+        if (event.isAttack()) {
+            if (GhostInteraction.onAttackPressed(player)) {
+                event.setCanceled(true);
+            }
+        } else if (event.isUseItem() && GhostInteraction.onUsePressed(player, event.getHand())) {
+            event.setCanceled(true);
+        }
     }
 
     @SubscribeEvent

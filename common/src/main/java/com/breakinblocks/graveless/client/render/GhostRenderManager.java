@@ -152,6 +152,9 @@ public class GhostRenderManager {
 
     private static void submitBeam(PoseStack poseStack, SubmitNodeCollector collector, Vec3 camPos,
                                    Vec3 base, float time, double dist, float farFade) {
+        if (!GravelessConfig.CLIENT.showBeam.get()) {
+            return;
+        }
         float distRamp = Mth.clamp((float) ((dist - 8.0) / 16.0), 0.0F, 1.0F);
         float pulse = 0.8F + 0.2F * Mth.sin(time * 0.08F);
         float beamAlpha = 0.22F * distRamp * farFade * pulse;

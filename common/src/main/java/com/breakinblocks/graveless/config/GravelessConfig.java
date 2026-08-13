@@ -74,6 +74,7 @@ public class GravelessConfig {
 
     public static class ClientConfig {
         public final ModConfigSpec.BooleanValue useShaders;
+        public final ModConfigSpec.BooleanValue showBeam;
         public final ModConfigSpec.BooleanValue debugLogging;
 
         ClientConfig(ModConfigSpec.Builder builder) {
@@ -81,6 +82,9 @@ public class GravelessConfig {
             useShaders = builder
                     .comment("Use the custom ghost shader (fresnel rim glow, shimmer). Disable to fall back to plain translucent rendering if the shader causes issues on your system.")
                     .define("use_shaders", true);
+            showBeam = builder
+                    .comment("Render the vertical light beam above your grave.")
+                    .define("show_beam", true);
             debugLogging = builder
                     .comment("Log extra client-side diagnostic information.")
                     .define("debug_logging", false);
