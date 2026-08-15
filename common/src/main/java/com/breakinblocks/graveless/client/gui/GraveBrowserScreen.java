@@ -1,6 +1,8 @@
 package com.breakinblocks.graveless.client.gui;
 
+import com.breakinblocks.graveless.client.GhostClientManager;
 import com.breakinblocks.graveless.client.render.GhostSkins;
+import com.breakinblocks.graveless.config.GravelessConfig;
 import com.breakinblocks.graveless.event.GraveMenuHandlers;
 import com.breakinblocks.graveless.net.GravelessNetworking;
 import net.minecraft.client.Minecraft;
@@ -58,6 +60,7 @@ public class GraveBrowserScreen extends Screen {
     private static final int ACTION_TELEPORT = 1;
     private static final int ACTION_TRACK = 2;
     private static final int ACTION_RESTORE = 3;
+    private static final int ACTION_CLAIM_XP = 4;
     private static final int ACTION_BACKUPS = 5;
 
     private static final int OVERLAY_NONE = 0;
@@ -78,6 +81,7 @@ public class GraveBrowserScreen extends Screen {
     private final Map<UUID, GravelessNetworking.GraveDetailPayload> details = new HashMap<>();
     private final Map<UUID, BlockState[]> dioramaCache = new HashMap<>();
     private UUID selectedId;
+    private UUID focusId;
     private int listScroll;
     private int gridScroll;
     private boolean confirmDelete;
@@ -118,6 +122,7 @@ public class GraveBrowserScreen extends Screen {
         this.trackedId = payload.trackedId().orElse(null);
         this.players = new ArrayList<>(payload.players());
         this.allowed = new ArrayList<>(payload.allowed());
+        payload.focusId().ifPresent(id -> this.focusId = id);
     }
 
     @Override
@@ -127,9 +132,13 @@ public class GraveBrowserScreen extends Screen {
             wideModel = new PlayerModel(minecraft.getEntityModels().bakeLayer(ModelLayers.PLAYER), false);
             slimModel = new PlayerModel(minecraft.getEntityModels().bakeLayer(ModelLayers.PLAYER_SLIM), true);
         }
-        if (selectedId == null && !graves.isEmpty()) {
+        if (focusId != null && findSummary(focusId) != null) {
+            select(focusId);
+        } else if (selectedId == null && !graves.isEmpty()) {
             select(graves.getFirst().recordId());
         }
+        focusId = null;
+        revealSelection();
     }
 
     public void updateFrom(GravelessNetworking.GraveListPayload payload) {
@@ -148,12 +157,18 @@ public class GraveBrowserScreen extends Screen {
         } else if (selectedId != null && findSummary(selectedId) == null) {
             selectedId = null;
         }
+        if (focusId != null && findSummary(focusId) != null) {
+            selectedId = focusId;
+            gridScroll = 0;
+        }
+        focusId = null;
         if (selectedId == null && !graves.isEmpty()) {
             select(graves.getFirst().recordId());
         } else if (selectedId != null) {
             requestDetail(selectedId);
         }
         clampScroll();
+        revealSelection();
     }
 
     public void receiveDetail(GravelessNetworking.GraveDetailPayload payload) {
@@ -179,6 +194,10 @@ public class GraveBrowserScreen extends Screen {
     private boolean viewingSelf() {
         Minecraft mc = Minecraft.getInstance();
         return mc.player != null && mc.player.getUUID().equals(ownerId);
+    }
+
+    private boolean canDelete() {
+        return admin || viewingSelf();
     }
 
     private UUID effectiveTrackedId() {
@@ -220,6 +239,11 @@ public class GraveBrowserScreen extends Screen {
                     hasSelection && !tracking));
             y -= BUTTON_STEP;
         }
+        GravelessNetworking.GraveSummary selected = hasSelection ? findSummary(selectedId) : null;
+        specs.add(new ButtonSpec(ACTION_CLAIM_XP, y,
+                Component.translatable("graveless.menu.button.claim_xp"),
+                selected != null && selected.xp() > 0 && canTake(selected)));
+        y -= BUTTON_STEP;
         if (admin) {
             specs.add(new ButtonSpec(ACTION_BACKUPS, y,
                     Component.translatable("graveless.menu.button.backups"), true));
@@ -242,7 +266,7 @@ public class GraveBrowserScreen extends Screen {
         int midW = 128;
         int gridX = midX + (midW - GRID_COLS * SLOT_SIZE) / 2;
         int gridY = contentY + 24;
-        int buttonCount = Math.max(1, (admin ? 3 : 0) + (viewingSelf() ? 1 : 0));
+        int buttonCount = (admin ? 3 : 0) + (viewingSelf() ? 1 : 0) + 1;
         int topButtonY = bottom - BUTTON_H - (buttonCount - 1) * BUTTON_STEP;
         int gridBottom = topButtonY - 14;
         int rightX = midX + midW + 7;
@@ -312,7 +336,9 @@ public class GraveBrowserScreen extends Screen {
     private void drawListHeader(GuiGraphicsExtractor graphics, Layout l, int mouseX, int mouseY) {
         int centerX = l.listX() + l.listW() / 2;
         if (!admin) {
-            graphics.centeredText(font, Component.translatable("graveless.menu.outstanding"),
+            graphics.centeredText(font, viewingSelf()
+                            ? Component.translatable("graveless.menu.outstanding")
+                            : Component.translatable("graveless.menu.viewing", ownerName.toUpperCase()),
                     centerX, l.top() + 26, TEXT_BRIGHT);
             return;
         }
@@ -416,6 +442,7 @@ public class GraveBrowserScreen extends Screen {
                     centerX, l.top() + 36, TEXT_MUTED);
         }
 
+        boolean takeable = summary != null && canTake(summary);
         GravelessNetworking.GraveDetailPayload detail = selectedId == null ? null : details.get(selectedId);
         List<ItemStack> items = detail == null ? List.of() : detail.items();
         int[] metrics = gridMetrics(l);
@@ -443,14 +470,11 @@ public class GraveBrowserScreen extends Screen {
                     graphics.item(stack, slotX + 1, slotY + 1);
                     graphics.itemDecorations(font, stack, slotX + 1, slotY + 1);
                     if (hoveredNow) {
-                        if (admin) {
-                            List<Component> lines = new ArrayList<>(getTooltipFromItem(minecraft, stack));
-                            lines.add(Component.translatable("graveless.menu.extract_hint")
-                                    .withStyle(style -> style.withColor(0x41E9E9)));
-                            graphics.setTooltipForNextFrame(font, lines, Optional.empty(), mouseX, mouseY);
-                        } else {
-                            graphics.setTooltipForNextFrame(font, stack, mouseX, mouseY);
-                        }
+                        List<Component> lines = new ArrayList<>(getTooltipFromItem(minecraft, stack));
+                        lines.add(Component.translatable(takeable
+                                        ? "graveless.menu.extract_hint" : "graveless.menu.extract_far")
+                                .withStyle(style -> style.withColor(takeable ? 0x41E9E9 : 0x6E9B9E)));
+                        graphics.setTooltipForNextFrame(font, lines, Optional.empty(), mouseX, mouseY);
                     }
                 }
             }
@@ -523,11 +547,13 @@ public class GraveBrowserScreen extends Screen {
             drawButton(graphics, l.midX(), spec.y(), l.midW(), BUTTON_H, spec.label(), TEXT_CYAN, EDGE,
                     spec.enabled(), overlay == OVERLAY_NONE && hovered(mouseX, mouseY, l.midX(), spec.y(), l.midW(), BUTTON_H));
         }
-        int deleteX = l.rightX() + (l.rightW() - 100) / 2;
-        drawButton(graphics, deleteX, l.deleteY(), 100, BUTTON_H,
-                Component.translatable(confirmDelete ? "graveless.menu.button.confirm_delete" : "graveless.menu.button.delete"),
-                RED, confirmDelete ? RED : RED_DIM,
-                hasSelection, overlay == OVERLAY_NONE && hovered(mouseX, mouseY, deleteX, l.deleteY(), 100, BUTTON_H));
+        if (canDelete()) {
+            int deleteX = l.rightX() + (l.rightW() - 100) / 2;
+            drawButton(graphics, deleteX, l.deleteY(), 100, BUTTON_H,
+                    Component.translatable(confirmDelete ? "graveless.menu.button.confirm_delete" : "graveless.menu.button.delete"),
+                    RED, confirmDelete ? RED : RED_DIM,
+                    hasSelection, overlay == OVERLAY_NONE && hovered(mouseX, mouseY, deleteX, l.deleteY(), 100, BUTTON_H));
+        }
 
         GravelessNetworking.GraveSummary summary = hasSelection ? findSummary(selectedId) : null;
         if (summary != null) {
@@ -851,7 +877,7 @@ public class GraveBrowserScreen extends Screen {
             return true;
         }
 
-        if (admin && event.hasShiftDown() && selectedId != null) {
+        if (event.hasShiftDown() && selectedId != null && canTakeSelected()) {
             int index = gridIndexAt(l, mouseX, mouseY);
             if (index >= 0) {
                 click();
@@ -886,7 +912,7 @@ public class GraveBrowserScreen extends Screen {
         boolean hasSelection = selectedId != null && findSummary(selectedId) != null;
 
         int deleteX = l.rightX() + (l.rightW() - 100) / 2;
-        if (hasSelection && hovered(mouseX, mouseY, deleteX, l.deleteY(), 100, BUTTON_H)) {
+        if (hasSelection && canDelete() && hovered(mouseX, mouseY, deleteX, l.deleteY(), 100, BUTTON_H)) {
             click();
             if (confirmDelete) {
                 Services.NETWORK.sendToServer(new GravelessNetworking.GraveActionPayload(
@@ -1026,6 +1052,8 @@ public class GraveBrowserScreen extends Screen {
                     ownerId, selectedId, GravelessNetworking.GraveActionPayload.ACTION_TRACK));
             case ACTION_RESTORE -> Services.NETWORK.sendToServer(new GravelessNetworking.GraveActionPayload(
                     ownerId, selectedId, GravelessNetworking.GraveActionPayload.ACTION_RESTORE));
+            case ACTION_CLAIM_XP -> Services.NETWORK.sendToServer(new GravelessNetworking.GraveActionPayload(
+                    ownerId, selectedId, GravelessNetworking.GraveActionPayload.ACTION_CLAIM_XP));
             case ACTION_BACKUPS -> {
                 openOverlay(OVERLAY_BACKUPS);
                 Services.NETWORK.sendToServer(new GravelessNetworking.BackupListRequestPayload(ownerId));
@@ -1104,6 +1132,46 @@ public class GraveBrowserScreen extends Screen {
         Layout l = layout();
         int maxScroll = Math.max(0, graves.size() * ROW_HEIGHT + 4 - l.listH());
         listScroll = Mth.clamp(listScroll, 0, maxScroll);
+    }
+
+    private void revealSelection() {
+        int index = -1;
+        for (int i = 0; i < graves.size(); i++) {
+            if (graves.get(i).recordId().equals(selectedId)) {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0) {
+            return;
+        }
+        Layout l = layout();
+        int rowTop = 2 + index * ROW_HEIGHT;
+        if (listScroll > rowTop) {
+            listScroll = rowTop;
+        } else if (listScroll < rowTop + ROW_HEIGHT - l.listH()) {
+            listScroll = rowTop + ROW_HEIGHT - l.listH();
+        }
+        clampScroll();
+    }
+
+    private boolean canTake(GravelessNetworking.GraveSummary summary) {
+        if (admin) {
+            return true;
+        }
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null || !mc.level.dimension().equals(summary.pos().dimension())) {
+            return false;
+        }
+        GhostClientManager.ClientGhost ghost = GhostClientManager.get(summary.recordId());
+        BlockPos pos = ghost == null ? summary.pos().pos() : ghost.pos();
+        int range = GravelessConfig.SERVER.claimRange.get() + 2;
+        return mc.player.position().distanceToSqr(Vec3.atCenterOf(pos)) <= (double) range * range;
+    }
+
+    private boolean canTakeSelected() {
+        GravelessNetworking.GraveSummary summary = selectedId == null ? null : findSummary(selectedId);
+        return summary != null && canTake(summary);
     }
 
     @Override

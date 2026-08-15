@@ -41,6 +41,8 @@ public class GravelessNetworking {
                 GraveMenuHandlers::handleAction);
         Services.NETWORK.registerToServer(GraveViewRequestPayload.TYPE, GraveViewRequestPayload.STREAM_CODEC,
                 GraveMenuHandlers::handleViewRequest);
+        Services.NETWORK.registerToServer(GraveOpenPayload.TYPE, GraveOpenPayload.STREAM_CODEC,
+                GraveMenuHandlers::handleOpenRequest);
         Services.NETWORK.registerToServer(GraveExtractPayload.TYPE, GraveExtractPayload.STREAM_CODEC,
                 GraveMenuHandlers::handleExtract);
         Services.NETWORK.registerToServer(ProfileActionPayload.TYPE, ProfileActionPayload.STREAM_CODEC,
@@ -122,7 +124,7 @@ public class GravelessNetworking {
 
     public record GraveListPayload(UUID ownerId, String ownerName, List<GraveSummary> graves, boolean admin,
                                    boolean ownerEnabled, Optional<UUID> trackedId,
-                                   List<PlayerEntry> players, List<PlayerEntry> allowed)
+                                   List<PlayerEntry> players, List<PlayerEntry> allowed, Optional<UUID> focusId)
             implements CustomPacketPayload {
         public static final Type<GraveListPayload> TYPE = new Type<>(Graveless.id("grave_list"));
 
@@ -135,6 +137,7 @@ public class GravelessNetworking {
                 UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs::optional), GraveListPayload::trackedId,
                 PlayerEntry.STREAM_CODEC.apply(ByteBufCodecs.list()), GraveListPayload::players,
                 PlayerEntry.STREAM_CODEC.apply(ByteBufCodecs.list()), GraveListPayload::allowed,
+                UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs::optional), GraveListPayload::focusId,
                 GraveListPayload::new
         );
 
@@ -248,6 +251,20 @@ public class GravelessNetworking {
         }
     }
 
+    public record GraveOpenPayload(UUID recordId) implements CustomPacketPayload {
+        public static final Type<GraveOpenPayload> TYPE = new Type<>(Graveless.id("grave_open"));
+
+        public static final StreamCodec<FriendlyByteBuf, GraveOpenPayload> STREAM_CODEC = StreamCodec.composite(
+                UUIDUtil.STREAM_CODEC, GraveOpenPayload::recordId,
+                GraveOpenPayload::new
+        );
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
     public record GraveDetailPayload(UUID recordId, List<ItemStack> items, List<Integer> terrain)
             implements CustomPacketPayload {
         public static final Type<GraveDetailPayload> TYPE = new Type<>(Graveless.id("grave_detail"));
@@ -286,6 +303,7 @@ public class GravelessNetworking {
         public static final int ACTION_TELEPORT = 1;
         public static final int ACTION_TRACK = 2;
         public static final int ACTION_RESTORE = 3;
+        public static final int ACTION_CLAIM_XP = 4;
 
         public static final Type<GraveActionPayload> TYPE = new Type<>(Graveless.id("grave_action"));
 

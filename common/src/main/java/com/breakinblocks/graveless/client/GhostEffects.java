@@ -114,6 +114,8 @@ public class GhostEffects {
             minecraft.getChatListener().handleSystemMessage(
                     message.copy().withStyle(ChatFormatting.AQUA), false);
         }
+        minecraft.getChatListener().handleSystemMessage(
+                Component.translatable("graveless.hud.sneak_hint").withStyle(ChatFormatting.DARK_AQUA), false);
         minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.AMETHYST_BLOCK_CHIME, 0.8F));
     }
 

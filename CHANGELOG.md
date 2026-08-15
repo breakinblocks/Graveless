@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.0
+
+Sneak and click a ghost to open that grave in the browser instead of claiming it. The death you clicked is
+already selected, and sneak + left click on any slot takes that stack back into your inventory. This is the
+way out when something in the grave is better left there so you can take back everything you want, then delete the
+entry with the rest still inside it. Accidentally pick up that uranium rod your friend threw to you? No problem :p
+
+Taking single stacks out is allowed for the grave's owner and anyone they granted access to, but only while
+standing within claim range of the ghost. Operators keep their existing reach from anywhere.
+
+Added a reclaim button for the experience held in a grave, so stored xp can come back without the items
+coming with it.
+
 ## 1.2.1
 
 Fixed grave claiming often taking several clicks. Clicks aimed at a ghost now register even when a block is

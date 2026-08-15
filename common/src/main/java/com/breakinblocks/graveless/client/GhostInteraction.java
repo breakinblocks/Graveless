@@ -17,14 +17,14 @@ public class GhostInteraction {
     private static long lastClaimTime = Long.MIN_VALUE;
 
     public static boolean onAttackPressed(Player player) {
-        return attemptClaim(player);
+        return attemptInteract(player);
     }
 
     public static boolean onUsePressed(Player player, InteractionHand hand) {
-        return hand == InteractionHand.MAIN_HAND && attemptClaim(player);
+        return hand == InteractionHand.MAIN_HAND && attemptInteract(player);
     }
 
-    private static boolean attemptClaim(Player player) {
+    private static boolean attemptInteract(Player player) {
         if (GhostClientManager.isEmpty()) {
             return false;
         }
@@ -35,7 +35,9 @@ public class GhostInteraction {
         long time = player.level().getGameTime();
         if (time - lastClaimTime >= CLAIM_COOLDOWN_TICKS || time < lastClaimTime) {
             lastClaimTime = time;
-            Services.NETWORK.sendToServer(new GravelessNetworking.ClaimRequestPayload(target.recordId()));
+            Services.NETWORK.sendToServer(player.isShiftKeyDown()
+                    ? new GravelessNetworking.GraveOpenPayload(target.recordId())
+                    : new GravelessNetworking.ClaimRequestPayload(target.recordId()));
         }
         return true;
     }

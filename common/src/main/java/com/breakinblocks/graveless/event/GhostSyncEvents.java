@@ -32,7 +32,7 @@ import java.util.UUID;
 public class GhostSyncEvents {
     private static final Map<UUID, Set<UUID>> KNOWN = new HashMap<>();
 
-    private record FoundRecord(UUID ownerId, GraveProfile profile, DeathRecord record) {
+    public record FoundRecord(UUID ownerId, GraveProfile profile, DeathRecord record) {
     }
 
     public static void onPlayerTick(ServerPlayer player) {
@@ -57,14 +57,10 @@ public class GhostSyncEvents {
                 return;
             }
             DeathRecord record = found.record();
-            if (!record.pos().dimension().equals(player.level().dimension())) {
+            if (!inClaimRange(player, record)) {
                 return;
             }
             BlockPos anchor = anchor(player.level(), record.pos().pos());
-            int range = GravelessConfig.SERVER.claimRange.get();
-            if (Vec3.atCenterOf(anchor).distanceToSqr(player.position()) > (double) (range + 2) * (range + 2)) {
-                return;
-            }
             if (GravelessConfig.SERVER.requireLineOfSight.get() && !hasLineOfSight(player, anchor)) {
                 player.sendSystemMessage(Component.translatable("graveless.claim.blocked")
                         .withStyle(ChatFormatting.GRAY));
@@ -153,7 +149,24 @@ public class GhostSyncEvents {
         });
     }
 
-    private static FoundRecord findRecord(GraveStore store, UUID recordId) {
+    public static boolean canReach(ServerPlayer player, DeathRecord record) {
+        if (!inClaimRange(player, record)) {
+            return false;
+        }
+        return !GravelessConfig.SERVER.requireLineOfSight.get()
+                || hasLineOfSight(player, anchor(player.level(), record.pos().pos()));
+    }
+
+    private static boolean inClaimRange(ServerPlayer player, DeathRecord record) {
+        if (!record.pos().dimension().equals(player.level().dimension())) {
+            return false;
+        }
+        BlockPos anchor = anchor(player.level(), record.pos().pos());
+        int range = GravelessConfig.SERVER.claimRange.get();
+        return Vec3.atCenterOf(anchor).distanceToSqr(player.position()) <= (double) (range + 2) * (range + 2);
+    }
+
+    public static FoundRecord findRecord(GraveStore store, UUID recordId) {
         for (Map.Entry<UUID, GraveProfile> entry : store.profiles().entrySet()) {
             DeathRecord record = entry.getValue().findRecord(recordId);
             if (record != null) {

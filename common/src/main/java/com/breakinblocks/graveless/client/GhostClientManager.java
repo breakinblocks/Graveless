@@ -27,6 +27,10 @@ public final class GhostClientManager {
         GHOSTS.clear();
     }
 
+    public static ClientGhost get(UUID recordId) {
+        return GHOSTS.get(recordId);
+    }
+
     public static Iterable<ClientGhost> all() {
         return GHOSTS.values();
     }

@@ -15,6 +15,7 @@ When you are close enough, a whisper tells you your spirit is within reach, how 
 - Items return to the exact slots they were in when you died. Your pickaxe is back on the same hotbar slot, your armor is back on your body, your offhand is back in your offhand and your curios are in the slot you assigned them to.
 - Your experience comes back too.
 - If your bags are already partly full, the ghost keeps whatever does not fit. Come back with space and claim the rest. Nothing is ever thrown on the ground or lost.
+- Sneak and click instead of clicking, and the grave opens in the browser with that death selected, so you can pick through it stack by stack rather than taking everything at once.
 
 ![The silver astral thread reaching from the ghost toward the player](metadata/images/astral-thread.png)
 
@@ -43,11 +44,13 @@ The compass (or the `/graveless` command) opens a view of every outstanding grav
 
 You can also attune your Spirit Compass to any grave in the list, if the one you want back first is not the most recent. The same screen manages who may see your graves and your personal graves on/off switch, so you never need to memorize a command.
 
+Standing at the ghost, the browser becomes a way to take your death apart piece by piece. Sneak and left click any slot to pull that stack into your inventory, reclaim the stored experience on its own, and delete the entry once whatever is left is something you would rather not carry. That is the answer to picking up a block that irradiates you, a cursed item, or anything else you want gone without giving up the rest of your gear. Taking single stacks needs you to be within claim range of the ghost, so the compass alone will not empty a grave from across the world.
+
 ![The grave browser: death list, inventory preview, and the 3D terrain diorama](metadata/images/browser.png)
 
 ## Bring friends, or don't
 
-Your graves are yours. Other players cannot see your ghost, cannot loot your items, and cannot even tell where you died. If you want help recovering something dangerous, grant a friend access right from the grave browser (or with a command), and they can claim your grave for you. Revoke it just as easily.
+Your graves are yours. Other players cannot see your ghost, cannot loot your items, and cannot even tell where you died. If you want help recovering something dangerous, grant a friend access right from the grave browser (or with a command), and they can claim your grave for you, or stand at it and hand back one stack at a time. Only you and server staff can delete a grave outright. Revoke access just as easily.
 
 Prefer the old ways? Turn Graveless off for yourself entirely and your items will drop on death like vanilla, no questions asked. Each player on a server can decide
 if they want this feature enabled or not.
