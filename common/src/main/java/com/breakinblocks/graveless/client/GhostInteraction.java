@@ -33,7 +33,8 @@ public class GhostInteraction {
             return false;
         }
         long time = player.level().getGameTime();
-        if (time - lastClaimTime >= CLAIM_COOLDOWN_TICKS || time < lastClaimTime) {
+        if (lastClaimTime == Long.MIN_VALUE || time < lastClaimTime
+                || time - lastClaimTime >= CLAIM_COOLDOWN_TICKS) {
             lastClaimTime = time;
             Services.NETWORK.sendToServer(player.isShiftKeyDown()
                     ? new GravelessNetworking.GraveOpenPayload(target.recordId())
