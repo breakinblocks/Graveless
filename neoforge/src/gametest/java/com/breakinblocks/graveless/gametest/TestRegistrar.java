@@ -1,25 +1,24 @@
 package com.breakinblocks.graveless.gametest;
 
 import com.breakinblocks.graveless.Graveless;
-import net.minecraft.core.Holder;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.gametest.framework.TestData;
-import net.minecraft.gametest.framework.TestEnvironmentDefinition;
-import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+import net.minecraft.gametest.framework.TestFunction;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public final class TestRegistrar {
-    private static final Identifier EMPTY_STRUCTURE = Identifier.withDefaultNamespace("empty");
+    private static final String EMPTY_STRUCTURE = Graveless.MOD_ID + ":empty";
     private static final int DEFAULT_TIMEOUT = 200;
 
-    private final RegisterGameTestsEvent event;
-    private final Holder<TestEnvironmentDefinition<?>> shared;
+    private final List<TestFunction> functions = new ArrayList<>();
 
-    TestRegistrar(RegisterGameTestsEvent event) {
-        this.event = event;
-        this.shared = event.registerEnvironment(Graveless.id("shared"));
+    TestRegistrar() {
+    }
+
+    public List<TestFunction> functions() {
+        return functions;
     }
 
     public void add(String name, Consumer<GameTestHelper> body) {
@@ -27,7 +26,7 @@ public final class TestRegistrar {
     }
 
     public void add(String name, int maxTicks, Consumer<GameTestHelper> body) {
-        register(name, this.shared, maxTicks, body);
+        register(name, Graveless.MOD_ID + ".shared", maxTicks, body);
     }
 
     public void addIsolated(String name, Consumer<GameTestHelper> body) {
@@ -35,13 +34,11 @@ public final class TestRegistrar {
     }
 
     public void addIsolated(String name, int maxTicks, Consumer<GameTestHelper> body) {
-        register(name, this.event.registerEnvironment(Graveless.id("solo_" + name)), maxTicks, body);
+        register(name, Graveless.MOD_ID + ".solo_" + name, maxTicks, body);
     }
 
-    private void register(String name, Holder<TestEnvironmentDefinition<?>> environment, int maxTicks,
-                          Consumer<GameTestHelper> body) {
-        TestData<Holder<TestEnvironmentDefinition<?>>> data =
-                new TestData<>(environment, EMPTY_STRUCTURE, maxTicks, 0, true);
-        this.event.registerTest(Graveless.id(name), new GravelessTestInstance(data, name, body));
+    private void register(String name, String batch, int maxTicks, Consumer<GameTestHelper> body) {
+        functions.add(new TestFunction(batch, Graveless.MOD_ID + "." + name, EMPTY_STRUCTURE,
+                maxTicks, 0L, true, body));
     }
 }

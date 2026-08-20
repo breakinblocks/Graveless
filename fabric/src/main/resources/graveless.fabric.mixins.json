@@ -4,10 +4,10 @@
   "package": "com.breakinblocks.graveless.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "DimensionDataStorageMixin",
     "LivingEntityMixin",
     "MobMixin",
     "PlayerMixin",
-    "SavedDataStorageMixin",
     "ServerPlayerMixin"
   ],
   "client": [],

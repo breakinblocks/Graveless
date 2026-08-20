@@ -4,7 +4,7 @@ import com.breakinblocks.graveless.platform.services.IRegistryFactory;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public class FabricRegistryFactory implements IRegistryFactory {
 
     @SuppressWarnings("unchecked")
     private static <T> Registry<T> lookup(ResourceKey<Registry<T>> key) {
-        return (Registry<T>) BuiltInRegistries.REGISTRY.getValue(key.identifier());
+        return (Registry<T>) BuiltInRegistries.REGISTRY.get(key.location());
     }
 
     private static final class FabricRegistrar<T> implements Registrar<T> {
@@ -34,8 +34,8 @@ public class FabricRegistryFactory implements IRegistryFactory {
         }
 
         @Override
-        public <I extends T> RegistrySupplier<I> register(String name, Function<Identifier, I> factory) {
-            Identifier id = Identifier.fromNamespaceAndPath(modId, name);
+        public <I extends T> RegistrySupplier<I> register(String name, Function<ResourceLocation, I> factory) {
+            ResourceLocation id = ResourceLocation.fromNamespaceAndPath(modId, name);
             FabricRegistrySupplier<T, I> entry = new FabricRegistrySupplier<>(registryKey, id, factory.apply(id));
             entries.add(entry);
             return entry;
@@ -52,11 +52,11 @@ public class FabricRegistryFactory implements IRegistryFactory {
 
     private static final class FabricRegistrySupplier<T, I extends T> implements RegistrySupplier<I> {
         private final ResourceKey<Registry<T>> registryKey;
-        private final Identifier id;
+        private final ResourceLocation id;
         private final I value;
         private Holder<I> holder;
 
-        private FabricRegistrySupplier(ResourceKey<Registry<T>> registryKey, Identifier id, I value) {
+        private FabricRegistrySupplier(ResourceKey<Registry<T>> registryKey, ResourceLocation id, I value) {
             this.registryKey = registryKey;
             this.id = id;
             this.value = value;
@@ -74,7 +74,7 @@ public class FabricRegistryFactory implements IRegistryFactory {
         }
 
         @Override
-        public Identifier getId() {
+        public ResourceLocation getId() {
             return id;
         }
 

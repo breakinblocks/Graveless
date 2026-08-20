@@ -25,7 +25,7 @@ public class CuriosInventoryHook implements InventoryHook {
 
     @Override
     public void prepareDrops(ServerPlayer player, DamageSource source) {
-        ICuriosItemHandler handler = CuriosApi.getCuriosInventoryOrNull(player);
+        ICuriosItemHandler handler = CuriosApi.getCuriosInventory(player).orElse(null);
         if (handler == null) {
             return;
         }
@@ -53,7 +53,7 @@ public class CuriosInventoryHook implements InventoryHook {
     @Override
     public ItemStack restore(ServerPlayer player, CapturedEntry entry) {
         ItemStack stack = entry.stack().copy();
-        ICuriosItemHandler handler = CuriosApi.getCuriosInventoryOrNull(player);
+        ICuriosItemHandler handler = CuriosApi.getCuriosInventory(player).orElse(null);
         if (handler == null) {
             return stack;
         }

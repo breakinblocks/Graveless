@@ -6,7 +6,6 @@ import com.breakinblocks.graveless.data.GraveProfile;
 import com.breakinblocks.graveless.data.GraveStore;
 import com.breakinblocks.graveless.event.DeathCaptureEvents;
 import com.breakinblocks.graveless.event.GhostSyncEvents;
-import com.breakinblocks.graveless.net.GravelessNetworking;
 import com.breakinblocks.graveless.platform.PayloadContext;
 import com.breakinblocks.graveless.registry.ModItems;
 import com.breakinblocks.graveless.util.XpMath;
@@ -22,12 +21,11 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
-import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -35,24 +33,15 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.level.GameType;
-import net.neoforged.neoforge.network.registration.ChannelAttributes;
+import net.neoforged.neoforge.network.registration.NetworkRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class TestPlayer implements GameTestListener {
     private static final AtomicInteger COUNTER = new AtomicInteger();
-
-    private static final List<Identifier> CLIENTBOUND_CHANNELS = List.of(
-            GravelessNetworking.GhostAddPayload.TYPE.id(),
-            GravelessNetworking.GhostRemovePayload.TYPE.id(),
-            GravelessNetworking.GraveListPayload.TYPE.id(),
-            GravelessNetworking.GraveDetailPayload.TYPE.id(),
-            GravelessNetworking.BackupListPayload.TYPE.id());
 
     private final MinecraftServer server;
     private final EmbeddedChannel channel;
@@ -76,10 +65,8 @@ public final class TestPlayer implements GameTestListener {
         ServerPlayer player = new ServerPlayer(server, level, cookie.gameProfile(), cookie.clientInformation());
         Connection connection = new Connection(PacketFlow.SERVERBOUND);
         EmbeddedChannel channel = new EmbeddedChannel(connection);
-        Set<Identifier> adHoc = ChannelAttributes.getOrCreateAdHocChannels(connection);
-        adHoc.addAll(CLIENTBOUND_CHANNELS);
+        NetworkRegistry.configureMockConnection(connection);
         server.getPlayerList().placeNewPlayer(connection, player, cookie);
-        player.connection.markClientLoaded();
 
         TestPlayer test = new TestPlayer(server, channel, player);
         helper.testInfo.addListener(test);
@@ -127,16 +114,15 @@ public final class TestPlayer implements GameTestListener {
 
     public void moveTo(GameTestHelper helper, BlockPos relative) {
         BlockPos target = helper.absolutePos(relative);
-        this.player.snapTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
+        this.player.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
     }
 
     public void moveToAbsolute(double x, double y, double z) {
-        this.player.snapTo(x, y, z);
+        this.player.teleportTo(x, y, z);
     }
 
     public void op() {
-        this.server.getPlayerList().op(this.player.nameAndId(),
-                Optional.of(LevelBasedPermissionSet.OWNER), Optional.empty());
+        this.server.getPlayerList().getOps().add(new ServerOpListEntry(this.player.getGameProfile(), 4, false));
     }
 
     public int tickCount() {
@@ -155,8 +141,7 @@ public final class TestPlayer implements GameTestListener {
     }
 
     public void killForReal() {
-        this.player.hurtServer((ServerLevel) this.player.level(),
-                this.player.damageSources().fellOutOfWorld(), Float.MAX_VALUE);
+        this.player.hurt(this.player.damageSources().fellOutOfWorld(), Float.MAX_VALUE);
     }
 
     public void give(int slot, ItemStack stack) {
@@ -216,7 +201,7 @@ public final class TestPlayer implements GameTestListener {
 
     public void moveToRecord(DeathRecord record) {
         BlockPos anchor = anchorOf(record);
-        this.player.snapTo(anchor.getX() + 0.5, anchor.getY(), anchor.getZ() + 0.5);
+        this.player.teleportTo(anchor.getX() + 0.5, anchor.getY(), anchor.getZ() + 0.5);
     }
 
     public void simulateDeath() {

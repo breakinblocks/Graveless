@@ -180,13 +180,15 @@ public final class DataTests {
         BlockPos surface = new BlockPos(0, 64, 0);
         Check.equal(helper, surface, GhostSyncEvents.anchor(level, surface), "anchor for a normal death");
 
-        BlockPos voidPos = new BlockPos(0, level.getMinY() - 40, 0);
-        int expectedVoid = Math.min(level.getMinY() + 48, level.getMaxY() - 2);
+        int minY = level.getMinBuildHeight();
+        int maxY = level.getMaxBuildHeight() - 1;
+        BlockPos voidPos = new BlockPos(0, minY - 40, 0);
+        int expectedVoid = Math.min(minY + 48, maxY - 2);
         Check.equal(helper, expectedVoid, GhostSyncEvents.anchor(level, voidPos).getY(),
                 "void death anchors above the world floor");
 
-        BlockPos ceiling = new BlockPos(0, level.getMaxY() + 10, 0);
-        Check.equal(helper, level.getMaxY() - 2, GhostSyncEvents.anchor(level, ceiling).getY(),
+        BlockPos ceiling = new BlockPos(0, maxY + 10, 0);
+        Check.equal(helper, maxY - 2, GhostSyncEvents.anchor(level, ceiling).getY(),
                 "death above the build limit anchors below the ceiling");
         helper.succeed();
     }

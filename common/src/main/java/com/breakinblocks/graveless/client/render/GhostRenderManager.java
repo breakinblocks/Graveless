@@ -7,16 +7,17 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.state.AvatarRenderState;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.ARGB;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.PlayerModelType;
-import net.minecraft.world.entity.player.PlayerSkin;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
@@ -40,7 +41,7 @@ public class GhostRenderManager {
     private static GhostModel wideModel;
     private static GhostModel slimModel;
 
-    public static void submitGhosts(PoseStack poseStack, SubmitNodeCollector collector, Vec3 camPos) {
+    public static void renderGhosts(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 camPos) {
         if (GhostClientManager.isEmpty()) {
             return;
         }
@@ -50,7 +51,7 @@ public class GhostRenderManager {
         }
         ensureModels(minecraft);
 
-        float partialTick = minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        float partialTick = minecraft.getTimer().getGameTimeDeltaPartialTick(false);
         Vec3 look = minecraft.player.getViewVector(partialTick);
         float time = minecraft.level.getGameTime() + partialTick;
         Vec3 playerChest = minecraft.player.getPosition(partialTick)
@@ -68,16 +69,13 @@ public class GhostRenderManager {
             float farFade = farFade(dist);
             GhostVisibility visibility = visibility(camPos, look, heart, dist, farFade);
 
-            submitBeam(poseStack, collector, camPos, base, ghostTime, dist, farFade);
+            renderBeamAt(poseStack, bufferSource, camPos, base, ghostTime, dist, farFade);
             if (visibility.body() >= 0.01F || visibility.outline() >= 0.01F) {
-                submitGhostModel(poseStack, collector, camPos, base, ghost, ghostTime, bob, visibility);
-                submitStrands(poseStack, collector, camPos, heart, playerChest, ghostTime, visibility.body());
+                boolean occluded = isOccluded(minecraft, camPos, heart);
+                renderGhostModel(poseStack, bufferSource, camPos, base, ghost, ghostTime, bob, visibility, occluded);
+                renderStrands(poseStack, bufferSource, camPos, heart, playerChest, ghostTime, visibility.body());
             }
         }
-    }
-
-    public static boolean needsOutlinePass() {
-        return !GhostClientManager.isEmpty();
     }
 
     private static void ensureModels(Minecraft minecraft) {
@@ -112,20 +110,23 @@ public class GhostRenderManager {
         return t * t * (3.0F - 2.0F * t);
     }
 
-    private static void submitGhostModel(PoseStack poseStack, SubmitNodeCollector collector, Vec3 camPos,
+    private static boolean isOccluded(Minecraft minecraft, Vec3 camPos, Vec3 heart) {
+        BlockHitResult hit = minecraft.level.clip(new ClipContext(
+                camPos, heart, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, minecraft.player));
+        return hit.getType() == HitResult.Type.BLOCK
+                && hit.getLocation().distanceToSqr(heart) > 1.5;
+    }
+
+    private static void renderGhostModel(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 camPos,
                                          Vec3 base, GhostClientManager.ClientGhost ghost, float time,
-                                         float bob, GhostVisibility visibility) {
+                                         float bob, GhostVisibility visibility, boolean occluded) {
         PlayerSkin skin = GhostSkins.get(ghost.ownerId(), ghost.ownerName());
-        GhostModel model = skin.model() == PlayerModelType.SLIM ? slimModel : wideModel;
-        Identifier texture = skin.body().texturePath();
+        GhostModel model = skin.model() == PlayerSkin.Model.SLIM ? slimModel : wideModel;
+        ResourceLocation texture = skin.texture();
 
         float bodyRot = (float) -Math.toDegrees(Math.atan2(camPos.x - base.x, camPos.z - base.z));
 
-        AvatarRenderState state = new AvatarRenderState();
-        state.skin = skin;
-        state.ageInTicks = time;
-        state.showCape = false;
-        state.lightCoords = FULL_BRIGHT;
+        model.setupGhostAnim(time);
 
         poseStack.pushPose();
         poseStack.translate(base.x - camPos.x, base.y - camPos.y + bob, base.z - camPos.z);
@@ -133,25 +134,28 @@ public class GhostRenderManager {
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.translate(0.0F, -1.501F, 0.0F);
 
-        int bodyTint = ARGB.color((int) (visibility.body() * 255.0F), 210, 235, 255);
-        int outlineColor = ARGB.color((int) (visibility.outline() * 255.0F), 120, 235, 255);
-        collector.submitModel(model, state, poseStack, GhostRenderTypes.ghost(texture),
-                FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bodyTint, null, outlineColor, null);
+        if (visibility.body() >= 0.01F) {
+            int bodyTint = FastColor.ARGB32.color((int) (visibility.body() * 255.0F), 210, 235, 255);
+            VertexConsumer buffer = bufferSource.getBuffer(GhostRenderTypes.ghost(texture));
+            model.renderToBuffer(poseStack, buffer, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bodyTint);
+        }
 
-        if (!GhostRenderTypes.shadersEnabled() && visibility.body() >= 0.01F) {
+        float glow = Math.max(visibility.body(), visibility.outline() * 0.45F);
+        if (glow >= 0.01F) {
             poseStack.pushPose();
             poseStack.scale(1.05F, 1.03F, 1.05F);
-            int auraTint = ARGB.color((int) (visibility.body() * 70.0F), 150, 200, 255);
-            collector.submitModel(model, state, poseStack, RenderTypes.entityTranslucentEmissive(texture),
-                    FULL_BRIGHT, OverlayTexture.NO_OVERLAY, auraTint, null, 0, null);
+            float auraAlpha = occluded ? glow * 55.0F : glow * 70.0F;
+            int auraTint = FastColor.ARGB32.color((int) auraAlpha, 150, 200, 255);
+            VertexConsumer aura = bufferSource.getBuffer(GhostRenderTypes.ghostAura(texture, occluded));
+            model.renderToBuffer(poseStack, aura, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, auraTint);
             poseStack.popPose();
         }
 
         poseStack.popPose();
     }
 
-    private static void submitBeam(PoseStack poseStack, SubmitNodeCollector collector, Vec3 camPos,
-                                   Vec3 base, float time, double dist, float farFade) {
+    private static void renderBeamAt(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 camPos,
+                                     Vec3 base, float time, double dist, float farFade) {
         if (!GravelessConfig.CLIENT.showBeam.get()) {
             return;
         }
@@ -163,9 +167,8 @@ public class GhostRenderManager {
         }
         poseStack.pushPose();
         poseStack.translate(base.x - camPos.x, base.y - camPos.y, base.z - camPos.z);
-        float finalAlpha = beamAlpha;
-        collector.submitCustomGeometry(poseStack, GhostRenderTypes.thread(), (pose, buffer) ->
-                renderBeam(pose.pose(), buffer, finalAlpha));
+        VertexConsumer buffer = bufferSource.getBuffer(GhostRenderTypes.thread());
+        renderBeam(poseStack.last().pose(), buffer, beamAlpha);
         poseStack.popPose();
     }
 
@@ -202,7 +205,7 @@ public class GhostRenderManager {
                 .setNormal(0.0F, 1.0F, 0.0F);
     }
 
-    private static void submitStrands(PoseStack poseStack, SubmitNodeCollector collector, Vec3 camPos,
+    private static void renderStrands(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 camPos,
                                       Vec3 heart, Vec3 playerChest, float time, float alpha) {
         Vec3 toPlayer = playerChest.subtract(heart);
         double dist = toPlayer.length();
@@ -253,9 +256,8 @@ public class GhostRenderManager {
             }
 
             Vec3 camToHeart = heart.subtract(camPos);
-            float finalAlpha = strandAlpha;
-            collector.submitCustomGeometry(poseStack, GhostRenderTypes.thread(), (pose, buffer) ->
-                    renderRibbon(pose.pose(), buffer, points, camToHeart, finalAlpha));
+            VertexConsumer buffer = bufferSource.getBuffer(GhostRenderTypes.thread());
+            renderRibbon(poseStack.last().pose(), buffer, points, camToHeart, strandAlpha);
         }
         poseStack.popPose();
     }

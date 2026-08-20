@@ -21,9 +21,12 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 @EventBusSubscriber(modid = Graveless.MOD_ID)
 public class NeoForgeServerEvents {
 
-    @SubscribeEvent
-    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        NeoForgeNetworkHelper.flush(event.registrar(Graveless.MOD_ID));
+    @EventBusSubscriber(modid = Graveless.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+    public static class ModBusEvents {
+        @SubscribeEvent
+        public static void registerPayloads(RegisterPayloadHandlersEvent event) {
+            NeoForgeNetworkHelper.flush(event.registrar(Graveless.MOD_ID));
+        }
     }
 
     @SubscribeEvent

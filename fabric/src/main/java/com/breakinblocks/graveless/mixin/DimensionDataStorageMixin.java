@@ -5,12 +5,12 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.level.storage.SavedDataStorage;
+import net.minecraft.world.level.storage.DimensionDataStorage;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(SavedDataStorage.class)
-public abstract class SavedDataStorageMixin {
+@Mixin(DimensionDataStorage.class)
+public abstract class DimensionDataStorageMixin {
 
     @WrapOperation(method = "readTagFromDisk",
             at = @At(value = "INVOKE",

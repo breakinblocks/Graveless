@@ -5,9 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [],
   "client": [
-    "LevelRendererMixin",
-    "MinecraftMixin",
-    "RenderPipelinesMixin"
+    "MinecraftMixin"
   ],
   "server": [],
   "injectors": {

@@ -7,14 +7,12 @@ import com.breakinblocks.graveless.event.SpiritWardEvents;
 import com.breakinblocks.graveless.registry.ModItems;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.ItemStack;
 
 public class GravelessFabric implements ModInitializer {
 
@@ -22,9 +20,8 @@ public class GravelessFabric implements ModInitializer {
     public void onInitialize() {
         Graveless.init();
 
-        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)
-                .register(output -> output.accept(new ItemStack(ModItems.SPIRIT_COMPASS.get()),
-                        CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)
+                .register(entries -> entries.accept(ModItems.SPIRIT_COMPASS.get()));
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) ->
                 GravelessCommands.register(dispatcher));
@@ -50,7 +47,7 @@ public class GravelessFabric implements ModInitializer {
             SpiritWardEvents.onRespawn(newPlayer);
         });
 
-        ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, origin, destination) ->
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) ->
                 GhostSyncEvents.forget(player));
     }
 }

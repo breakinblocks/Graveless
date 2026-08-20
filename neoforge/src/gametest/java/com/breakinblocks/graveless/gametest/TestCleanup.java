@@ -6,8 +6,7 @@ import net.minecraft.gametest.framework.GameTestInfo;
 import net.minecraft.gametest.framework.GameTestListener;
 import net.minecraft.gametest.framework.GameTestRunner;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.gamerules.GameRule;
-import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.GameRules;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.ArrayList;
@@ -32,11 +31,11 @@ public final class TestCleanup implements GameTestListener {
         this.actions.add(() -> value.set(original));
     }
 
-    public <T> void gameRule(ServerLevel level, GameRule<T> rule, T temporary) {
+    public void gameRule(ServerLevel level, GameRules.Key<GameRules.BooleanValue> rule, boolean temporary) {
         GameRules rules = level.getGameRules();
-        T original = rules.get(rule);
-        rules.set(rule, temporary, level.getServer());
-        this.actions.add(() -> rules.set(rule, original, level.getServer()));
+        boolean original = rules.getBoolean(rule);
+        rules.getRule(rule).set(temporary, level.getServer());
+        this.actions.add(() -> rules.getRule(rule).set(original, level.getServer()));
     }
 
     public void onFinish(Runnable action) {

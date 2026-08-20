@@ -22,7 +22,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.NameAndId;
+import com.mojang.authlib.GameProfile;
 
 import java.nio.file.Path;
 import java.time.Instant;
@@ -54,27 +54,27 @@ public class GravelessCommands {
                 .then(Commands.literal("list")
                         .executes(context -> list(context, context.getSource().getPlayerOrException()))
                         .then(Commands.argument("player", EntityArgument.player())
-                                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                                .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
                                 .executes(context -> list(context, EntityArgument.getPlayer(context, "player")))))
                 .then(Commands.literal("restore")
-                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("player", EntityArgument.player())
                                 .executes(context -> restore(context, 1))
                                 .then(Commands.argument("index", IntegerArgumentType.integer(1))
                                         .executes(context -> restore(context,
                                                 IntegerArgumentType.getInteger(context, "index"))))))
                 .then(Commands.literal("backups")
-                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("player", GameProfileArgument.gameProfile())
                                 .executes(GravelessCommands::listBackups)))
                 .then(Commands.literal("restorebackup")
-                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("player", GameProfileArgument.gameProfile())
                                 .then(Commands.argument("index", IntegerArgumentType.integer(1))
                                         .executes(context -> restoreBackup(context,
                                                 IntegerArgumentType.getInteger(context, "index"))))))
                 .then(Commands.literal("prune")
-                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.literal("all")
                                 .executes(context -> pruneAll(context, GraveBackups.retentionLimit()))
                                 .then(Commands.argument("keep", IntegerArgumentType.integer(0))
@@ -102,17 +102,17 @@ public class GravelessCommands {
         ServerPlayer player = context.getSource().getPlayerOrException();
         GraveStore store = GraveStore.get(player.level().getServer());
         GraveProfile profile = store.profile(player.getUUID());
-        Collection<NameAndId> targets = GameProfileArgument.getGameProfiles(context, "player");
+        Collection<GameProfile> targets = GameProfileArgument.getGameProfiles(context, "player");
         int changed = 0;
-        for (NameAndId target : targets) {
-            if (target.id().equals(player.getUUID())) {
+        for (GameProfile target : targets) {
+            if (target.getId().equals(player.getUUID())) {
                 continue;
             }
-            boolean result = add ? profile.allowed().add(target.id()) : profile.allowed().remove(target.id());
+            boolean result = add ? profile.allowed().add(target.getId()) : profile.allowed().remove(target.getId());
             if (result) {
                 changed++;
                 context.getSource().sendSuccess(() -> Component.translatable(
-                        add ? "graveless.command.allowed" : "graveless.command.denied", target.name()), false);
+                        add ? "graveless.command.allowed" : "graveless.command.denied", target.getName()), false);
             }
         }
         if (changed > 0) {
@@ -160,14 +160,14 @@ public class GravelessCommands {
             context.getSource().sendSuccess(() -> Component.translatable("graveless.command.list.entry",
                     index, record.itemCount(), record.xp(),
                     pos.getX(), pos.getY(), pos.getZ(),
-                    record.pos().dimension().identifier().toString(),
+                    record.pos().dimension().location().toString(),
                     record.cause()).withStyle(ChatFormatting.GRAY), false);
         }
         return records.size();
     }
 
-    private static NameAndId backupTarget(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        Collection<NameAndId> targets = GameProfileArgument.getGameProfiles(context, "player");
+    private static GameProfile backupTarget(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Collection<GameProfile> targets = GameProfileArgument.getGameProfiles(context, "player");
         return targets.iterator().next();
     }
 
@@ -181,15 +181,15 @@ public class GravelessCommands {
     }
 
     private static int listBackups(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        NameAndId target = backupTarget(context);
+        GameProfile target = backupTarget(context);
         MinecraftServer server = context.getSource().getServer();
-        List<Path> files = GraveBackups.list(server, target.id());
+        List<Path> files = GraveBackups.list(server, target.getId());
         if (files.isEmpty()) {
-            context.getSource().sendFailure(Component.translatable("graveless.command.backups.empty", target.name()));
+            context.getSource().sendFailure(Component.translatable("graveless.command.backups.empty", target.getName()));
             return 0;
         }
         context.getSource().sendSuccess(() -> Component.translatable("graveless.command.backups.header",
-                target.name(), files.size()), false);
+                target.getName(), files.size()), false);
         int shown = Math.min(files.size(), 10);
         for (int i = 0; i < shown; i++) {
             int index = i + 1;
@@ -204,17 +204,17 @@ public class GravelessCommands {
             context.getSource().sendSuccess(() -> Component.translatable("graveless.command.backups.entry",
                     index, record.itemCount(), timestamp(record),
                     pos.getX(), pos.getY(), pos.getZ(),
-                    record.pos().dimension().identifier().toString()).withStyle(ChatFormatting.GRAY), false);
+                    record.pos().dimension().location().toString()).withStyle(ChatFormatting.GRAY), false);
         }
         return files.size();
     }
 
     private static int restoreBackup(CommandContext<CommandSourceStack> context, int index) throws CommandSyntaxException {
-        NameAndId target = backupTarget(context);
+        GameProfile target = backupTarget(context);
         MinecraftServer server = context.getSource().getServer();
-        List<Path> files = GraveBackups.list(server, target.id());
+        List<Path> files = GraveBackups.list(server, target.getId());
         if (files.isEmpty()) {
-            context.getSource().sendFailure(Component.translatable("graveless.command.backups.empty", target.name()));
+            context.getSource().sendFailure(Component.translatable("graveless.command.backups.empty", target.getName()));
             return 0;
         }
         if (index > files.size()) {
@@ -222,14 +222,14 @@ public class GravelessCommands {
                     index, files.size()));
             return 0;
         }
-        DeathRecord revived = GraveMenuHandlers.reviveBackup(server, target.id(), files.get(index - 1));
+        DeathRecord revived = GraveMenuHandlers.reviveBackup(server, target.getId(), files.get(index - 1));
         if (revived == null) {
             context.getSource().sendFailure(Component.translatable("graveless.command.backups.unreadable",
                     index, files.get(index - 1).getFileName().toString()));
             return 0;
         }
         context.getSource().sendSuccess(() -> Component.translatable("graveless.command.restorebackup.done",
-                index, revived.itemCount(), target.name()), true);
+                index, revived.itemCount(), target.getName()), true);
         return revived.itemCount();
     }
 
@@ -238,10 +238,10 @@ public class GravelessCommands {
             context.getSource().sendFailure(Component.translatable("graveless.command.prune.unlimited"));
             return 0;
         }
-        NameAndId target = backupTarget(context);
-        int deleted = GraveBackups.prune(context.getSource().getServer(), target.id(), keep);
+        GameProfile target = backupTarget(context);
+        int deleted = GraveBackups.prune(context.getSource().getServer(), target.getId(), keep);
         context.getSource().sendSuccess(() -> Component.translatable("graveless.command.prune.player",
-                deleted, target.name(), keep), true);
+                deleted, target.getName(), keep), true);
         return deleted;
     }
 

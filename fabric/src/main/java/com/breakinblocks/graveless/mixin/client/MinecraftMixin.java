@@ -10,12 +10,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.jspecify.annotations.Nullable;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin {
     @Shadow
-    public @Nullable LocalPlayer player;
+    public LocalPlayer player;
 
     @Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
     private void graveless$onAttack(CallbackInfoReturnable<Boolean> cir) {

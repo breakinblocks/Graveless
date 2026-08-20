@@ -2,14 +2,14 @@ package com.breakinblocks.graveless.net;
 
 import com.breakinblocks.graveless.platform.PayloadContext;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
 public final class ClientPayloadDispatch {
-    private static final Map<Identifier, BiConsumer<?, PayloadContext>> HANDLERS = new HashMap<>();
+    private static final Map<ResourceLocation, BiConsumer<?, PayloadContext>> HANDLERS = new HashMap<>();
 
     private ClientPayloadDispatch() {
     }

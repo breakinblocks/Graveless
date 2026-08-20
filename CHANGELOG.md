@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.1 for Minecraft 1.21.1
+
+- Backported the mod to Minecraft 1.21.1 (NeoForge 21.1 and Fabric).
+- Ghost and grave browser rendering were rebuilt on the 1.21.1 render APIs. The outline pass is replaced by
+  a glow aura that stays visible through walls when the ghost is hidden behind terrain.
+
 ## 1.3.1
 
 - Fixed clicking a ghost doing nothing. A bad cooldown check blocked every claim, sneak-to-open and extraction.

@@ -74,11 +74,11 @@ public final class CommandTests {
         sequence.thenExecute(() -> {
                     Check.equal(helper, 4, GraveBackups.list(player.server(), player.id()).size(),
                             "archive size before pruning");
-                    Check.equal(helper, 3, run(helper, "graveless prune player " + player.name() + " 1"),
+                    Check.equal(helper, 3, run(helper, "graveless prune player @a[name=" + player.name() + "] 1"),
                             "files reported deleted");
                     Check.equal(helper, 1, GraveBackups.list(player.server(), player.id()).size(),
                             "archive size after pruning to one");
-                    Check.equal(helper, 0, run(helper, "graveless prune player " + player.name() + " 1"),
+                    Check.equal(helper, 0, run(helper, "graveless prune player @a[name=" + player.name() + "] 1"),
                             "pruning again should delete nothing");
                 })
                 .thenSucceed();
@@ -91,7 +91,7 @@ public final class CommandTests {
 
         Check.equal(helper, GraveBackups.UNLIMITED, GraveBackups.retentionLimit(),
                 "the default retention limit");
-        Check.equal(helper, 0, run(helper, "graveless prune player " + player.name()),
+        Check.equal(helper, 0, run(helper, "graveless prune player @a[name=" + player.name() + "]"),
                 "prune with no keep count under unlimited retention");
         Check.equal(helper, 1, GraveBackups.list(player.server(), player.id()).size(),
                 "archive should be untouched");

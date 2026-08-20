@@ -25,7 +25,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.GameRules;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +46,7 @@ public class DeathCaptureEvents {
         if (!GravelessConfig.SERVER.enabled.get()) {
             return;
         }
-        if (level.getGameRules().get(GameRules.KEEP_INVENTORY)) {
+        if (level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
             return;
         }
         GraveProfile profile = GraveStore.get(level.getServer()).profile(player.getUUID());
@@ -160,7 +160,7 @@ public class DeathCaptureEvents {
         player.sendSystemMessage(Component.translatable("graveless.death.saved",
                 record.itemCount(),
                 pos.getX(), pos.getY(), pos.getZ(),
-                record.pos().dimension().identifier().toString()).withStyle(ChatFormatting.AQUA));
+                record.pos().dimension().location().toString()).withStyle(ChatFormatting.AQUA));
         player.level().playSound(null, pos, SoundEvents.SOUL_ESCAPE.value(), SoundSource.PLAYERS, 1.0F, 0.7F);
     }
 }

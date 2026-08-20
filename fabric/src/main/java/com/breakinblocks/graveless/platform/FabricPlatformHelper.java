@@ -2,7 +2,7 @@ package com.breakinblocks.graveless.platform;
 
 import com.breakinblocks.graveless.Graveless;
 import com.breakinblocks.graveless.platform.services.IPlatformHelper;
-import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -33,7 +33,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
 
     @Override
     public void registerConfig(ConfigType type, ModConfigSpec spec) {
-        ConfigRegistry.INSTANCE.register(Graveless.MOD_ID,
+        NeoForgeConfigRegistry.INSTANCE.register(Graveless.MOD_ID,
                 type == ConfigType.CLIENT ? ModConfig.Type.CLIENT : ModConfig.Type.SERVER, spec);
     }
 }

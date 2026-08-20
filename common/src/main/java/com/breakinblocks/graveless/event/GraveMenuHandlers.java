@@ -16,7 +16,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.permissions.Permissions;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
@@ -354,7 +353,7 @@ public class GraveMenuHandlers {
     }
 
     private static boolean isAdmin(ServerPlayer player) {
-        return player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
+        return player.hasPermissions(2);
     }
 
     private static void deleteRecord(MinecraftServer server, GraveStore store, GraveProfile profile,
@@ -427,7 +426,7 @@ public class GraveMenuHandlers {
         }
         BlockPos anchor = GhostSyncEvents.anchor(level, record.pos().pos());
         player.teleportTo(level, anchor.getX() + 0.5, anchor.getY(), anchor.getZ() + 0.5,
-                Set.of(), player.getYRot(), player.getXRot(), true);
+                Set.of(), player.getYRot(), player.getXRot());
         level.playSound(null, anchor, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.6F, 1.1F);
     }
 
@@ -448,7 +447,7 @@ public class GraveMenuHandlers {
             int y = anchor.getY() - TERRAIN_BELOW + layer;
             for (int dz = 0; dz < TERRAIN_SIZE; dz++) {
                 for (int dx = 0; dx < TERRAIN_SIZE; dx++) {
-                    if (y < level.getMinY() || y > level.getMaxY()) {
+                    if (y < level.getMinBuildHeight() || y > level.getMaxBuildHeight() - 1) {
                         terrain.add(air);
                         continue;
                     }

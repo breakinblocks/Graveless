@@ -2,83 +2,70 @@ package com.breakinblocks.graveless.client.render;
 
 import com.breakinblocks.graveless.Graveless;
 import com.breakinblocks.graveless.config.GravelessConfig;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.util.Util;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.resources.Identifier;
+import net.minecraft.Util;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.function.Function;
 
-public final class GhostRenderTypes {
-    public static final RenderPipeline GHOST_PIPELINE = RenderPipeline.builder(
-                    RenderPipelines.MATRICES_FOG_SNIPPET, RenderPipelines.GLOBALS_SNIPPET)
-            .withLocation(Graveless.id("pipeline/ghost"))
-            .withVertexShader(Graveless.id("core/ghost"))
-            .withFragmentShader(Graveless.id("core/ghost"))
-            .withSampler("Sampler0")
-            .withVertexFormat(DefaultVertexFormat.ENTITY, VertexFormat.Mode.QUADS)
-            .withDepthStencilState(DepthStencilState.DEFAULT)
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withCull(false)
-            .build();
+public final class GhostRenderTypes extends RenderType {
 
-    public static final RenderPipeline GHOST_PREVIEW_PIPELINE = RenderPipeline.builder(
-                    RenderPipelines.ENTITY_EMISSIVE_SNIPPET)
-            .withLocation(Graveless.id("pipeline/ghost_preview"))
-            .withShaderDefine("ALPHA_CUTOUT", 0.1F)
-            .withShaderDefine("PER_FACE_LIGHTING")
-            .withSampler("Sampler1")
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withCull(false)
-            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
-            .build();
+    private GhostRenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize,
+                             boolean affectsCrumbling, boolean sortOnUpload, Runnable setup, Runnable clear) {
+        super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setup, clear);
+    }
 
-    private static final Function<Identifier, RenderType> GHOST_PREVIEW = Util.memoize(texture ->
-            RenderType.create("graveless_ghost_preview", RenderSetup.builder(GHOST_PREVIEW_PIPELINE)
-                    .withTexture("Sampler0", texture)
-                    .useOverlay()
-                    .sortOnUpload()
-                    .createRenderSetup()));
+    private static final Function<ResourceLocation, RenderType> GHOST = Util.memoize(texture ->
+            create("graveless_ghost",
+                    DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, false, false,
+                    RenderType.CompositeState.builder()
+                            .setShaderState(new RenderStateShard.ShaderStateShard(GhostShaders::getGhostShader))
+                            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                            .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                            .setCullState(NO_CULL)
+                            .createCompositeState(true)));
 
-    public static final RenderPipeline THREAD_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
-            .withLocation(Graveless.id("pipeline/astral_thread"))
-            .withVertexShader("core/rendertype_lightning")
-            .withFragmentShader("core/rendertype_lightning")
-            .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
-            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS)
-            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
-            .build();
+    private static final Function<ResourceLocation, RenderType> GHOST_PREVIEW = Util.memoize(texture ->
+            create("graveless_ghost_preview",
+                    DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, false, true,
+                    RenderType.CompositeState.builder()
+                            .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                            .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                            .setCullState(NO_CULL)
+                            .setOverlayState(OVERLAY)
+                            .setDepthTestState(NO_DEPTH_TEST)
+                            .setWriteMaskState(COLOR_WRITE)
+                            .createCompositeState(false)));
 
-    private static final Function<Identifier, RenderType> GHOST = Util.memoize(texture ->
-            RenderType.create("graveless_ghost", RenderSetup.builder(GHOST_PIPELINE)
-                    .withTexture("Sampler0", texture)
-                    .bufferSize(1536)
-                    .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE)
-                    .createRenderSetup()));
+    private static final Function<ResourceLocation, RenderType> GHOST_AURA = Util.memoize(texture ->
+            create("graveless_ghost_aura",
+                    DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, false, true,
+                    RenderType.CompositeState.builder()
+                            .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                            .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                            .setCullState(NO_CULL)
+                            .setOverlayState(OVERLAY)
+                            .setDepthTestState(NO_DEPTH_TEST)
+                            .setWriteMaskState(COLOR_WRITE)
+                            .createCompositeState(false)));
 
-    private static final RenderType THREAD = RenderType.create("graveless_astral_thread",
-            RenderSetup.builder(THREAD_PIPELINE)
-                    .bufferSize(8192)
-                    .sortOnUpload()
-                    .createRenderSetup());
+    private static final RenderType THREAD = create("graveless_astral_thread",
+            DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 8192, false, true,
+            RenderType.CompositeState.builder()
+                    .setShaderState(RENDERTYPE_LIGHTNING_SHADER)
+                    .setTransparencyState(LIGHTNING_TRANSPARENCY)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false));
 
     private static Object irisApi;
     private static Method shaderPackInUse;
     private static boolean irisChecked;
-
-    private GhostRenderTypes() {
-    }
 
     public static boolean shaderPackActive() {
         if (!irisChecked) {
@@ -101,25 +88,28 @@ public final class GhostRenderTypes {
         }
     }
 
-    private static final Identifier WHITE_TEXTURE = Graveless.id("textures/misc/white.png");
+    private static final ResourceLocation WHITE_TEXTURE = Graveless.id("textures/misc/white.png");
 
     public static RenderType thread() {
-        return shaderPackActive() ? RenderTypes.entityTranslucentEmissive(WHITE_TEXTURE) : THREAD;
+        return shaderPackActive() ? RenderType.entityTranslucentEmissive(WHITE_TEXTURE) : THREAD;
     }
 
-    public static RenderType ghostPreview(Identifier texture) {
+    public static RenderType ghostPreview(ResourceLocation texture) {
         return GHOST_PREVIEW.apply(texture);
     }
 
+    public static RenderType ghostAura(ResourceLocation texture, boolean throughWalls) {
+        if (throughWalls && !shaderPackActive()) {
+            return GHOST_AURA.apply(texture);
+        }
+        return RenderType.entityTranslucentEmissive(texture);
+    }
+
     public static boolean shadersEnabled() {
-        return GravelessConfig.CLIENT.useShaders.get() && !shaderPackActive();
+        return GravelessConfig.CLIENT.useShaders.get() && GhostShaders.isLoaded() && !shaderPackActive();
     }
 
-    public static RenderType ghost(Identifier texture) {
-        return shadersEnabled() ? GHOST.apply(texture) : RenderTypes.entityTranslucent(texture);
-    }
-
-    public static List<RenderPipeline> pipelines() {
-        return List.of(GHOST_PIPELINE, THREAD_PIPELINE, GHOST_PREVIEW_PIPELINE);
+    public static RenderType ghost(ResourceLocation texture) {
+        return shadersEnabled() ? GHOST.apply(texture) : RenderType.entityTranslucent(texture);
     }
 }

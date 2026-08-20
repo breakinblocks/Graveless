@@ -4,8 +4,8 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.PlayerSkin;
 
 import java.util.Map;
 import java.util.Set;
@@ -34,8 +34,12 @@ public final class GhostSkins {
         if (PENDING.add(ownerId)) {
             String name = ownerName == null || ownerName.isBlank() ? "Ghost" : ownerName;
             GameProfile profile = new GameProfile(ownerId, name);
-            minecraft.getSkinManager().get(profile)
-                    .thenAccept(optional -> optional.ifPresent(skin -> CACHE.put(ownerId, skin)));
+            minecraft.getSkinManager().getOrLoad(profile)
+                    .thenAccept(skin -> {
+                        if (skin != null) {
+                            CACHE.put(ownerId, skin);
+                        }
+                    });
         }
         return DefaultPlayerSkin.get(ownerId);
     }

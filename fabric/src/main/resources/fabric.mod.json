@@ -21,6 +21,7 @@
             "com.breakinblocks.graveless.GravelessFabricClient"
         ]
     },
+    "accessWidener": "${mod_id}.accesswidener",
     "mixins": [
         "${mod_id}.fabric.mixins.json",
         {
@@ -28,7 +29,6 @@
             "environment": "client"
         }
     ],
-    "accessWidener": "${mod_id}.accesswidener",
     "depends": {
         "fabricloader": ">=${fabric_loader_version}",
         "fabric-api": "*",

@@ -26,7 +26,7 @@ public class FabricNetworkHelper implements INetworkHelper {
     public <T extends CustomPacketPayload> void registerToClient(CustomPacketPayload.Type<T> type,
                                                                  StreamCodec<? super RegistryFriendlyByteBuf, T> codec,
                                                                  BiConsumer<T, PayloadContext> handler) {
-        PayloadTypeRegistry.clientboundPlay().register(type, codec);
+        PayloadTypeRegistry.playS2C().register(type, codec);
         CLIENT_RECEIVERS.add(() -> ClientPlayNetworking.registerGlobalReceiver(type,
                 (payload, context) -> handler.accept(payload, new PayloadContext() {
                     @Override
@@ -45,7 +45,7 @@ public class FabricNetworkHelper implements INetworkHelper {
     public <T extends CustomPacketPayload> void registerToServer(CustomPacketPayload.Type<T> type,
                                                                  StreamCodec<? super RegistryFriendlyByteBuf, T> codec,
                                                                  BiConsumer<T, PayloadContext> handler) {
-        PayloadTypeRegistry.serverboundPlay().register(type, codec);
+        PayloadTypeRegistry.playC2S().register(type, codec);
         ServerPlayNetworking.registerGlobalReceiver(type,
                 (payload, context) -> handler.accept(payload, new PayloadContext() {
                     @Override

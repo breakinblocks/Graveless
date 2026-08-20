@@ -108,14 +108,14 @@ limit on demand, or a one-off limit if you pass a keep count.
 
 ## Requirements
 
-Minecraft 26.1 on either NeoForge or Fabric. Works in singleplayer and on servers.
+Minecraft 1.21.1 on either NeoForge or Fabric. Works in singleplayer and on servers.
 
 | Loader | Jar | Also needs |
 |---|---|---|
 | NeoForge | `graveless-neoforge-<mc>-<version>.jar` | nothing |
 | Fabric | `graveless-fabric-<mc>-<version>.jar` | Fabric API, Forge Config API Port |
 
-Curios is supported on NeoForge when present. Accessories support on Fabric is waiting on an Accessories build for 26.1.
+Curios is supported on NeoForge when present.
 
 ## License
 

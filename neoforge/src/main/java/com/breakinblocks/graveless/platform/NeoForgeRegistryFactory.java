@@ -3,7 +3,7 @@ package com.breakinblocks.graveless.platform;
 import com.breakinblocks.graveless.platform.services.IRegistryFactory;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -25,7 +25,7 @@ public class NeoForgeRegistryFactory implements IRegistryFactory {
 
     private record NeoForgeRegistrar<T>(DeferredRegister<T> deferred) implements Registrar<T> {
         @Override
-        public <I extends T> RegistrySupplier<I> register(String name, Function<Identifier, I> factory) {
+        public <I extends T> RegistrySupplier<I> register(String name, Function<ResourceLocation, I> factory) {
             return new NeoForgeRegistrySupplier<>(deferred.register(name, factory::apply));
         }
 
@@ -43,7 +43,7 @@ public class NeoForgeRegistryFactory implements IRegistryFactory {
         }
 
         @Override
-        public Identifier getId() {
+        public ResourceLocation getId() {
             return deferred.getId();
         }
 

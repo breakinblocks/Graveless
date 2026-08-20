@@ -102,15 +102,24 @@ public class GravelessNetworking {
 
     public record GraveSummary(UUID recordId, GlobalPos pos, long epochMillis, long gameTime, String cause,
                                int itemCount, int xp) {
-        public static final StreamCodec<FriendlyByteBuf, GraveSummary> STREAM_CODEC = StreamCodec.composite(
-                UUIDUtil.STREAM_CODEC, GraveSummary::recordId,
-                GlobalPos.STREAM_CODEC, GraveSummary::pos,
-                ByteBufCodecs.VAR_LONG, GraveSummary::epochMillis,
-                ByteBufCodecs.VAR_LONG, GraveSummary::gameTime,
-                ByteBufCodecs.STRING_UTF8, GraveSummary::cause,
-                ByteBufCodecs.VAR_INT, GraveSummary::itemCount,
-                ByteBufCodecs.VAR_INT, GraveSummary::xp,
-                GraveSummary::new
+        public static final StreamCodec<FriendlyByteBuf, GraveSummary> STREAM_CODEC = StreamCodec.of(
+                (buf, value) -> {
+                    UUIDUtil.STREAM_CODEC.encode(buf, value.recordId());
+                    GlobalPos.STREAM_CODEC.encode(buf, value.pos());
+                    ByteBufCodecs.VAR_LONG.encode(buf, value.epochMillis());
+                    ByteBufCodecs.VAR_LONG.encode(buf, value.gameTime());
+                    ByteBufCodecs.STRING_UTF8.encode(buf, value.cause());
+                    ByteBufCodecs.VAR_INT.encode(buf, value.itemCount());
+                    ByteBufCodecs.VAR_INT.encode(buf, value.xp());
+                },
+                buf -> new GraveSummary(
+                        UUIDUtil.STREAM_CODEC.decode(buf),
+                        GlobalPos.STREAM_CODEC.decode(buf),
+                        ByteBufCodecs.VAR_LONG.decode(buf),
+                        ByteBufCodecs.VAR_LONG.decode(buf),
+                        ByteBufCodecs.STRING_UTF8.decode(buf),
+                        ByteBufCodecs.VAR_INT.decode(buf),
+                        ByteBufCodecs.VAR_INT.decode(buf))
         );
     }
 
@@ -128,17 +137,35 @@ public class GravelessNetworking {
             implements CustomPacketPayload {
         public static final Type<GraveListPayload> TYPE = new Type<>(Graveless.id("grave_list"));
 
-        public static final StreamCodec<FriendlyByteBuf, GraveListPayload> STREAM_CODEC = StreamCodec.composite(
-                UUIDUtil.STREAM_CODEC, GraveListPayload::ownerId,
-                ByteBufCodecs.STRING_UTF8, GraveListPayload::ownerName,
-                GraveSummary.STREAM_CODEC.apply(ByteBufCodecs.list()), GraveListPayload::graves,
-                ByteBufCodecs.BOOL, GraveListPayload::admin,
-                ByteBufCodecs.BOOL, GraveListPayload::ownerEnabled,
-                UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs::optional), GraveListPayload::trackedId,
-                PlayerEntry.STREAM_CODEC.apply(ByteBufCodecs.list()), GraveListPayload::players,
-                PlayerEntry.STREAM_CODEC.apply(ByteBufCodecs.list()), GraveListPayload::allowed,
-                UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs::optional), GraveListPayload::focusId,
-                GraveListPayload::new
+        private static final StreamCodec<FriendlyByteBuf, List<GraveSummary>> GRAVES_CODEC =
+                GraveSummary.STREAM_CODEC.apply(ByteBufCodecs.list());
+        private static final StreamCodec<FriendlyByteBuf, List<PlayerEntry>> PLAYERS_CODEC =
+                PlayerEntry.STREAM_CODEC.apply(ByteBufCodecs.list());
+        private static final StreamCodec<? super FriendlyByteBuf, Optional<UUID>> OPTIONAL_UUID_CODEC =
+                ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC);
+
+        public static final StreamCodec<FriendlyByteBuf, GraveListPayload> STREAM_CODEC = StreamCodec.of(
+                (buf, value) -> {
+                    UUIDUtil.STREAM_CODEC.encode(buf, value.ownerId());
+                    ByteBufCodecs.STRING_UTF8.encode(buf, value.ownerName());
+                    GRAVES_CODEC.encode(buf, value.graves());
+                    ByteBufCodecs.BOOL.encode(buf, value.admin());
+                    ByteBufCodecs.BOOL.encode(buf, value.ownerEnabled());
+                    OPTIONAL_UUID_CODEC.encode(buf, value.trackedId());
+                    PLAYERS_CODEC.encode(buf, value.players());
+                    PLAYERS_CODEC.encode(buf, value.allowed());
+                    OPTIONAL_UUID_CODEC.encode(buf, value.focusId());
+                },
+                buf -> new GraveListPayload(
+                        UUIDUtil.STREAM_CODEC.decode(buf),
+                        ByteBufCodecs.STRING_UTF8.decode(buf),
+                        GRAVES_CODEC.decode(buf),
+                        ByteBufCodecs.BOOL.decode(buf),
+                        ByteBufCodecs.BOOL.decode(buf),
+                        OPTIONAL_UUID_CODEC.decode(buf),
+                        PLAYERS_CODEC.decode(buf),
+                        PLAYERS_CODEC.decode(buf),
+                        OPTIONAL_UUID_CODEC.decode(buf))
         );
 
         @Override

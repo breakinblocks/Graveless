@@ -18,7 +18,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
@@ -261,7 +261,7 @@ public final class CaptureTests {
 
     private static void respectsKeepInventory(GameTestHelper helper) {
         TestCleanup cleanup = TestCleanup.attach(helper);
-        cleanup.gameRule(helper.getLevel(), GameRules.KEEP_INVENTORY, true);
+        cleanup.gameRule(helper.getLevel(), GameRules.RULE_KEEPINVENTORY, true);
 
         TestPlayer player = TestPlayer.join(helper);
         player.give(0, new ItemStack(Items.DIAMOND, 4));

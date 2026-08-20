@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -74,7 +75,7 @@ public class GhostSyncEvents {
         MinecraftServer server = player.level().getServer();
         GraveStore store = GraveStore.get(server);
         RestoreEngine.Result result = RestoreEngine.claim(player, found.profile(), found.record(), store);
-        ServerLevel level = player.level();
+        ServerLevel level = player.serverLevel();
         BlockPos anchor = anchor(level, found.record().pos().pos());
         if (result.recordRemoved()) {
             player.sendSystemMessage(Component.translatable("graveless.restore.complete",
@@ -181,17 +182,22 @@ public class GhostSyncEvents {
         if (online != null) {
             return online.getName().getString();
         }
-        return server.services().nameToIdCache().get(ownerId)
-                .map(profile -> profile.name())
+        if (server.getProfileCache() == null) {
+            return "";
+        }
+        return server.getProfileCache().get(ownerId)
+                .map(profile -> profile.getName())
                 .orElse("");
     }
 
-    public static BlockPos anchor(ServerLevel level, BlockPos pos) {
+    public static BlockPos anchor(LevelHeightAccessor level, BlockPos pos) {
         int y = pos.getY();
-        if (y < level.getMinY() + 1) {
-            y = Math.min(level.getMinY() + 48, level.getMaxY() - 2);
-        } else if (y > level.getMaxY() - 2) {
-            y = level.getMaxY() - 2;
+        int minY = level.getMinBuildHeight();
+        int maxY = level.getMaxBuildHeight() - 1;
+        if (y < minY + 1) {
+            y = Math.min(minY + 48, maxY - 2);
+        } else if (y > maxY - 2) {
+            y = maxY - 2;
         }
         return y == pos.getY() ? pos : new BlockPos(pos.getX(), y, pos.getZ());
     }

@@ -6,7 +6,6 @@ import com.breakinblocks.graveless.platform.Registrar;
 import com.breakinblocks.graveless.platform.RegistrySupplier;
 import com.breakinblocks.graveless.platform.Services;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 
@@ -15,7 +14,6 @@ public class ModItems {
 
     public static final RegistrySupplier<Item> SPIRIT_COMPASS = ITEMS.register("spirit_compass",
             registryName -> new SpiritCompassItem(new Item.Properties()
-                    .setId(ResourceKey.create(Registries.ITEM, registryName))
                     .stacksTo(1)
                     .rarity(Rarity.UNCOMMON)));
 }
