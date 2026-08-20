@@ -3,6 +3,8 @@
 ## 1.3.1 for Minecraft 1.21.1
 
 - Backported the mod to Minecraft 1.21.1 (NeoForge 21.1 and Fabric).
+- Added Accessories support on both loaders. Equipped accessories are stored in the grave and returned to
+  their slots on claim, respecting each accessory's keep and destroy rules.
 - Ghost and grave browser rendering were rebuilt on the 1.21.1 render APIs. The outline pass is replaced by
   a glow aura that stays visible through walls when the ghost is hidden behind terrain.
 

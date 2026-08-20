@@ -30,3 +30,10 @@ type = "optional"
 versionRange = "[9,)"
 ordering = "BEFORE"
 side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "accessories"
+type = "optional"
+versionRange = "[1.1.0-beta,)"
+ordering = "BEFORE"
+side = "BOTH"

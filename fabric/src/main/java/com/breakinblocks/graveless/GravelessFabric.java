@@ -2,6 +2,7 @@ package com.breakinblocks.graveless;
 
 import com.breakinblocks.graveless.commands.GravelessCommands;
 import com.breakinblocks.graveless.event.DeathCaptureEvents;
+import com.breakinblocks.graveless.integration.accessories.AccessoriesIntegration;
 import com.breakinblocks.graveless.event.GhostSyncEvents;
 import com.breakinblocks.graveless.event.SpiritWardEvents;
 import com.breakinblocks.graveless.registry.ModItems;
@@ -19,6 +20,10 @@ public class GravelessFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         Graveless.init();
+
+        if (Graveless.isModLoaded("accessories")) {
+            AccessoriesIntegration.init();
+        }
 
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)
                 .register(entries -> entries.accept(ModItems.SPIRIT_COMPASS.get()));
