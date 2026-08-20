@@ -60,6 +60,9 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 dependencies {
     compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
     runtimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
+    compileOnly ("io.wispforest:accessories-neoforge:${accessories_version}") { transitive = false }
+    gametestCompileOnly ("io.wispforest:accessories-neoforge:${accessories_version}") { transitive = false }
+    gametestRuntimeOnly "io.wispforest:accessories-neoforge:${accessories_version}"
 }
 
 publishMods {
@@ -88,6 +91,7 @@ publishMods {
             clientRequired = true
             serverRequired = true
             optional { slug = 'curios' }
+            optional { slug = 'accessories' }
         }
     }
 
@@ -96,7 +100,7 @@ publishMods {
             projectId = modrinth_project_id
             accessToken = providers.environmentVariable('MODRINTH_TOKEN')
             minecraftVersions.add(minecraft_version)
-            optional('curios')
+            optional('curios', 'accessories')
         }
     }
 }

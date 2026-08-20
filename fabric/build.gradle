@@ -10,6 +10,9 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${fcap_version}"
+    modCompileOnly ("io.wispforest:accessories-fabric:${accessories_version}") { transitive = false }
+    modLocalRuntime "io.wispforest:accessories-fabric:${accessories_version}"
+    modLocalRuntime "io.wispforest:owo-lib:0.12.15.4+1.21"
 }
 
 loom {
@@ -63,6 +66,7 @@ publishMods {
             clientRequired = true
             serverRequired = true
             requires('fabric-api', 'forge-config-api-port')
+            optional { slug = 'accessories' }
         }
     }
 
@@ -72,6 +76,7 @@ publishMods {
             accessToken = providers.environmentVariable('MODRINTH_TOKEN')
             minecraftVersions.add(minecraft_version)
             requires('fabric-api', 'forge-config-api-port')
+            optional('accessories')
         }
     }
 }

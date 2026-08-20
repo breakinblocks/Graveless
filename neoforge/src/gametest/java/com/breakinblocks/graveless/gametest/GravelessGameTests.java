@@ -35,6 +35,7 @@ public final class GravelessGameTests {
         AdminTests.register(tests);
         ExtractTests.register(tests);
         CommandTests.register(tests);
+        AccessoriesTests.register(tests);
         return tests.functions();
     }
 }

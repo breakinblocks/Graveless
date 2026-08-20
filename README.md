@@ -115,7 +115,7 @@ Minecraft 1.21.1 on either NeoForge or Fabric. Works in singleplayer and on serv
 | NeoForge | `graveless-neoforge-<mc>-<version>.jar` | nothing |
 | Fabric | `graveless-fabric-<mc>-<version>.jar` | Fabric API, Forge Config API Port |
 
-Curios is supported on NeoForge when present.
+Curios is supported on NeoForge when present. Accessories is supported on both loaders when present.
 
 ## License
 

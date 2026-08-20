@@ -36,6 +36,16 @@ repositories {
         url = 'https://maven.theillusivec4.top/'
     }
     maven {
+        name = 'Wisp Forest'
+        url = 'https://maven.wispforest.io/releases'
+        content { includeGroupAndSubgroups('io.wispforest') }
+    }
+    maven {
+        name = 'Sinytra'
+        url = 'https://maven.su5ed.dev/releases'
+        content { includeGroupAndSubgroups('org.sinytra') }
+    }
+    maven {
         name = 'Fuzs'
         url = 'https://raw.githubusercontent.com/Fuzss/modresources/main/maven'
         content { includeGroupAndSubgroups('fuzs') }
