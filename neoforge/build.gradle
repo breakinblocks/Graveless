@@ -29,21 +29,21 @@ neoForge {
         }
         client {
             client()
-            gameDirectory = this.mkdir(this.file('runs/client'))
+            gameDirectory = this.mkdir(this.file("runs/${minecraft_version}/client"))
         }
         server {
             server()
             programArgument '--nogui'
-            gameDirectory = this.mkdir(this.file('runs/server'))
+            gameDirectory = this.mkdir(this.file("runs/${minecraft_version}/server"))
         }
         gameTestServer {
             type = 'gameTestServer'
             sourceSet = sourceSets.gametest
-            gameDirectory = this.mkdir(this.file('runs/gametest'))
+            gameDirectory = this.mkdir(this.file("runs/${minecraft_version}/gametest"))
         }
         data {
             clientData()
-            gameDirectory = this.mkdir(this.file('runs/data'))
+            gameDirectory = this.mkdir(this.file("runs/${minecraft_version}/data"))
             programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', commonResourcesDir.getAbsolutePath()
         }
     }

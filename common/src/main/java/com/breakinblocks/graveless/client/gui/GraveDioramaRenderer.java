@@ -4,12 +4,12 @@ import com.breakinblocks.graveless.client.render.GhostRenderTypes;
 import com.breakinblocks.graveless.event.GraveMenuHandlers;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.BlockQuadOutput;
 import net.minecraft.client.renderer.block.BlockStateModelSet;
@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
-import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
@@ -45,10 +44,6 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
     private float lastScale;
     private float lastYaw;
 
-    public GraveDioramaRenderer(MultiBufferSource.BufferSource bufferSource) {
-        super(bufferSource);
-    }
-
     @Override
     public Class<GraveDioramaRenderState> getRenderStateClass() {
         return GraveDioramaRenderState.class;
@@ -71,7 +66,7 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
     }
 
     @Override
-    protected void renderToTexture(GraveDioramaRenderState state, PoseStack poseStack) {
+    protected void renderToTexture(GraveDioramaRenderState state, PoseStack poseStack, SubmitNodeCollector collector) {
         Minecraft minecraft = Minecraft.getInstance();
         DioramaView view = new DioramaView(state.blocks());
         ModelBlockRenderer renderer = new ModelBlockRenderer(false, true, minecraft.getBlockColors());
@@ -83,21 +78,24 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
                 (float) Math.toRadians(30.0), (float) Math.toRadians(state.yaw()), 0.0F));
         poseStack.translate(-(SIZE / 2.0F + 0.5F), -(ghostFeet + 0.9F), -(SIZE / 2.0F + 0.5F));
 
-        renderPass(renderer, models, view, poseStack, false);
-        this.bufferSource.endBatch();
-        renderPass(renderer, models, view, poseStack, true);
-        this.bufferSource.endBatch();
-        renderGhost(state, poseStack);
+        for (ChunkSectionLayer layer : ChunkSectionLayer.values()) {
+            collector.submitCustomGeometry(poseStack, switch (layer) {
+                case SOLID -> RenderTypes.solidMovingBlock();
+                case CUTOUT -> RenderTypes.cutoutMovingBlock();
+                case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
+            }, (pose, buffer) -> renderPass(renderer, models, view, pose, buffer, layer));
+        }
+        // Keep the translucent ghost passes after the terrain, including glass.
+        renderGhost(state, poseStack, collector.order(1));
         lastBlocks = state.blocks();
         lastTexture = state.skin().body().texturePath();
         lastScale = state.scale();
         lastYaw = state.yaw();
     }
 
-    private void renderGhost(GraveDioramaRenderState state, PoseStack poseStack) {
+    private void renderGhost(GraveDioramaRenderState state, PoseStack poseStack, OrderedSubmitNodeCollector collector) {
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.ENTITY_IN_UI);
-        FeatureRenderDispatcher dispatcher = minecraft.gameRenderer.getFeatureRenderDispatcher();
+        minecraft.gameRenderer.lighting().setupFor(Lighting.Entry.ENTITY_IN_UI);
         AvatarRenderState avatar = new AvatarRenderState();
         avatar.skin = state.skin();
         avatar.ageInTicks = 0.0F;
@@ -109,14 +107,13 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.translate(0.0F, -1.501F, 0.0F);
         Identifier texture = state.skin().body().texturePath();
-        dispatcher.getSubmitNodeStorage().submitModel(state.playerModel(), avatar, poseStack,
+        collector.submitModel(state.playerModel(), avatar, poseStack,
                 RenderTypes.entityTranslucentEmissive(texture), FULL_BRIGHT,
                 OverlayTexture.NO_OVERLAY, ARGB.color(245, 255, 255, 255), null, 0, null);
-        dispatcher.getSubmitNodeStorage().submitModel(state.playerModel(), avatar, poseStack,
+        collector.submitModel(state.playerModel(), avatar, poseStack,
                 GhostRenderTypes.ghostPreview(texture), FULL_BRIGHT,
                 OverlayTexture.NO_OVERLAY, ARGB.color(80, 160, 235, 255), null, 0, null);
         poseStack.popPose();
-        dispatcher.renderAllFeatures();
     }
 
     private static int groundLayer(BlockState[] blocks) {
@@ -133,22 +130,18 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
     }
 
     private void renderPass(ModelBlockRenderer renderer, BlockStateModelSet models, DioramaView view,
-                            PoseStack poseStack, boolean translucent) {
+                            PoseStack.Pose pose, VertexConsumer buffer, ChunkSectionLayer layer) {
+        PoseStack blockPose = new PoseStack();
+        blockPose.last().set(pose);
         BlockQuadOutput output = (x, y, z, quad, instance) -> {
-            boolean quadTranslucent = quad.materialInfo().layer() == ChunkSectionLayer.TRANSLUCENT;
-            if (quadTranslucent != translucent) {
+            if (quad.materialInfo().layer() != layer) {
                 return;
             }
             instance.setLightCoords(FULL_BRIGHT);
-            VertexConsumer buffer = this.bufferSource.getBuffer(switch (quad.materialInfo().layer()) {
-                case SOLID -> RenderTypes.solidMovingBlock();
-                case CUTOUT -> RenderTypes.cutoutMovingBlock();
-                case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
-            });
-            poseStack.pushPose();
-            poseStack.translate(x, y, z);
-            buffer.putBakedQuad(poseStack.last(), quad, instance);
-            poseStack.popPose();
+            blockPose.pushPose();
+            blockPose.translate(x, y, z);
+            buffer.putBakedQuad(blockPose.last(), quad, instance);
+            blockPose.popPose();
         };
 
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();

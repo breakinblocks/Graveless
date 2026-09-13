@@ -30,17 +30,17 @@ public final class ClientGhostHandlers {
     public static void handleGraveList(GravelessNetworking.GraveListPayload payload, PayloadContext context) {
         context.enqueueWork(() -> {
             Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.screen instanceof GraveBrowserScreen screen) {
+            if (minecraft.gui.screen() instanceof GraveBrowserScreen screen) {
                 screen.updateFrom(payload);
             } else {
-                minecraft.setScreen(new GraveBrowserScreen(payload));
+                minecraft.gui.setScreen(new GraveBrowserScreen(payload));
             }
         });
     }
 
     public static void handleGraveDetail(GravelessNetworking.GraveDetailPayload payload, PayloadContext context) {
         context.enqueueWork(() -> {
-            if (Minecraft.getInstance().screen instanceof GraveBrowserScreen screen) {
+            if (Minecraft.getInstance().gui.screen() instanceof GraveBrowserScreen screen) {
                 screen.receiveDetail(payload);
             }
         });
@@ -48,7 +48,7 @@ public final class ClientGhostHandlers {
 
     public static void handleBackupList(GravelessNetworking.BackupListPayload payload, PayloadContext context) {
         context.enqueueWork(() -> {
-            if (Minecraft.getInstance().screen instanceof GraveBrowserScreen screen) {
+            if (Minecraft.getInstance().gui.screen() instanceof GraveBrowserScreen screen) {
                 screen.receiveBackups(payload);
             }
         });

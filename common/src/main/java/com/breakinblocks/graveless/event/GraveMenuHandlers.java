@@ -472,7 +472,7 @@ public class GraveMenuHandlers {
         if (state.getBlock() instanceof LiquidBlock) {
             return state.getFluidState().is(FluidTags.LAVA)
                     ? Blocks.MAGMA_BLOCK.defaultBlockState()
-                    : Blocks.BLUE_STAINED_GLASS.defaultBlockState();
+                    : Blocks.STAINED_GLASS.blue().defaultBlockState();
         }
         if (state.getRenderShape() != RenderShape.MODEL) {
             return Blocks.AIR.defaultBlockState();

@@ -109,12 +109,12 @@ public class GhostEffects {
         if (messages.isEmpty()) {
             return;
         }
-        minecraft.gui.setOverlayMessage(nearestMessage, false);
+        minecraft.gui.hud.setOverlayMessage(nearestMessage, false);
         for (Component message : messages) {
-            minecraft.getChatListener().handleSystemMessage(
+            minecraft.gui.chatListener().handleSystemMessage(
                     message.copy().withStyle(ChatFormatting.AQUA), false);
         }
-        minecraft.getChatListener().handleSystemMessage(
+        minecraft.gui.chatListener().handleSystemMessage(
                 Component.translatable("graveless.hud.sneak_hint").withStyle(ChatFormatting.DARK_AQUA), false);
         minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.AMETHYST_BLOCK_CHIME, 0.8F));
     }

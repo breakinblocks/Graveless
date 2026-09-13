@@ -76,10 +76,6 @@ public class GhostRenderManager {
         }
     }
 
-    public static boolean needsOutlinePass() {
-        return !GhostClientManager.isEmpty();
-    }
-
     private static void ensureModels(Minecraft minecraft) {
         if (wideModel == null) {
             wideModel = new GhostModel(minecraft.getEntityModels().bakeLayer(ModelLayers.PLAYER), false);

@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.FrameGraphSetupEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 
@@ -52,10 +51,4 @@ public class NeoForgeClientEvents {
                 event.getLevelRenderState().cameraRenderState.pos);
     }
 
-    @SubscribeEvent
-    public static void onFrameGraphSetup(FrameGraphSetupEvent event) {
-        if (GhostRenderManager.needsOutlinePass()) {
-            event.enableOutlineProcessing();
-        }
-    }
 }

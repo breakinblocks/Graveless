@@ -17,7 +17,7 @@ public class GravelessFabricClient implements ClientModInitializer {
         ClientGhostHandlers.bindAll();
         FabricNetworkHelper.registerClientReceivers();
 
-        PictureInPictureRendererRegistry.register(context -> new GraveDioramaRenderer(context.bufferSource()));
+        PictureInPictureRendererRegistry.register(context -> new GraveDioramaRenderer());
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> GhostEffects.onClientTick());
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> GhostEffects.onDisconnect());
