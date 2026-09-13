@@ -28,7 +28,7 @@ public class GhostInteraction {
         if (GhostClientManager.isEmpty()) {
             return false;
         }
-        GhostClientManager.ClientGhost target = aimedGhost(player, Minecraft.getInstance().hitResult);
+        GhostClientManager.ClientGhost target = findTarget(player, Minecraft.getInstance().hitResult);
         if (target == null) {
             return false;
         }
@@ -43,8 +43,9 @@ public class GhostInteraction {
         return true;
     }
 
-    private static GhostClientManager.ClientGhost aimedGhost(Player player, HitResult hit) {
-        boolean obstructed = hit != null && hit.getType() != HitResult.Type.MISS;
+    public static GhostClientManager.ClientGhost findTarget(Player player, HitResult hit) {
+        boolean obstructed = hit != null && (hit.getType() == HitResult.Type.ENTITY
+                || (hit.getType() == HitResult.Type.BLOCK && GravelessConfig.SERVER.requireLineOfSight.get()));
         Vec3 eye = player.getEyePosition();
         double hitDist = obstructed ? hit.getLocation().distanceTo(eye) : Double.MAX_VALUE;
         int range = GravelessConfig.SERVER.claimRange.get();

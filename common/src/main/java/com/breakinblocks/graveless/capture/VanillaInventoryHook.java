@@ -44,12 +44,19 @@ public class VanillaInventoryHook implements InventoryHook {
     @Override
     public ItemStack restore(ServerPlayer player, CapturedEntry entry) {
         Inventory inventory = player.getInventory();
-        ItemStack stack = entry.stack().copy();
+        ItemStack stack = entry.stack();
         int slot = entry.slot();
         if (slot >= 0 && slot < inventory.getContainerSize()) {
             ItemStack existing = inventory.getItem(slot);
             if (existing.isEmpty()) {
-                inventory.setItem(slot, stack);
+                ItemStack placed = stack.copy();
+                try {
+                    inventory.setItem(slot, placed);
+                } finally {
+                    if (inventory.getItem(slot) == placed) {
+                        stack.setCount(0);
+                    }
+                }
                 return ItemStack.EMPTY;
             }
             if (ItemStack.isSameItemSameComponents(existing, stack)) {
@@ -62,10 +69,6 @@ public class VanillaInventoryHook implements InventoryHook {
                 }
             }
         }
-        if (stack.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
-        inventory.add(stack);
         return stack.isEmpty() ? ItemStack.EMPTY : stack;
     }
 }

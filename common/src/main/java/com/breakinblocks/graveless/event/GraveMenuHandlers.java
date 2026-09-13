@@ -136,6 +136,7 @@ public class GraveMenuHandlers {
                 profile.records().remove(record);
                 GhostSyncEvents.broadcastRemoval(server, record.id());
                 refreshOwner(server, payload.ownerId(), actor);
+                SpiritWardEvents.beginWearOff(actor);
             }
             store.setDirty();
             openFor(actor, payload.ownerId(), Optional.of(record.id()));
@@ -261,13 +262,12 @@ public class GraveMenuHandlers {
             if (!(context.player() instanceof ServerPlayer player)) {
                 return;
             }
-            if (!payload.ownerId().equals(player.getUUID()) && !isAdmin(player)) {
-                return;
-            }
             MinecraftServer server = player.level().getServer();
             GraveProfile profile = GraveStore.get(server).profile(payload.ownerId());
             DeathRecord record = profile.findRecord(payload.recordId());
-            if (record == null) {
+            if (record == null || (!payload.ownerId().equals(player.getUUID()) && !isAdmin(player)
+                    && (!profile.canAccess(payload.ownerId(), player.getUUID())
+                    || !GhostSyncEvents.canReach(player, record)))) {
                 return;
             }
             List<ItemStack> items = new ArrayList<>();
@@ -379,6 +379,7 @@ public class GraveMenuHandlers {
             profile.records().remove(record);
             GhostSyncEvents.broadcastRemoval(server, record.id());
             refreshOwner(server, ownerId, actor);
+            SpiritWardEvents.beginWearOff(actor);
         }
         store.setDirty();
         actor.sendSystemMessage(Component.translatable("graveless.menu.xp_claimed", xp)

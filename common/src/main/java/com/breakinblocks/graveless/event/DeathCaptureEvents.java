@@ -114,15 +114,41 @@ public class DeathCaptureEvents {
         return true;
     }
 
+    public static boolean captureDrop(ServerPlayer player, CapturedEntry entry) {
+        DeathRecord record = PENDING.get(player.getUUID());
+        if (record == null || entry.stack().isEmpty() || entry.stack().is(ModItems.SPIRIT_COMPASS.get())) {
+            return false;
+        }
+        ItemStack copy = entry.stack().copy();
+        copy.remove(ModDataComponents.CURIO_SLOT.get());
+        record.entries().add(entry.withStack(copy));
+        return true;
+    }
+
     public static void finishDrops(ServerPlayer player) {
         DeathRecord record = PENDING.remove(player.getUUID());
-        if (record != null) {
-            finalizeRecord(player, record);
+        try {
+            if (record != null) {
+                finalizeRecord(player, record);
+            }
+        } finally {
+            cleanupHooks(player);
         }
     }
 
     public static void onLogout(ServerPlayer player) {
         PENDING.remove(player.getUUID());
+        cleanupHooks(player);
+    }
+
+    private static void cleanupHooks(ServerPlayer player) {
+        for (InventoryHook hook : InventoryHooks.all()) {
+            try {
+                hook.finishDrops(player);
+            } catch (Exception e) {
+                Graveless.LOGGER.error("Inventory hook {} failed cleaning up death for {}", hook.id(), player.getUUID(), e);
+            }
+        }
     }
 
     public static void onRespawn(ServerPlayer player) {

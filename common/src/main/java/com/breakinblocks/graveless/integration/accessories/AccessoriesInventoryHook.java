@@ -2,25 +2,26 @@ package com.breakinblocks.graveless.integration.accessories;
 
 import com.breakinblocks.graveless.capture.InventoryHook;
 import com.breakinblocks.graveless.data.CapturedEntry;
-import com.breakinblocks.graveless.registry.ModDataComponents;
+import com.breakinblocks.graveless.event.DeathCaptureEvents;
 import io.wispforest.accessories.api.AccessoriesAPI;
 import io.wispforest.accessories.api.AccessoriesCapability;
 import io.wispforest.accessories.api.AccessoriesContainer;
-import io.wispforest.accessories.api.DropRule;
 import io.wispforest.accessories.api.slot.SlotReference;
 import io.wispforest.accessories.impl.ExpandedSimpleContainer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class AccessoriesInventoryHook implements InventoryHook {
     public static final String ID = "accessories";
     private static final String COSMETIC_SUFFIX = "#cosmetic";
+    private final Map<UUID, Map<ItemStack, CapturedEntry>> pendingSlots = new HashMap<>();
 
     @Override
     public String id() {
@@ -28,54 +29,61 @@ public class AccessoriesInventoryHook implements InventoryHook {
     }
 
     @Override
-    public List<CapturedEntry> capture(ServerPlayer player, DamageSource source) {
+    public void prepareDrops(ServerPlayer player, DamageSource source) {
         AccessoriesCapability capability = AccessoriesCapability.get(player);
         if (capability == null) {
-            return List.of();
+            return;
         }
-        List<CapturedEntry> entries = new ArrayList<>();
+        Map<ItemStack, CapturedEntry> slots = new IdentityHashMap<>();
         capability.getContainers().forEach((type, container) -> {
-            boolean changed = captureStacks(player, source, container, container.getAccessories(), false, entries);
-            changed |= captureStacks(player, source, container, container.getCosmeticAccessories(), true, entries);
-            if (changed) {
-                container.markChanged();
-            }
+            rememberSlots(type, container.getAccessories(), false, slots);
+            rememberSlots(type, container.getCosmeticAccessories(), true, slots);
         });
-        return entries;
+        pendingSlots.put(player.getUUID(), slots);
     }
 
-    private static boolean captureStacks(ServerPlayer player, DamageSource source, AccessoriesContainer container,
-                                         ExpandedSimpleContainer stacks, boolean cosmetic,
-                                         List<CapturedEntry> entries) {
-        String type = container.getSlotName();
-        boolean changed = false;
+    private static void rememberSlots(String type, ExpandedSimpleContainer stacks, boolean cosmetic,
+                                       Map<ItemStack, CapturedEntry> slots) {
         for (int slot = 0; slot < stacks.getContainerSize(); slot++) {
             ItemStack stack = stacks.getItem(slot);
-            if (stack.isEmpty()) {
-                continue;
+            if (!stack.isEmpty()) {
+                slots.put(stack, new CapturedEntry(ID, cosmetic ? type + COSMETIC_SUFFIX : type, slot, stack));
             }
-            SlotReference reference = SlotReference.of(player, type, slot);
-            DropRule rule = AccessoriesAPI.getOrDefaultAccessory(stack).getDropRule(stack, reference, source);
-            if (rule == DropRule.KEEP) {
-                continue;
-            }
-            stacks.setItem(slot, ItemStack.EMPTY);
-            changed = true;
-            if (rule == DropRule.DESTROY) {
-                continue;
-            }
-            if (EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
-                continue;
-            }
-            stack.remove(ModDataComponents.CURIO_SLOT.get());
-            entries.add(new CapturedEntry(ID, cosmetic ? type + COSMETIC_SUFFIX : type, slot, stack));
         }
-        return changed;
+    }
+
+    @Override
+    public List<CapturedEntry> capture(ServerPlayer player, DamageSource source) {
+        // Accessories owns keep rules, nested items, and death callbacks. Capture its resolved drops.
+        return List.of();
+    }
+
+    public void captureDrops(ServerPlayer player, List<ItemStack> drops) {
+        Map<ItemStack, CapturedEntry> slots = pendingSlots.remove(player.getUUID());
+        if (slots == null || !DeathCaptureEvents.hasPending(player)) {
+            return;
+        }
+        drops.removeIf(stack -> DeathCaptureEvents.captureDrop(player,
+                slots.getOrDefault(stack, CapturedEntry.loose(stack)).withStack(stack)));
+    }
+
+    @Override
+    public void finishDrops(ServerPlayer player) {
+        pendingSlots.remove(player.getUUID());
     }
 
     @Override
     public ItemStack restore(ServerPlayer player, CapturedEntry entry) {
-        ItemStack stack = entry.stack().copy();
+        return restore(player, entry, false);
+    }
+
+    @Override
+    public ItemStack restoreFallback(ServerPlayer player, CapturedEntry entry) {
+        return restore(player, entry, true);
+    }
+
+    private ItemStack restore(ServerPlayer player, CapturedEntry entry, boolean fallback) {
+        ItemStack stack = entry.stack();
         AccessoriesCapability capability = AccessoriesCapability.get(player);
         if (capability == null) {
             return stack;
@@ -89,14 +97,16 @@ public class AccessoriesInventoryHook implements InventoryHook {
         }
         ExpandedSimpleContainer stacks = cosmetic ? container.getCosmeticAccessories() : container.getAccessories();
         int slot = entry.slot();
-        if (canPlace(player, stacks, type, slot, cosmetic, stack)) {
-            place(container, stacks, slot, stack);
-            return ItemStack.EMPTY;
+        if (!fallback) {
+            if (canPlace(player, stacks, type, slot, cosmetic, stack)) {
+                place(container, stacks, slot, stack);
+            }
+            return stack;
         }
         for (int i = 0; i < stacks.getContainerSize(); i++) {
             if (canPlace(player, stacks, type, i, cosmetic, stack)) {
                 place(container, stacks, i, stack);
-                return ItemStack.EMPTY;
+                return stack;
             }
         }
         return stack;
@@ -112,7 +122,14 @@ public class AccessoriesInventoryHook implements InventoryHook {
 
     private static void place(AccessoriesContainer container, ExpandedSimpleContainer stacks, int slot,
                               ItemStack stack) {
-        stacks.setItem(slot, stack);
-        container.markChanged();
+        ItemStack placed = stack.copyWithCount(Math.min(stack.getCount(), stacks.getMaxStackSize(stack)));
+        try {
+            stacks.setItem(slot, placed);
+            container.markChanged();
+        } finally {
+            if (stacks.getItem(slot) == placed) {
+                stack.shrink(placed.getCount());
+            }
+        }
     }
 }

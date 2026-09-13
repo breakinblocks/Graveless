@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.2 for Minecraft 1.21.1
+
+- Fixed the Spirit Compass blocking full inventory recovery and displacing restored items from their original slots.
+- Fixed restore failures discarding items still waiting in a grave.
+- Fixed Accessories recovery bypassing keep-inventory rules, death callbacks, and explicit drop rules.
+- Fixed Accessories fallback displacing items from their original slots and restored stacks exceeding slot limits.
+- Fixed trusted players being unable to view and extract grave contents in the browser.
+- Fixed ghosts persisting across dimension changes and respawns on Fabric.
+- Fixed through-wall claiming when the line of sight requirement is disabled.
+- Fixed Spirit Ward ending before its configured linger expires, including browser recovery, and removing potion effects.
+- Fixed sneaking and clicking above the item grid extracting an item.
+
+
 ## 1.3.1 for Minecraft 1.21.1
 
 - Backported the mod to Minecraft 1.21.1 (NeoForge 21.1 and Fabric).

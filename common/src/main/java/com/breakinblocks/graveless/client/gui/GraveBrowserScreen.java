@@ -812,7 +812,7 @@ public class GraveBrowserScreen extends Screen {
         int[] metrics = gridMetrics(l);
         int col = (mouseX - l.gridX()) / SLOT_SIZE;
         int row = (mouseY - l.gridY()) / SLOT_SIZE;
-        if (mouseX < l.gridX() || col < 0 || col >= GRID_COLS || row < 0 || row >= metrics[0]) {
+        if (mouseX < l.gridX() || mouseY < l.gridY() || col < 0 || col >= GRID_COLS || row < 0 || row >= metrics[0]) {
             return -1;
         }
         int index = (gridScroll + row) * GRID_COLS + col;
