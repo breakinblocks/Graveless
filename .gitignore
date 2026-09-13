@@ -67,5 +67,4 @@ local.properties
 !LICENSE.md
 !CHANGELOG.md
 
-*.bat
-!gradlew.bat
+/tools/

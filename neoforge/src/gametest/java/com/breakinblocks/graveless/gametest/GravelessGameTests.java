@@ -17,6 +17,8 @@ public final class GravelessGameTests {
         DataTests.register(tests);
         CaptureTests.register(tests);
         RestoreTests.register(tests);
+        RecoveryTests.register(tests);
+        CuriosTests.register(tests);
         GhostTests.register(tests);
         CompassTests.register(tests);
         WardTests.register(tests);

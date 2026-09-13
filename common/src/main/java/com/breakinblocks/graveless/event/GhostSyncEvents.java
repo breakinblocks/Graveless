@@ -45,6 +45,15 @@ public class GhostSyncEvents {
         KNOWN.remove(player.getUUID());
     }
 
+    public static void reset(ServerPlayer player) {
+        Set<UUID> known = KNOWN.remove(player.getUUID());
+        if (known != null) {
+            for (UUID recordId : known) {
+                Services.NETWORK.sendToPlayer(player, new GravelessNetworking.GhostRemovePayload(recordId));
+            }
+        }
+    }
+
     public static void handleClaimRequest(GravelessNetworking.ClaimRequestPayload payload, PayloadContext context) {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) {

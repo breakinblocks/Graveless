@@ -60,6 +60,7 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 dependencies {
     compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
     runtimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
+    gametestImplementation "top.theillusivec4.curios:curios-neoforge:${curios_version}"
 }
 
 publishMods {

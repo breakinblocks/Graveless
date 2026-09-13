@@ -262,13 +262,12 @@ public class GraveMenuHandlers {
             if (!(context.player() instanceof ServerPlayer player)) {
                 return;
             }
-            if (!payload.ownerId().equals(player.getUUID()) && !isAdmin(player)) {
-                return;
-            }
             MinecraftServer server = player.level().getServer();
             GraveProfile profile = GraveStore.get(server).profile(payload.ownerId());
             DeathRecord record = profile.findRecord(payload.recordId());
-            if (record == null) {
+            if (record == null || (!payload.ownerId().equals(player.getUUID()) && !isAdmin(player)
+                    && (!profile.canAccess(payload.ownerId(), player.getUUID())
+                    || !GhostSyncEvents.canReach(player, record)))) {
                 return;
             }
             List<ItemStack> items = new ArrayList<>();

@@ -1,5 +1,6 @@
 package com.breakinblocks.graveless.restore;
 
+import com.breakinblocks.graveless.Graveless;
 import com.breakinblocks.graveless.capture.InventoryHook;
 import com.breakinblocks.graveless.capture.InventoryHooks;
 import com.breakinblocks.graveless.capture.VanillaInventoryHook;
@@ -7,13 +8,14 @@ import com.breakinblocks.graveless.data.CapturedEntry;
 import com.breakinblocks.graveless.data.DeathRecord;
 import com.breakinblocks.graveless.data.GraveProfile;
 import com.breakinblocks.graveless.data.GraveStore;
+import com.breakinblocks.graveless.util.SpiritCompassManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class RestoreEngine {
     private RestoreEngine() {
@@ -23,47 +25,60 @@ public final class RestoreEngine {
     }
 
     public static Result claim(ServerPlayer player, GraveProfile profile, DeathRecord record, GraveStore store) {
-        List<CapturedEntry> pending = new ArrayList<>(record.entries());
-        pending.sort(Comparator.comparingInt(RestoreEngine::restoreOrder));
-        record.entries().clear();
-
-        int restored = 0;
-        for (CapturedEntry entry : pending) {
-            ItemStack leftover = restoreEntry(player, entry);
-            if (leftover.isEmpty()) {
-                restored += entry.stack().getCount();
-            } else {
-                restored += entry.stack().getCount() - leftover.getCount();
-                record.entries().add(entry.withStack(leftover));
+        var compasses = SpiritCompassManager.suspend(player);
+        int before = record.itemCount();
+        int xpRestored = 0;
+        try {
+            record.entries().sort(Comparator.comparingInt(RestoreEngine::restoreOrder));
+            Set<Integer> failed = new HashSet<>();
+            // Hooks only restore their own destinations. General inventory space is used afterward.
+            for (int i = 0; i < record.entries().size(); i++) {
+                CapturedEntry entry = record.entries().get(i);
+                InventoryHook hook = InventoryHooks.byId(entry.handler());
+                if (hook == null || entry.stack().isEmpty()) {
+                    continue;
+                }
+                try {
+                    ItemStack leftover = hook.restore(player, entry);
+                    record.entries().set(i, entry.withStack(leftover));
+                } catch (Exception e) {
+                    failed.add(i);
+                    Graveless.LOGGER.error("Inventory hook {} failed restoring grave {} for {}",
+                            entry.handler(), record.id(), player.getUUID(), e);
+                }
             }
+            for (int i = 0; i < record.entries().size(); i++) {
+                CapturedEntry entry = record.entries().get(i);
+                if (failed.contains(i) || entry.stack().isEmpty()) {
+                    continue;
+                }
+                InventoryHook hook = InventoryHooks.byId(entry.handler());
+                try {
+                    ItemStack remaining = hook == null ? entry.stack() : hook.restoreFallback(player, entry);
+                    record.entries().set(i, entry.withStack(remaining));
+                    if (!remaining.isEmpty()) {
+                        player.getInventory().add(remaining);
+                    }
+                } catch (Exception e) {
+                    Graveless.LOGGER.error("Failed restoring remaining items from grave {} for {}",
+                            record.id(), player.getUUID(), e);
+                }
+            }
+            xpRestored = record.xp();
+            if (xpRestored > 0) {
+                player.giveExperiencePoints(xpRestored);
+                record.setXp(0);
+            }
+        } finally {
+            record.entries().removeIf(entry -> entry.stack().isEmpty());
+            if (record.isEmpty()) {
+                profile.records().remove(record);
+            }
+            store.setDirty();
+            SpiritCompassManager.resume(player, compasses);
+            player.inventoryMenu.broadcastChanges();
         }
-
-        int xpRestored = record.xp();
-        if (xpRestored > 0) {
-            player.giveExperiencePoints(xpRestored);
-            record.setXp(0);
-        }
-
-        boolean removed = record.entries().isEmpty();
-        if (removed) {
-            profile.records().remove(record);
-        }
-        store.setDirty();
-        player.inventoryMenu.broadcastChanges();
-
-        int remaining = record.itemCount();
-        return new Result(restored, remaining, xpRestored, removed);
-    }
-
-    private static ItemStack restoreEntry(ServerPlayer player, CapturedEntry entry) {
-        InventoryHook hook = InventoryHooks.byId(entry.handler());
-        ItemStack leftover = hook != null ? hook.restore(player, entry) : entry.stack().copy();
-        if (leftover.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
-        Inventory inventory = player.getInventory();
-        inventory.add(leftover);
-        return leftover.isEmpty() ? ItemStack.EMPTY : leftover;
+        return new Result(before - record.itemCount(), record.itemCount(), xpRestored, record.isEmpty());
     }
 
     private static int restoreOrder(CapturedEntry entry) {

@@ -52,7 +52,16 @@ public class CuriosInventoryHook implements InventoryHook {
 
     @Override
     public ItemStack restore(ServerPlayer player, CapturedEntry entry) {
-        ItemStack stack = entry.stack().copy();
+        return restore(player, entry, false);
+    }
+
+    @Override
+    public ItemStack restoreFallback(ServerPlayer player, CapturedEntry entry) {
+        return restore(player, entry, true);
+    }
+
+    private ItemStack restore(ServerPlayer player, CapturedEntry entry, boolean fallback) {
+        ItemStack stack = entry.stack();
         ICuriosItemHandler handler = CuriosApi.getCuriosInventoryOrNull(player);
         if (handler == null) {
             return stack;
@@ -66,9 +75,11 @@ public class CuriosInventoryHook implements InventoryHook {
         }
         IDynamicStackHandler stacks = cosmetic ? stacksHandler.getCosmeticStacks() : stacksHandler.getStacks();
         int slot = entry.slot();
-        if (slot >= 0 && slot < stacks.getSlots() && stacks.getStackInSlot(slot).isEmpty()) {
-            place(handler, stacks, type, slot, cosmetic, stack);
-            return ItemStack.EMPTY;
+        if (!fallback) {
+            if (slot >= 0 && slot < stacks.getSlots() && stacks.getStackInSlot(slot).isEmpty()) {
+                place(handler, stacks, type, slot, cosmetic, stack);
+            }
+            return stack;
         }
         for (int i = 0; i < stacks.getSlots(); i++) {
             if (!stacks.getStackInSlot(i).isEmpty()) {
@@ -78,17 +89,25 @@ public class CuriosInventoryHook implements InventoryHook {
                 continue;
             }
             place(handler, stacks, type, i, cosmetic, stack);
-            return ItemStack.EMPTY;
+            return stack;
         }
         return stack;
     }
 
     private static void place(ICuriosItemHandler handler, IDynamicStackHandler stacks,
                               String type, int slot, boolean cosmetic, ItemStack stack) {
-        if (cosmetic) {
-            stacks.setStackInSlot(slot, stack);
-        } else {
-            handler.setEquippedCurio(type, slot, stack);
+        ItemStack placed = stack.copy();
+        try {
+            if (cosmetic) {
+                stacks.setStackInSlot(slot, placed);
+            } else {
+                handler.setEquippedCurio(type, slot, placed);
+            }
+        } finally {
+            // Curios can invoke item callbacks after installing the stack.
+            if (stacks.getStackInSlot(slot) == placed) {
+                stack.setCount(0);
+            }
         }
     }
 }

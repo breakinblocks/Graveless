@@ -14,7 +14,7 @@ When you are close enough, a whisper tells you your spirit is within reach, how 
 
 - Items return to the exact slots they were in when you died. Your pickaxe is back on the same hotbar slot, your armor is back on your body, your offhand is back in your offhand and your curios are in the slot you assigned them to.
 - Your experience comes back too.
-- If your bags are already partly full, the ghost keeps whatever does not fit. Come back with space and claim the rest. Nothing is ever thrown on the ground or lost.
+- When reclaiming a whole grave, the ghost keeps whatever does not fit in your inventory. Come back with space and claim the rest.
 - Sneak and click instead of clicking, and the grave opens in the browser with that death selected, so you can pick through it stack by stack rather than taking everything at once.
 
 ![The silver astral thread reaching from the ghost toward the player](metadata/images/astral-thread.png)
@@ -31,6 +31,8 @@ Every death places a Spirit Compass in your hand when you respawn. Its needle po
 
 Right click the compass to commune with your graves and select the one you want to track and live preview its location and contents.
 
+Recovering your belongings takes priority over the compass. If other graves remain and your restored inventory has no room for it, the compass drops at your feet pointing to a remaining grave.
+
 ![The Spirit Compass pointing toward a distant grave beam](metadata/images/spirit-compass.png)
 
 ## Browse your deaths
@@ -45,6 +47,8 @@ The compass (or the `/graveless` command) opens a view of every outstanding grav
 You can also attune your Spirit Compass to any grave in the list, if the one you want back first is not the most recent. The same screen manages who may see your graves and your personal graves on/off switch, so you never need to memorize a command.
 
 Standing at the ghost, the browser becomes a way to take your death apart piece by piece. Sneak and left click any slot to pull that stack into your inventory, reclaim the stored experience on its own, and delete the entry once whatever is left is something you would rather not carry. That is the answer to picking up a block that irradiates you, a cursed item, or anything else you want gone without giving up the rest of your gear. Taking single stacks needs you to be within claim range of the ghost, so the compass alone will not empty a grave from across the world.
+
+When taking a single stack from the browser, any part that does not fit drops at your feet.
 
 ![The grave browser: death list, inventory preview, and the 3D terrain diorama](metadata/images/browser.png)
 
@@ -119,4 +123,4 @@ Curios is supported on NeoForge when present. Accessories support on Fabric is w
 
 ## License
 
-MIT. See [LICENSE.md](LICENSE.md).
+PolyForm Shield License 1.0.0 AND PolyForm Perimeter License 1.0.0. Use must comply with both. See [LICENSE.md](LICENSE.md).

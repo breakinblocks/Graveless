@@ -94,7 +94,7 @@ public class NeoForgeServerEvents {
     public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             DeathCaptureEvents.onRespawn(player);
-            GhostSyncEvents.forget(player);
+            GhostSyncEvents.reset(player);
             SpiritWardEvents.onRespawn(player);
         }
     }
@@ -102,7 +102,7 @@ public class NeoForgeServerEvents {
     @SubscribeEvent
     public static void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            GhostSyncEvents.forget(player);
+            GhostSyncEvents.reset(player);
         }
     }
 }

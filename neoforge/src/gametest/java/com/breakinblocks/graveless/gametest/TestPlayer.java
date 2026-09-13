@@ -78,6 +78,10 @@ public final class TestPlayer implements GameTestListener {
         EmbeddedChannel channel = new EmbeddedChannel(connection);
         Set<Identifier> adHoc = ChannelAttributes.getOrCreateAdHocChannels(connection);
         adHoc.addAll(CLIENTBOUND_CHANNELS);
+        for (String channelName : List.of("break", "grabbed_item", "server_page", "quick_move",
+                "sync_active", "sync_curios", "sync_data", "sync_modifiers", "sync_render", "sync_stack")) {
+            adHoc.add(Identifier.fromNamespaceAndPath("curios", channelName));
+        }
         server.getPlayerList().placeNewPlayer(connection, player, cookie);
         player.connection.markClientLoaded();
 

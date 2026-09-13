@@ -46,11 +46,11 @@ public class GravelessFabric implements ModInitializer {
 
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
             DeathCaptureEvents.onRespawn(newPlayer);
-            GhostSyncEvents.forget(newPlayer);
+            GhostSyncEvents.reset(newPlayer);
             SpiritWardEvents.onRespawn(newPlayer);
         });
 
         ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, origin, destination) ->
-                GhostSyncEvents.forget(player));
+                GhostSyncEvents.reset(player));
     }
 }
