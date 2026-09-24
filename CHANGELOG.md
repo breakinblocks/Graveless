@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.3 for Minecraft 1.21.1
+
+- Fixed a death losing every item when the drop event never arrived, such as a disconnect or crash between dying and the grave being written. The pending items are now saved on respawn or logout instead of discarded.
+
+
 ## 1.3.2 for Minecraft 1.21.1
 
 - Fixed the Spirit Compass blocking full inventory recovery and displacing restored items from their original slots.

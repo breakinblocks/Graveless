@@ -137,8 +137,22 @@ public class DeathCaptureEvents {
     }
 
     public static void onLogout(ServerPlayer player) {
-        PENDING.remove(player.getUUID());
+        rescuePending(player, "logout");
         cleanupHooks(player);
+    }
+
+    public static void rescuePending(ServerPlayer player, String reason) {
+        DeathRecord record = PENDING.remove(player.getUUID());
+        if (record == null) {
+            return;
+        }
+        Graveless.LOGGER.warn("Drop capture for {} never completed ({}); saving {} item(s) taken at death",
+                player.getName().getString(), reason, record.itemCount());
+        try {
+            finalizeRecord(player, record);
+        } catch (Exception e) {
+            Graveless.LOGGER.error("Failed to save the rescued grave for {}", player.getName().getString(), e);
+        }
     }
 
     private static void cleanupHooks(ServerPlayer player) {
@@ -152,6 +166,7 @@ public class DeathCaptureEvents {
     }
 
     public static void onRespawn(ServerPlayer player) {
+        rescuePending(player, "respawn");
         if (!Services.PLATFORM.isFakePlayer(player)) {
             SpiritCompassManager.giveIfMissing(player);
         }

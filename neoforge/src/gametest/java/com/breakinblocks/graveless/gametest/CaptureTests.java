@@ -7,6 +7,7 @@ import com.breakinblocks.graveless.event.DeathCaptureEvents;
 import com.breakinblocks.graveless.event.GraveMenuHandlers;
 import com.breakinblocks.graveless.registry.ModItems;
 import com.breakinblocks.graveless.util.XpMath;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
@@ -44,6 +46,9 @@ public final class CaptureTests {
         tests.add("capture_records_the_death_cause", CaptureTests::recordsDeathCause);
         tests.add("capture_xp_math_matches_vanilla", CaptureTests::xpMathMatchesVanilla);
         tests.add("capture_real_death_leaves_nothing_behind", CaptureTests::realDeathLeavesNothingBehind);
+        tests.add("capture_real_death_in_water_keeps_the_grave", CaptureTests::realDeathInWaterKeepsTheGrave);
+        tests.add("capture_interrupted_drops_are_saved_on_respawn", CaptureTests::interruptedDropsSavedOnRespawn);
+        tests.add("capture_interrupted_drops_are_saved_on_logout", CaptureTests::interruptedDropsSavedOnLogout);
 
         tests.addIsolated("capture_respects_keep_inventory", CaptureTests::respectsKeepInventory);
         tests.addIsolated("capture_respects_master_switch", CaptureTests::respectsMasterSwitch);
@@ -226,6 +231,71 @@ public final class CaptureTests {
             Check.isTrue(helper, Math.abs(computed - target) <= 2,
                     "XpMath read back " + computed + " for " + target + " granted points");
         }
+        helper.succeed();
+    }
+
+    private static void realDeathInWaterKeepsTheGrave(GameTestHelper helper) {
+        TestPlayer player = TestPlayer.join(helper);
+        BlockPos centre = player.player().blockPosition();
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 2; dy++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    helper.getLevel().setBlockAndUpdate(centre.offset(dx, dy, dz), Blocks.WATER.defaultBlockState());
+                }
+            }
+        }
+        player.give(0, new ItemStack(Items.NETHERITE_SCRAP, 5));
+        player.give(1, new ItemStack(Items.BLAZE_ROD, 9));
+
+        helper.startSequence()
+                .thenExecute(player::killForReal)
+                .thenIdle(5)
+                .thenExecute(() -> {
+                    Check.isTrue(helper, player.records().size() == 1,
+                            "a death in water should create exactly one grave (graves=" + player.records().size()
+                                    + ", inWater=" + player.player().isInWater()
+                                    + ", dying=" + player.player().isDeadOrDying()
+                                    + ", inventory=" + player.countItems()
+                                    + ", pending=" + DeathCaptureEvents.hasPending(player.player()) + ")");
+                    Check.equal(helper, 14, player.newestRecord().itemCount(), "grave item count after a death in water");
+                    Check.equal(helper, 0, player.countItems(), "items left in the inventory");
+
+                    AABB area = new AABB(player.player().blockPosition()).inflate(12.0);
+                    List<ItemEntity> items = helper.getLevel().getEntitiesOfClass(ItemEntity.class, area,
+                            entity -> entity.getItem().is(Items.NETHERITE_SCRAP)
+                                    || entity.getItem().is(Items.BLAZE_ROD));
+                    Check.isTrue(helper, items.isEmpty(), items.size() + " items dropped on the ground");
+                })
+                .thenSucceed();
+    }
+
+    private static void interruptedDropsSavedOnRespawn(GameTestHelper helper) {
+        interruptedDrops(helper, false);
+    }
+
+    private static void interruptedDropsSavedOnLogout(GameTestHelper helper) {
+        interruptedDrops(helper, true);
+    }
+
+    private static void interruptedDrops(GameTestHelper helper, boolean logout) {
+        TestPlayer player = TestPlayer.join(helper);
+        player.give(0, new ItemStack(Items.NETHERITE_SCRAP, 5));
+        player.give(1, new ItemStack(Items.BLAZE_ROD, 9));
+
+        player.beginDeath();
+        Check.equal(helper, 0, player.countItems(), "the capture should have emptied the inventory");
+        Check.isTrue(helper, DeathCaptureEvents.hasPending(player.player()), "the record should be pending");
+
+        if (logout) {
+            DeathCaptureEvents.onLogout(player.player());
+        } else {
+            DeathCaptureEvents.onRespawn(player.player());
+        }
+
+        Check.isTrue(helper, player.records().size() == 1,
+                "a death whose drop event never arrived must still leave a grave (graves="
+                        + player.records().size() + ")");
+        Check.equal(helper, 14, player.newestRecord().itemCount(), "rescued grave item count");
         helper.succeed();
     }
 
