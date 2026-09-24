@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.3
+
+- Fixed a death losing every item when the drop event never arrived, such as a disconnect or crash between dying and the grave being written. The pending items are now saved on respawn or logout instead of discarded.
+
 ## 1.3.2
 
 - Fixed the Spirit Compass blocking full inventory recovery and displacing restored items from their original slots.
@@ -8,7 +12,7 @@
 - Fixed ghosts persisting across dimension changes and respawns on Fabric.
 - Fixed through-wall claiming when the line of sight requirement is disabled.
 - Fixed Spirit Ward ending before its configured linger expires and removing existing potion effects.
-- Fixed sneaking and clicking above the item grid extracting an item.s
+- Fixed sneaking and clicking above the item grid extracting an item.
 
 ## 1.3.1
 
