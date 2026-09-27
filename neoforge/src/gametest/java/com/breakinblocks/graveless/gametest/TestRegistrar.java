@@ -1,14 +1,13 @@
 package com.breakinblocks.graveless.gametest;
 
 import com.breakinblocks.graveless.Graveless;
+import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
-
-import java.util.function.Consumer;
 
 public final class TestRegistrar {
     private static final Identifier EMPTY_STRUCTURE = Identifier.withDefaultNamespace("empty");
@@ -38,8 +37,11 @@ public final class TestRegistrar {
         register(name, this.event.registerEnvironment(Graveless.id("solo_" + name)), maxTicks, body);
     }
 
-    private void register(String name, Holder<TestEnvironmentDefinition<?>> environment, int maxTicks,
-                          Consumer<GameTestHelper> body) {
+    private void register(
+            String name,
+            Holder<TestEnvironmentDefinition<?>> environment,
+            int maxTicks,
+            Consumer<GameTestHelper> body) {
         TestData<Holder<TestEnvironmentDefinition<?>>> data =
                 new TestData<>(environment, EMPTY_STRUCTURE, maxTicks, 0, true);
         this.event.registerTest(Graveless.id(name), new GravelessTestInstance(data, name, body));

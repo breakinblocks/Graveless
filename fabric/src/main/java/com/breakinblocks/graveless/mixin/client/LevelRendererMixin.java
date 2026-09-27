@@ -26,20 +26,25 @@ public abstract class LevelRendererMixin {
     private LevelRenderState levelRenderState;
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
-    private void graveless$enableOutlineProcessing(GraphicsResourceAllocator resourceAllocator,
-                                                   DeltaTracker deltaTracker, boolean renderOutline,
-                                                   CameraRenderState cameraState, Matrix4fc modelViewMatrix,
-                                                   GpuBufferSlice terrainFog, Vector4f fogColor,
-                                                   boolean shouldRenderSky, ChunkSectionsToRender sections,
-                                                   CallbackInfo ci) {
+    private void graveless$enableOutlineProcessing(
+            GraphicsResourceAllocator resourceAllocator,
+            DeltaTracker deltaTracker,
+            boolean renderOutline,
+            CameraRenderState cameraState,
+            Matrix4fc modelViewMatrix,
+            GpuBufferSlice terrainFog,
+            Vector4f fogColor,
+            boolean shouldRenderSky,
+            ChunkSectionsToRender sections,
+            CallbackInfo ci) {
         if (GhostRenderManager.needsOutlinePass()) {
             levelRenderState.haveGlowingEntities = true;
         }
     }
 
     @Inject(method = "submitEntities", at = @At("TAIL"))
-    private void graveless$submitGhosts(PoseStack poseStack, LevelRenderState renderState,
-                                        SubmitNodeCollector collector, CallbackInfo ci) {
+    private void graveless$submitGhosts(
+            PoseStack poseStack, LevelRenderState renderState, SubmitNodeCollector collector, CallbackInfo ci) {
         GhostRenderManager.submitGhosts(poseStack, collector, renderState.cameraRenderState.pos);
     }
 }

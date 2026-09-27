@@ -5,8 +5,15 @@ import com.breakinblocks.graveless.data.DeathRecord;
 import com.breakinblocks.graveless.data.GraveProfile;
 import com.breakinblocks.graveless.data.GraveStore;
 import com.breakinblocks.graveless.net.GravelessNetworking;
+import com.breakinblocks.graveless.platform.PayloadContext;
+import com.breakinblocks.graveless.platform.Services;
 import com.breakinblocks.graveless.restore.RestoreEngine;
 import com.breakinblocks.graveless.util.SpiritCompassManager;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -14,26 +21,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import com.breakinblocks.graveless.platform.Services;
-import com.breakinblocks.graveless.platform.PayloadContext;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 public class GhostSyncEvents {
     private static final Map<UUID, Set<UUID>> KNOWN = new HashMap<>();
 
-    public record FoundRecord(UUID ownerId, GraveProfile profile, DeathRecord record) {
-    }
+    public record FoundRecord(UUID ownerId, GraveProfile profile, DeathRecord record) {}
 
     public static void onPlayerTick(ServerPlayer player) {
         if ((player.tickCount + player.getId()) % 20 == 0) {
@@ -71,8 +69,8 @@ public class GhostSyncEvents {
             }
             BlockPos anchor = anchor(player.level(), record.pos().pos());
             if (GravelessConfig.SERVER.requireLineOfSight.get() && !hasLineOfSight(player, anchor)) {
-                player.sendSystemMessage(Component.translatable("graveless.claim.blocked")
-                        .withStyle(ChatFormatting.GRAY));
+                player.sendSystemMessage(
+                        Component.translatable("graveless.claim.blocked").withStyle(ChatFormatting.GRAY));
                 return;
             }
             completeClaim(player, found);
@@ -86,13 +84,14 @@ public class GhostSyncEvents {
         ServerLevel level = player.level();
         BlockPos anchor = anchor(level, found.record().pos().pos());
         if (result.recordRemoved()) {
-            player.sendSystemMessage(Component.translatable("graveless.restore.complete",
-                    result.restored()).withStyle(ChatFormatting.AQUA));
+            player.sendSystemMessage(Component.translatable("graveless.restore.complete", result.restored())
+                    .withStyle(ChatFormatting.AQUA));
             broadcastRemoval(server, found.record().id());
             level.playSound(null, anchor, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6F, 1.3F);
         } else {
-            player.sendSystemMessage(Component.translatable("graveless.restore.partial",
-                    result.restored(), result.remaining()).withStyle(ChatFormatting.YELLOW));
+            player.sendSystemMessage(
+                    Component.translatable("graveless.restore.partial", result.restored(), result.remaining())
+                            .withStyle(ChatFormatting.YELLOW));
             level.playSound(null, anchor, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.8F, 0.6F);
         }
         Vec3 center = Vec3.atCenterOf(anchor);
@@ -128,8 +127,10 @@ public class GhostSyncEvents {
                     continue;
                 }
                 String ownerName = ownerName(server, ownerId);
-                visible.put(record.id(), new GravelessNetworking.GhostAddPayload(
-                        record.id(), ownerId, ownerName, anchor, record.itemCount()));
+                visible.put(
+                        record.id(),
+                        new GravelessNetworking.GhostAddPayload(
+                                record.id(), ownerId, ownerName, anchor, record.itemCount()));
             }
         });
 
@@ -190,7 +191,9 @@ public class GhostSyncEvents {
         if (online != null) {
             return online.getName().getString();
         }
-        return server.services().nameToIdCache().get(ownerId)
+        return server.services()
+                .nameToIdCache()
+                .get(ownerId)
                 .map(profile -> profile.name())
                 .orElse("");
     }
@@ -208,8 +211,8 @@ public class GhostSyncEvents {
     private static boolean hasLineOfSight(ServerPlayer player, BlockPos anchor) {
         Vec3 from = player.getEyePosition();
         Vec3 to = Vec3.atLowerCornerOf(anchor).add(0.5, 1.3, 0.5);
-        BlockHitResult hit = player.level().clip(new ClipContext(
-                from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+        BlockHitResult hit = player.level()
+                .clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         return hit.getType() != HitResult.Type.BLOCK || hit.getLocation().distanceToSqr(to) < 1.5;
     }
 }

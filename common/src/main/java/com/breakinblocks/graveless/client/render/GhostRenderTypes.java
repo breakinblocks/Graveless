@@ -9,16 +9,15 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.util.Util;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.function.Function;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
-
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.function.Function;
+import net.minecraft.util.Util;
 
 public final class GhostRenderTypes {
     public static final RenderPipeline GHOST_PIPELINE = RenderPipeline.builder(
@@ -44,8 +43,9 @@ public final class GhostRenderTypes {
             .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .build();
 
-    private static final Function<Identifier, RenderType> GHOST_PREVIEW = Util.memoize(texture ->
-            RenderType.create("graveless_ghost_preview", RenderSetup.builder(GHOST_PREVIEW_PIPELINE)
+    private static final Function<Identifier, RenderType> GHOST_PREVIEW = Util.memoize(texture -> RenderType.create(
+            "graveless_ghost_preview",
+            RenderSetup.builder(GHOST_PREVIEW_PIPELINE)
                     .withTexture("Sampler0", texture)
                     .useOverlay()
                     .sortOnUpload()
@@ -60,25 +60,23 @@ public final class GhostRenderTypes {
             .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
             .build();
 
-    private static final Function<Identifier, RenderType> GHOST = Util.memoize(texture ->
-            RenderType.create("graveless_ghost", RenderSetup.builder(GHOST_PIPELINE)
+    private static final Function<Identifier, RenderType> GHOST = Util.memoize(texture -> RenderType.create(
+            "graveless_ghost",
+            RenderSetup.builder(GHOST_PIPELINE)
                     .withTexture("Sampler0", texture)
                     .bufferSize(1536)
                     .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE)
                     .createRenderSetup()));
 
-    private static final RenderType THREAD = RenderType.create("graveless_astral_thread",
-            RenderSetup.builder(THREAD_PIPELINE)
-                    .bufferSize(8192)
-                    .sortOnUpload()
-                    .createRenderSetup());
+    private static final RenderType THREAD = RenderType.create(
+            "graveless_astral_thread",
+            RenderSetup.builder(THREAD_PIPELINE).bufferSize(8192).sortOnUpload().createRenderSetup());
 
     private static Object irisApi;
     private static Method shaderPackInUse;
     private static boolean irisChecked;
 
-    private GhostRenderTypes() {
-    }
+    private GhostRenderTypes() {}
 
     public static boolean shaderPackActive() {
         if (!irisChecked) {

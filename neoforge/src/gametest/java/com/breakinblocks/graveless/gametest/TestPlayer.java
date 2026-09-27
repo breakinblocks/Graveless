@@ -12,6 +12,12 @@ import com.breakinblocks.graveless.registry.ModItems;
 import com.breakinblocks.graveless.util.XpMath;
 import com.mojang.authlib.GameProfile;
 import io.netty.channel.embedded.EmbeddedChannel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -37,13 +43,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.network.registration.ChannelAttributes;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public final class TestPlayer implements GameTestListener {
     private static final AtomicInteger COUNTER = new AtomicInteger();
@@ -79,8 +78,17 @@ public final class TestPlayer implements GameTestListener {
         EmbeddedChannel channel = new EmbeddedChannel(connection);
         Set<Identifier> adHoc = ChannelAttributes.getOrCreateAdHocChannels(connection);
         adHoc.addAll(CLIENTBOUND_CHANNELS);
-        for (String channelName : List.of("break", "grabbed_item", "server_page", "quick_move",
-                "sync_active", "sync_curios", "sync_data", "sync_modifiers", "sync_render", "sync_stack")) {
+        for (String channelName : List.of(
+                "break",
+                "grabbed_item",
+                "server_page",
+                "quick_move",
+                "sync_active",
+                "sync_curios",
+                "sync_data",
+                "sync_modifiers",
+                "sync_render",
+                "sync_stack")) {
             adHoc.add(Identifier.fromNamespaceAndPath("curios", channelName));
         }
         server.getPlayerList().placeNewPlayer(connection, player, cookie);
@@ -140,8 +148,9 @@ public final class TestPlayer implements GameTestListener {
     }
 
     public void op() {
-        this.server.getPlayerList().op(this.player.nameAndId(),
-                Optional.of(LevelBasedPermissionSet.OWNER), Optional.empty());
+        this.server
+                .getPlayerList()
+                .op(this.player.nameAndId(), Optional.of(LevelBasedPermissionSet.OWNER), Optional.empty());
     }
 
     public int tickCount() {
@@ -160,8 +169,8 @@ public final class TestPlayer implements GameTestListener {
     }
 
     public void killForReal() {
-        this.player.hurtServer((ServerLevel) this.player.level(),
-                this.player.damageSources().fellOutOfWorld(), Float.MAX_VALUE);
+        this.player.hurtServer(
+                (ServerLevel) this.player.level(), this.player.damageSources().fellOutOfWorld(), Float.MAX_VALUE);
     }
 
     public void respawn() {
@@ -288,8 +297,7 @@ public final class TestPlayer implements GameTestListener {
     }
 
     @Override
-    public void testStructureLoaded(GameTestInfo testInfo) {
-    }
+    public void testStructureLoaded(GameTestInfo testInfo) {}
 
     @Override
     public void testPassed(GameTestInfo testInfo, GameTestRunner runner) {
@@ -302,6 +310,5 @@ public final class TestPlayer implements GameTestListener {
     }
 
     @Override
-    public void testAddedForRerun(GameTestInfo original, GameTestInfo copy, GameTestRunner runner) {
-    }
+    public void testAddedForRerun(GameTestInfo original, GameTestInfo copy, GameTestRunner runner) {}
 }

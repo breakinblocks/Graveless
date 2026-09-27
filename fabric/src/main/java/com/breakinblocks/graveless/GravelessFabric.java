@@ -23,11 +23,12 @@ public class GravelessFabric implements ModInitializer {
         Graveless.init();
 
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)
-                .register(output -> output.accept(new ItemStack(ModItems.SPIRIT_COMPASS.get()),
+                .register(output -> output.accept(
+                        new ItemStack(ModItems.SPIRIT_COMPASS.get()),
                         CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) ->
-                GravelessCommands.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register(
+                (dispatcher, registry, environment) -> GravelessCommands.register(dispatcher));
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -50,7 +51,7 @@ public class GravelessFabric implements ModInitializer {
             SpiritWardEvents.onRespawn(newPlayer);
         });
 
-        ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, origin, destination) ->
-                GhostSyncEvents.reset(player));
+        ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register(
+                (player, origin, destination) -> GhostSyncEvents.reset(player));
     }
 }

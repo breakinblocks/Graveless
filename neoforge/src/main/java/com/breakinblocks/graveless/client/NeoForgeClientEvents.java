@@ -2,11 +2,11 @@ package com.breakinblocks.graveless.client;
 
 import com.breakinblocks.graveless.Graveless;
 import com.breakinblocks.graveless.client.render.GhostRenderManager;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.FrameGraphSetupEvent;
@@ -48,7 +48,9 @@ public class NeoForgeClientEvents {
 
     @SubscribeEvent
     public static void onSubmit(SubmitCustomGeometryEvent event) {
-        GhostRenderManager.submitGhosts(event.getPoseStack(), event.getSubmitNodeCollector(),
+        GhostRenderManager.submitGhosts(
+                event.getPoseStack(),
+                event.getSubmitNodeCollector(),
                 event.getLevelRenderState().cameraRenderState.pos);
     }
 

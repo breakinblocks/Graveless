@@ -3,6 +3,14 @@ package com.breakinblocks.graveless.util;
 import com.breakinblocks.graveless.Graveless;
 import com.breakinblocks.graveless.config.GravelessConfig;
 import com.breakinblocks.graveless.data.DeathRecord;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Stream;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
@@ -12,25 +20,14 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Stream;
-
 public final class GraveBackups {
-    private GraveBackups() {
-    }
+    private GraveBackups() {}
 
     public static final int UNLIMITED = -1;
 
-    private static final Comparator<Path> NEWEST_FIRST =
-            Comparator.comparingLong(GraveBackups::gameTimeOf)
-                    .thenComparing(path -> path.getFileName().toString())
-                    .reversed();
+    private static final Comparator<Path> NEWEST_FIRST = Comparator.comparingLong(GraveBackups::gameTimeOf)
+            .thenComparing(path -> path.getFileName().toString())
+            .reversed();
 
     public static Path directory(MinecraftServer server, UUID owner) {
         return archiveRoot(server).resolve(owner.toString());
@@ -111,8 +108,10 @@ public final class GraveBackups {
         try {
             CompoundTag tag = NbtIo.readCompressed(file, NbtAccounter.unlimitedHeap());
             RegistryOps<Tag> ops = server.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-            return DeathRecord.CODEC.parse(ops, tag)
-                    .resultOrPartial(error -> Graveless.LOGGER.error("Failed to parse grave backup {}: {}", file, error))
+            return DeathRecord.CODEC
+                    .parse(ops, tag)
+                    .resultOrPartial(
+                            error -> Graveless.LOGGER.error("Failed to parse grave backup {}: {}", file, error))
                     .orElse(null);
         } catch (Exception e) {
             Graveless.LOGGER.error("Failed to read grave backup {}", file, e);

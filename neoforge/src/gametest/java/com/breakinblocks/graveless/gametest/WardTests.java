@@ -13,8 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public final class WardTests {
-    private WardTests() {
-    }
+    private WardTests() {}
 
     static void register(TestRegistrar tests) {
         tests.add("ward_stays_off_when_disabled", WardTests::staysOffWhenDisabled);
@@ -30,9 +29,12 @@ public final class WardTests {
         int start = owner.tickCount();
 
         helper.startSequence()
-                .thenWaitUntil(() -> Check.isTrue(helper, owner.tickCount() >= start + 45,
+                .thenWaitUntil(() -> Check.isTrue(
+                        helper,
+                        owner.tickCount() >= start + 45,
                         "waiting for the player to tick past two Spirit Ward checks"))
-                .thenExecute(() -> Check.isFalse(helper,
+                .thenExecute(() -> Check.isFalse(
+                        helper,
                         owner.player().hasEffect(ModEffects.SPIRIT_WARD.holder()),
                         "Spirit Ward was granted while protection is disabled"))
                 .thenSucceed();
@@ -52,15 +54,22 @@ public final class WardTests {
         bystander.moveToRecord(record);
 
         helper.startSequence()
-                .thenWaitUntil(() -> Check.isTrue(helper,
+                .thenWaitUntil(() -> Check.isTrue(
+                        helper,
                         owner.player().hasEffect(ModEffects.SPIRIT_WARD.holder()),
                         "Spirit Ward was not granted near the owner's grave"))
                 .thenExecute(() -> {
-                    Check.isTrue(helper, owner.player().hasEffect(MobEffects.INVISIBILITY),
+                    Check.isTrue(
+                            helper,
+                            owner.player().hasEffect(MobEffects.INVISIBILITY),
                             "Invisibility was not granted with Spirit Ward");
-                    Check.isTrue(helper, owner.player().hasEffect(MobEffects.NIGHT_VISION),
+                    Check.isTrue(
+                            helper,
+                            owner.player().hasEffect(MobEffects.NIGHT_VISION),
                             "Night Vision was not granted with Spirit Ward");
-                    Check.isFalse(helper, bystander.player().hasEffect(ModEffects.SPIRIT_WARD.holder()),
+                    Check.isFalse(
+                            helper,
+                            bystander.player().hasEffect(ModEffects.SPIRIT_WARD.holder()),
                             "a bystander was warded by someone else's grave");
                     claimAndLinger(helper, owner, record);
                 })
@@ -68,7 +77,8 @@ public final class WardTests {
     }
 
     private static void claimAndLinger(GameTestHelper helper, TestPlayer owner, DeathRecord record) {
-        int wardBefore = owner.player().getEffect(ModEffects.SPIRIT_WARD.holder()).getDuration();
+        int wardBefore =
+                owner.player().getEffect(ModEffects.SPIRIT_WARD.holder()).getDuration();
         GhostSyncEvents.handleClaimRequest(new ClaimRequestPayload(record.id()), owner.context());
         Check.isTrue(helper, owner.records().isEmpty(), "grave was not claimed");
 
@@ -76,9 +86,13 @@ public final class WardTests {
         MobEffectInstance effect = owner.player().getEffect(ModEffects.SPIRIT_WARD.holder());
         if (linger > 0) {
             Check.notNull(helper, effect, "Spirit Ward should linger briefly after a claim");
-            Check.isTrue(helper, effect.getDuration() <= linger,
+            Check.isTrue(
+                    helper,
+                    effect.getDuration() <= linger,
                     "Spirit Ward lingered for " + effect.getDuration() + " ticks, expected at most " + linger);
-            Check.isTrue(helper, effect.getDuration() < wardBefore,
+            Check.isTrue(
+                    helper,
+                    effect.getDuration() < wardBefore,
                     "claiming should cut the ward short, still " + effect.getDuration() + " ticks");
         } else {
             Check.isNull(helper, effect, "Spirit Ward should end immediately when linger is zero");
@@ -98,21 +112,28 @@ public final class WardTests {
         owner.moveToRecord(record);
 
         helper.startSequence()
-                .thenWaitUntil(() -> Check.isTrue(helper,
+                .thenWaitUntil(() -> Check.isTrue(
+                        helper,
                         owner.player().hasEffect(ModEffects.SPIRIT_WARD.holder()),
                         "Spirit Ward was not granted near the owner's grave"))
                 .thenExecute(() -> owner.moveToAbsolute(anchor.getX() + 120.0, anchor.getY(), anchor.getZ()))
-                .thenWaitUntil(() -> Check.isFalse(helper,
+                .thenWaitUntil(() -> Check.isFalse(
+                        helper,
                         owner.player().hasEffect(ModEffects.SPIRIT_WARD.holder()),
                         "Spirit Ward survived walking out of protection_range"))
                 .thenExecute(() -> {
-                    Check.isFalse(helper, owner.player().hasEffect(MobEffects.INVISIBILITY),
+                    Check.isFalse(
+                            helper,
+                            owner.player().hasEffect(MobEffects.INVISIBILITY),
                             "Invisibility survived walking out of protection_range");
-                    Check.isFalse(helper, owner.player().hasEffect(MobEffects.NIGHT_VISION),
+                    Check.isFalse(
+                            helper,
+                            owner.player().hasEffect(MobEffects.NIGHT_VISION),
                             "Night Vision survived walking out of protection_range");
                     owner.moveToRecord(record);
                 })
-                .thenWaitUntil(() -> Check.isTrue(helper,
+                .thenWaitUntil(() -> Check.isTrue(
+                        helper,
                         owner.player().hasEffect(ModEffects.SPIRIT_WARD.holder()),
                         "Spirit Ward was not re-granted after returning to the grave"))
                 .thenSucceed();

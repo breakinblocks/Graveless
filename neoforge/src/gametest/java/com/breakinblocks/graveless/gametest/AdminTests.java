@@ -9,17 +9,15 @@ import com.breakinblocks.graveless.net.GravelessNetworking.GraveExtractPayload;
 import com.breakinblocks.graveless.net.GravelessNetworking.GraveListPayload;
 import com.breakinblocks.graveless.net.GravelessNetworking.GraveViewRequestPayload;
 import com.breakinblocks.graveless.net.GravelessNetworking.ProfileActionPayload;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 public final class AdminTests {
-    private AdminTests() {
-    }
+    private AdminTests() {}
 
     static void register(TestRegistrar tests) {
         tests.add("admin_extract_pulls_a_stack_from_a_grave", AdminTests::extractPullsStack);
@@ -44,11 +42,9 @@ public final class AdminTests {
         TestPlayer owner = TestPlayer.join(helper);
         TestPlayer admin = TestPlayer.join(helper);
         admin.op();
-        DeathRecord record = graveWith(owner,
-                new ItemStack(Items.DIAMOND, 4), new ItemStack(Items.EMERALD, 2));
+        DeathRecord record = graveWith(owner, new ItemStack(Items.DIAMOND, 4), new ItemStack(Items.EMERALD, 2));
 
-        GraveMenuHandlers.handleExtract(
-                new GraveExtractPayload(owner.id(), record.id(), 0), admin.context());
+        GraveMenuHandlers.handleExtract(new GraveExtractPayload(owner.id(), record.id(), 0), admin.context());
 
         Check.equal(helper, 1, record.entries().size(), "entries left in the grave after an extract");
         Check.equal(helper, 2, record.itemCount(), "grave item count after an extract");
@@ -63,8 +59,7 @@ public final class AdminTests {
         admin.op();
         DeathRecord record = graveWith(owner, new ItemStack(Items.DIAMOND, 1));
 
-        GraveMenuHandlers.handleExtract(
-                new GraveExtractPayload(owner.id(), record.id(), 0), admin.context());
+        GraveMenuHandlers.handleExtract(new GraveExtractPayload(owner.id(), record.id(), 0), admin.context());
 
         Check.isTrue(helper, owner.records().isEmpty(), "extracting the last item should remove the grave");
         Check.equal(helper, 1, admin.countOf(Items.DIAMOND), "the extracted item reached the admin");
@@ -76,8 +71,7 @@ public final class AdminTests {
         TestPlayer stranger = TestPlayer.join(helper);
         DeathRecord record = graveWith(owner, new ItemStack(Items.DIAMOND, 4));
 
-        GraveMenuHandlers.handleExtract(
-                new GraveExtractPayload(owner.id(), record.id(), 0), stranger.context());
+        GraveMenuHandlers.handleExtract(new GraveExtractPayload(owner.id(), record.id(), 0), stranger.context());
 
         Check.equal(helper, 1, record.entries().size(), "a regular player extracted from someone else's grave");
         Check.equal(helper, 0, stranger.countItems(), "a regular player received extracted items");
@@ -94,7 +88,9 @@ public final class AdminTests {
         admin.clearOutbound();
 
         GraveMenuHandlers.handleViewRequest(new GraveViewRequestPayload(owner.id()), stranger.context());
-        Check.isTrue(helper, stranger.outbound(GraveListPayload.class).isEmpty(),
+        Check.isTrue(
+                helper,
+                stranger.outbound(GraveListPayload.class).isEmpty(),
                 "a regular player was sent another player's grave list");
 
         GraveMenuHandlers.handleViewRequest(new GraveViewRequestPayload(owner.id()), admin.context());
@@ -113,8 +109,7 @@ public final class AdminTests {
         DeathRecord record = graveWith(owner, new ItemStack(Items.DIAMOND, 4));
 
         GraveMenuHandlers.handleAction(
-                new GraveActionPayload(owner.id(), record.id(), GraveActionPayload.ACTION_RESTORE),
-                admin.context());
+                new GraveActionPayload(owner.id(), record.id(), GraveActionPayload.ACTION_RESTORE), admin.context());
 
         Check.isTrue(helper, owner.records().isEmpty(), "the grave should be gone after an admin restore");
         Check.equal(helper, 4, owner.countOf(Items.DIAMOND), "the owner received the grave contents");
@@ -131,16 +126,17 @@ public final class AdminTests {
 
         GraveMenuHandlers.handleDetailRequest(
                 new GraveDetailRequestPayload(owner.id(), record.id()), stranger.context());
-        Check.isTrue(helper, stranger.outbound(GraveDetailPayload.class).isEmpty(),
+        Check.isTrue(
+                helper,
+                stranger.outbound(GraveDetailPayload.class).isEmpty(),
                 "grave contents leaked to a player who does not own them");
 
-        GraveMenuHandlers.handleDetailRequest(
-                new GraveDetailRequestPayload(owner.id(), record.id()), owner.context());
+        GraveMenuHandlers.handleDetailRequest(new GraveDetailRequestPayload(owner.id(), record.id()), owner.context());
         List<GraveDetailPayload> details = owner.outbound(GraveDetailPayload.class);
         Check.equal(helper, 1, details.size(), "grave details sent to the owner");
         Check.equal(helper, 1, details.getFirst().items().size(), "items in the grave detail");
-        int terrain = GraveMenuHandlers.TERRAIN_SIZE * GraveMenuHandlers.TERRAIN_SIZE
-                * GraveMenuHandlers.TERRAIN_HEIGHT;
+        int terrain =
+                GraveMenuHandlers.TERRAIN_SIZE * GraveMenuHandlers.TERRAIN_SIZE * GraveMenuHandlers.TERRAIN_HEIGHT;
         Check.equal(helper, terrain, details.getFirst().terrain().size(), "terrain payload size");
         helper.succeed();
     }
@@ -151,13 +147,11 @@ public final class AdminTests {
         DeathRecord record = graveWith(owner, new ItemStack(Items.DIAMOND, 4));
 
         GraveMenuHandlers.handleAction(
-                new GraveActionPayload(owner.id(), record.id(), GraveActionPayload.ACTION_DELETE),
-                stranger.context());
+                new GraveActionPayload(owner.id(), record.id(), GraveActionPayload.ACTION_DELETE), stranger.context());
         Check.equal(helper, 1, owner.records().size(), "a stranger deleted someone else's grave");
 
         GraveMenuHandlers.handleAction(
-                new GraveActionPayload(owner.id(), record.id(), GraveActionPayload.ACTION_DELETE),
-                owner.context());
+                new GraveActionPayload(owner.id(), record.id(), GraveActionPayload.ACTION_DELETE), owner.context());
         Check.isTrue(helper, owner.records().isEmpty(), "the owner could not delete their own grave");
         helper.succeed();
     }
@@ -175,7 +169,9 @@ public final class AdminTests {
         Check.isTrue(helper, owner.profile().allowed().contains(friend.id()), "allow action");
 
         act(owner, ProfileActionPayload.ACTION_ALLOW, Optional.of(owner.id()));
-        Check.isFalse(helper, owner.profile().allowed().contains(owner.id()),
+        Check.isFalse(
+                helper,
+                owner.profile().allowed().contains(owner.id()),
                 "a player should never be added to their own allow list");
 
         act(owner, ProfileActionPayload.ACTION_DENY, Optional.of(friend.id()));

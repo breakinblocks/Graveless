@@ -3,6 +3,11 @@ package com.breakinblocks.graveless.client;
 import com.breakinblocks.graveless.client.render.GhostRenderManager;
 import com.breakinblocks.graveless.client.render.GhostSkins;
 import com.breakinblocks.graveless.config.GravelessConfig;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -15,12 +20,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 public class GhostEffects {
 
@@ -52,8 +51,8 @@ public class GhostEffects {
                 double x = cx + Mth.cos(angle) * radius;
                 double z = cz + Mth.sin(angle) * radius;
                 double y = cy + 0.15 + ((gameTime % 60) / 60.0) * 1.9;
-                level.addParticle(ParticleTypes.SOUL_FIRE_FLAME, x, y, z,
-                        -Mth.sin(angle) * 0.012, 0.014, Mth.cos(angle) * 0.012);
+                level.addParticle(
+                        ParticleTypes.SOUL_FIRE_FLAME, x, y, z, -Mth.sin(angle) * 0.012, 0.014, Mth.cos(angle) * 0.012);
             }
 
             if (gameTime % 2 == 0) {
@@ -67,18 +66,31 @@ public class GhostEffects {
                     double offsetX = Math.cos(angle + 0.9) * radius;
                     double offsetY = 0.4 - random.nextDouble() * 0.8;
                     double offsetZ = Math.sin(angle + 0.9) * radius;
-                    level.addParticle(ParticleTypes.ENCHANT, targetX, targetY, targetZ,
-                            offsetX, offsetY, offsetZ);
+                    level.addParticle(ParticleTypes.ENCHANT, targetX, targetY, targetZ, offsetX, offsetY, offsetZ);
                 }
             }
 
             if (distSqr < 24 * 24 && random.nextInt(160) == 0) {
-                level.playLocalSound(cx, cy + 1.2, cz, SoundEvents.SOUL_ESCAPE.value(), SoundSource.AMBIENT,
-                        0.7F, 0.7F + random.nextFloat() * 0.25F, false);
+                level.playLocalSound(
+                        cx,
+                        cy + 1.2,
+                        cz,
+                        SoundEvents.SOUL_ESCAPE.value(),
+                        SoundSource.AMBIENT,
+                        0.7F,
+                        0.7F + random.nextFloat() * 0.25F,
+                        false);
             }
             if (distSqr < 12 * 12 && random.nextInt(200) == 0) {
-                level.playLocalSound(cx, cy + 1.2, cz, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.AMBIENT,
-                        0.45F, 0.65F, false);
+                level.playLocalSound(
+                        cx,
+                        cy + 1.2,
+                        cz,
+                        SoundEvents.AMETHYST_BLOCK_RESONATE,
+                        SoundSource.AMBIENT,
+                        0.45F,
+                        0.65F,
+                        false);
             }
         }
     }
@@ -97,8 +109,8 @@ public class GhostEffects {
             Vec3 ghostPos = Vec3.atCenterOf(ghost.pos());
             double distSqr = playerPos.distanceToSqr(ghostPos);
             if (distSqr <= rangeSqr && ANNOUNCED.add(ghost.recordId())) {
-                Component message = Component.translatable("graveless.hud.in_range",
-                        (int) Math.sqrt(distSqr), directionPhrase(playerPos, ghostPos));
+                Component message = Component.translatable(
+                        "graveless.hud.in_range", (int) Math.sqrt(distSqr), directionPhrase(playerPos, ghostPos));
                 messages.add(message);
                 if (distSqr < nearest) {
                     nearest = distSqr;
@@ -111,11 +123,12 @@ public class GhostEffects {
         }
         minecraft.gui.setOverlayMessage(nearestMessage, false);
         for (Component message : messages) {
-            minecraft.getChatListener().handleSystemMessage(
-                    message.copy().withStyle(ChatFormatting.AQUA), false);
+            minecraft.getChatListener().handleSystemMessage(message.copy().withStyle(ChatFormatting.AQUA), false);
         }
-        minecraft.getChatListener().handleSystemMessage(
-                Component.translatable("graveless.hud.sneak_hint").withStyle(ChatFormatting.DARK_AQUA), false);
+        minecraft
+                .getChatListener()
+                .handleSystemMessage(
+                        Component.translatable("graveless.hud.sneak_hint").withStyle(ChatFormatting.DARK_AQUA), false);
         minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.AMETHYST_BLOCK_CHIME, 0.8F));
     }
 

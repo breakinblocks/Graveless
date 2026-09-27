@@ -7,8 +7,7 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 
 @EventBusSubscriber(modid = Graveless.MOD_ID)
 public final class GravelessGameTests {
-    private GravelessGameTests() {
-    }
+    private GravelessGameTests() {}
 
     @SubscribeEvent
     public static void register(RegisterGameTestsEvent event) {

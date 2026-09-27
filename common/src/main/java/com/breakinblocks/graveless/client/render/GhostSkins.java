@@ -1,23 +1,21 @@
 package com.breakinblocks.graveless.client.render;
 
 import com.mojang.authlib.GameProfile;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerSkin;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 public final class GhostSkins {
     private static final Map<UUID, PlayerSkin> CACHE = new ConcurrentHashMap<>();
     private static final Set<UUID> PENDING = ConcurrentHashMap.newKeySet();
 
-    private GhostSkins() {
-    }
+    private GhostSkins() {}
 
     public static PlayerSkin get(UUID ownerId, String ownerName) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -34,7 +32,9 @@ public final class GhostSkins {
         if (PENDING.add(ownerId)) {
             String name = ownerName == null || ownerName.isBlank() ? "Ghost" : ownerName;
             GameProfile profile = new GameProfile(ownerId, name);
-            minecraft.getSkinManager().get(profile)
+            minecraft
+                    .getSkinManager()
+                    .get(profile)
                     .thenAccept(optional -> optional.ifPresent(skin -> CACHE.put(ownerId, skin)));
         }
         return DefaultPlayerSkin.get(ownerId);

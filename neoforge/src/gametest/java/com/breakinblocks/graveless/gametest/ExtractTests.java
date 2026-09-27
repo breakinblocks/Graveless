@@ -6,17 +6,15 @@ import com.breakinblocks.graveless.net.GravelessNetworking.GraveActionPayload;
 import com.breakinblocks.graveless.net.GravelessNetworking.GraveExtractPayload;
 import com.breakinblocks.graveless.net.GravelessNetworking.GraveListPayload;
 import com.breakinblocks.graveless.net.GravelessNetworking.GraveOpenPayload;
+import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import java.util.List;
-import java.util.Optional;
-
 public final class ExtractTests {
-    private ExtractTests() {
-    }
+    private ExtractTests() {}
 
     static void register(TestRegistrar tests) {
         tests.add("open_request_focuses_the_clicked_grave", ExtractTests::openFocusesClickedGrave);
@@ -67,8 +65,8 @@ public final class ExtractTests {
 
         GraveMenuHandlers.handleOpenRequest(new GraveOpenPayload(record.id()), stranger.context());
 
-        Check.isTrue(helper, stranger.outbound(GraveListPayload.class).isEmpty(),
-                "a stranger opened someone else's grave");
+        Check.isTrue(
+                helper, stranger.outbound(GraveListPayload.class).isEmpty(), "a stranger opened someone else's grave");
         helper.succeed();
     }
 
@@ -80,18 +78,16 @@ public final class ExtractTests {
 
         GraveMenuHandlers.handleOpenRequest(new GraveOpenPayload(record.id()), owner.context());
 
-        Check.isTrue(helper, owner.outbound(GraveListPayload.class).isEmpty(),
-                "a grave was opened from beyond claim_range");
+        Check.isTrue(
+                helper, owner.outbound(GraveListPayload.class).isEmpty(), "a grave was opened from beyond claim_range");
         helper.succeed();
     }
 
     private static void ownerExtractsSingleStack(GameTestHelper helper) {
         TestPlayer owner = TestPlayer.join(helper);
-        DeathRecord record = graveAt(owner,
-                new ItemStack(Items.DIAMOND, 4), new ItemStack(Items.EMERALD, 2));
+        DeathRecord record = graveAt(owner, new ItemStack(Items.DIAMOND, 4), new ItemStack(Items.EMERALD, 2));
 
-        GraveMenuHandlers.handleExtract(
-                new GraveExtractPayload(owner.id(), record.id(), 0), owner.context());
+        GraveMenuHandlers.handleExtract(new GraveExtractPayload(owner.id(), record.id(), 0), owner.context());
 
         Check.equal(helper, 1, record.entries().size(), "entries left after the owner took one stack");
         Check.equal(helper, 4, owner.countOf(Items.DIAMOND), "diamonds handed to the owner");
@@ -105,8 +101,7 @@ public final class ExtractTests {
         DeathRecord record = graveAt(owner, new ItemStack(Items.DIAMOND, 4));
         sendFarAway(owner, record);
 
-        GraveMenuHandlers.handleExtract(
-                new GraveExtractPayload(owner.id(), record.id(), 0), owner.context());
+        GraveMenuHandlers.handleExtract(new GraveExtractPayload(owner.id(), record.id(), 0), owner.context());
 
         Check.equal(helper, 1, record.entries().size(), "a grave was emptied from beyond claim_range");
         Check.equal(helper, 0, owner.countItems(), "items were handed out from beyond claim_range");
@@ -119,13 +114,11 @@ public final class ExtractTests {
         DeathRecord record = graveAt(owner, new ItemStack(Items.DIAMOND, 4));
         friend.moveToRecord(record);
 
-        GraveMenuHandlers.handleExtract(
-                new GraveExtractPayload(owner.id(), record.id(), 0), friend.context());
+        GraveMenuHandlers.handleExtract(new GraveExtractPayload(owner.id(), record.id(), 0), friend.context());
         Check.equal(helper, 0, friend.countItems(), "a player without access extracted from the grave");
 
         owner.profile().allowed().add(friend.id());
-        GraveMenuHandlers.handleExtract(
-                new GraveExtractPayload(owner.id(), record.id(), 0), friend.context());
+        GraveMenuHandlers.handleExtract(new GraveExtractPayload(owner.id(), record.id(), 0), friend.context());
         Check.equal(helper, 4, friend.countOf(Items.DIAMOND), "an allowed player could not extract");
         Check.isTrue(helper, owner.records().isEmpty(), "the emptied grave should be gone");
         helper.succeed();
@@ -139,8 +132,7 @@ public final class ExtractTests {
         owner.profile().allowed().add(friend.id());
 
         GraveMenuHandlers.handleAction(
-                new GraveActionPayload(owner.id(), record.id(), GraveActionPayload.ACTION_DELETE),
-                friend.context());
+                new GraveActionPayload(owner.id(), record.id(), GraveActionPayload.ACTION_DELETE), friend.context());
 
         Check.equal(helper, 1, owner.records().size(), "an allowed player deleted someone else's grave");
         helper.succeed();
@@ -154,11 +146,12 @@ public final class ExtractTests {
         Check.equal(helper, granted, record.xp(), "grave xp matches what the player had");
 
         GraveMenuHandlers.handleAction(
-                new GraveActionPayload(owner.id(), record.id(), GraveActionPayload.ACTION_CLAIM_XP),
-                owner.context());
+                new GraveActionPayload(owner.id(), record.id(), GraveActionPayload.ACTION_CLAIM_XP), owner.context());
 
         Check.equal(helper, 0, record.xp(), "grave xp after a claim");
-        Check.isTrue(helper, Math.abs(owner.storedXp() - granted) <= 2,
+        Check.isTrue(
+                helper,
+                Math.abs(owner.storedXp() - granted) <= 2,
                 "player xp after an xp claim, saw " + owner.storedXp() + " expected " + granted);
         Check.equal(helper, 1, record.entries().size(), "an xp claim took items out of the grave");
         Check.equal(helper, 1, owner.records().size(), "the grave should survive an xp-only claim");

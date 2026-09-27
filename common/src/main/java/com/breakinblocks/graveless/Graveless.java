@@ -17,8 +17,7 @@ public final class Graveless {
     public static final String MOD_ID = "graveless";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    private Graveless() {
-    }
+    private Graveless() {}
 
     public static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(MOD_ID, path);

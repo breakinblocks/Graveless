@@ -2,6 +2,7 @@ package com.breakinblocks.graveless.client;
 
 import com.breakinblocks.graveless.config.GravelessConfig;
 import com.breakinblocks.graveless.net.GravelessNetworking;
+import com.breakinblocks.graveless.platform.Services;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
@@ -10,7 +11,6 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import com.breakinblocks.graveless.platform.Services;
 
 public class GhostInteraction {
     private static final int CLAIM_COOLDOWN_TICKS = 10;
@@ -33,19 +33,20 @@ public class GhostInteraction {
             return false;
         }
         long time = player.level().getGameTime();
-        if (lastClaimTime == Long.MIN_VALUE || time < lastClaimTime
-                || time - lastClaimTime >= CLAIM_COOLDOWN_TICKS) {
+        if (lastClaimTime == Long.MIN_VALUE || time < lastClaimTime || time - lastClaimTime >= CLAIM_COOLDOWN_TICKS) {
             lastClaimTime = time;
-            Services.NETWORK.sendToServer(player.isShiftKeyDown()
-                    ? new GravelessNetworking.GraveOpenPayload(target.recordId())
-                    : new GravelessNetworking.ClaimRequestPayload(target.recordId()));
+            Services.NETWORK.sendToServer(
+                    player.isShiftKeyDown()
+                            ? new GravelessNetworking.GraveOpenPayload(target.recordId())
+                            : new GravelessNetworking.ClaimRequestPayload(target.recordId()));
         }
         return true;
     }
 
     public static GhostClientManager.ClientGhost findTarget(Player player, HitResult hit) {
-        boolean obstructed = hit != null && (hit.getType() == HitResult.Type.ENTITY
-                || (hit.getType() == HitResult.Type.BLOCK && GravelessConfig.SERVER.requireLineOfSight.get()));
+        boolean obstructed = hit != null
+                && (hit.getType() == HitResult.Type.ENTITY
+                        || (hit.getType() == HitResult.Type.BLOCK && GravelessConfig.SERVER.requireLineOfSight.get()));
         Vec3 eye = player.getEyePosition();
         double hitDist = obstructed ? hit.getLocation().distanceTo(eye) : Double.MAX_VALUE;
         int range = GravelessConfig.SERVER.claimRange.get();
@@ -85,8 +86,8 @@ public class GhostInteraction {
     }
 
     private static boolean hasLineOfSight(Player player, Vec3 eye, Vec3 heart) {
-        BlockHitResult hit = player.level().clip(new ClipContext(
-                eye, heart, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+        BlockHitResult hit = player.level()
+                .clip(new ClipContext(eye, heart, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         return hit.getType() != HitResult.Type.BLOCK || hit.getLocation().distanceToSqr(heart) < 1.5;
     }
 }

@@ -2,15 +2,14 @@ package com.breakinblocks.graveless.data;
 
 import com.breakinblocks.graveless.Graveless;
 import com.mojang.serialization.Codec;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.level.saveddata.SavedDataType;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 public class GraveStore extends SavedData {
     private static final Codec<GraveStore> CODEC = Codec.unboundedMap(UUIDUtil.STRING_CODEC, GraveProfile.CODEC)
@@ -21,8 +20,7 @@ public class GraveStore extends SavedData {
 
     private final Map<UUID, GraveProfile> profiles = new HashMap<>();
 
-    public GraveStore() {
-    }
+    public GraveStore() {}
 
     private GraveStore(Map<UUID, GraveProfile> profiles) {
         this.profiles.putAll(profiles);

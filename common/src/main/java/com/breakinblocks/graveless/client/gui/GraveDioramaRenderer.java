@@ -4,7 +4,6 @@ import com.breakinblocks.graveless.client.render.GhostRenderTypes;
 import com.breakinblocks.graveless.event.GraveMenuHandlers;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -61,7 +60,9 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
 
     @Override
     protected boolean textureIsReadyToBlit(GraveDioramaRenderState state) {
-        return state.blocks() == lastBlocks && state.scale() == lastScale && state.yaw() == lastYaw
+        return state.blocks() == lastBlocks
+                && state.scale() == lastScale
+                && state.yaw() == lastYaw
                 && state.skin().body().texturePath().equals(lastTexture);
     }
 
@@ -79,8 +80,8 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
 
         float ghostFeet = groundLayer(state.blocks());
         poseStack.scale(1.0F, -1.0F, 1.0F);
-        poseStack.mulPose(new Quaternionf().rotationXYZ(
-                (float) Math.toRadians(30.0), (float) Math.toRadians(state.yaw()), 0.0F));
+        poseStack.mulPose(
+                new Quaternionf().rotationXYZ((float) Math.toRadians(30.0), (float) Math.toRadians(state.yaw()), 0.0F));
         poseStack.translate(-(SIZE / 2.0F + 0.5F), -(ghostFeet + 0.9F), -(SIZE / 2.0F + 0.5F));
 
         renderPass(renderer, models, view, poseStack, false);
@@ -109,12 +110,32 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.translate(0.0F, -1.501F, 0.0F);
         Identifier texture = state.skin().body().texturePath();
-        dispatcher.getSubmitNodeStorage().submitModel(state.playerModel(), avatar, poseStack,
-                RenderTypes.entityTranslucentEmissive(texture), FULL_BRIGHT,
-                OverlayTexture.NO_OVERLAY, ARGB.color(245, 255, 255, 255), null, 0, null);
-        dispatcher.getSubmitNodeStorage().submitModel(state.playerModel(), avatar, poseStack,
-                GhostRenderTypes.ghostPreview(texture), FULL_BRIGHT,
-                OverlayTexture.NO_OVERLAY, ARGB.color(80, 160, 235, 255), null, 0, null);
+        dispatcher
+                .getSubmitNodeStorage()
+                .submitModel(
+                        state.playerModel(),
+                        avatar,
+                        poseStack,
+                        RenderTypes.entityTranslucentEmissive(texture),
+                        FULL_BRIGHT,
+                        OverlayTexture.NO_OVERLAY,
+                        ARGB.color(245, 255, 255, 255),
+                        null,
+                        0,
+                        null);
+        dispatcher
+                .getSubmitNodeStorage()
+                .submitModel(
+                        state.playerModel(),
+                        avatar,
+                        poseStack,
+                        GhostRenderTypes.ghostPreview(texture),
+                        FULL_BRIGHT,
+                        OverlayTexture.NO_OVERLAY,
+                        ARGB.color(80, 160, 235, 255),
+                        null,
+                        0,
+                        null);
         poseStack.popPose();
         dispatcher.renderAllFeatures();
     }
@@ -132,19 +153,24 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
         return feet;
     }
 
-    private void renderPass(ModelBlockRenderer renderer, BlockStateModelSet models, DioramaView view,
-                            PoseStack poseStack, boolean translucent) {
+    private void renderPass(
+            ModelBlockRenderer renderer,
+            BlockStateModelSet models,
+            DioramaView view,
+            PoseStack poseStack,
+            boolean translucent) {
         BlockQuadOutput output = (x, y, z, quad, instance) -> {
             boolean quadTranslucent = quad.materialInfo().layer() == ChunkSectionLayer.TRANSLUCENT;
             if (quadTranslucent != translucent) {
                 return;
             }
             instance.setLightCoords(FULL_BRIGHT);
-            VertexConsumer buffer = this.bufferSource.getBuffer(switch (quad.materialInfo().layer()) {
-                case SOLID -> RenderTypes.solidMovingBlock();
-                case CUTOUT -> RenderTypes.cutoutMovingBlock();
-                case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
-            });
+            VertexConsumer buffer = this.bufferSource.getBuffer(
+                    switch (quad.materialInfo().layer()) {
+                        case SOLID -> RenderTypes.solidMovingBlock();
+                        case CUTOUT -> RenderTypes.cutoutMovingBlock();
+                        case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
+                    });
             poseStack.pushPose();
             poseStack.translate(x, y, z);
             buffer.putBakedQuad(poseStack.last(), quad, instance);
@@ -160,8 +186,8 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
                         continue;
                     }
                     BlockStateModel model = models.get(blockState);
-                    renderer.tesselateBlock(output, x, y, z, view, cursor.immutable(), blockState, model,
-                            blockState.getSeed(cursor));
+                    renderer.tesselateBlock(
+                            output, x, y, z, view, cursor.immutable(), blockState, model, blockState.getSeed(cursor));
                 }
             }
         }

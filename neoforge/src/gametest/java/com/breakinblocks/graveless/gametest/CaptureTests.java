@@ -6,7 +6,11 @@ import com.breakinblocks.graveless.data.DeathRecord;
 import com.breakinblocks.graveless.event.DeathCaptureEvents;
 import com.breakinblocks.graveless.event.GraveMenuHandlers;
 import com.breakinblocks.graveless.registry.ModItems;
-import com.breakinblocks.graveless.util.XpMath;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -23,15 +27,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
 public final class CaptureTests {
-    private CaptureTests() {
-    }
+    private CaptureTests() {}
 
     static void register(TestRegistrar tests) {
         tests.add("capture_stores_every_slot_region", CaptureTests::storesEverySlotRegion);
@@ -74,7 +71,9 @@ public final class CaptureTests {
         for (CapturedEntry entry : record.entries()) {
             slots.add(entry.slot());
         }
-        Check.isTrue(helper, slots.containsAll(Set.of(0, 17, 38, Inventory.SLOT_OFFHAND)),
+        Check.isTrue(
+                helper,
+                slots.containsAll(Set.of(0, 17, 38, Inventory.SLOT_OFFHAND)),
                 "captured slots " + slots + " should cover hotbar, main, armour and offhand");
         helper.succeed();
     }
@@ -98,8 +97,10 @@ public final class CaptureTests {
 
     private static void destroysVanishingCurseItems(GameTestHelper helper) {
         TestPlayer player = TestPlayer.join(helper);
-        Holder<Enchantment> vanishing = helper.getLevel().registryAccess()
-                .lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.VANISHING_CURSE);
+        Holder<Enchantment> vanishing = helper.getLevel()
+                .registryAccess()
+                .lookupOrThrow(Registries.ENCHANTMENT)
+                .getOrThrow(Enchantments.VANISHING_CURSE);
         ItemStack cursed = new ItemStack(Items.DIAMOND_HELMET);
         cursed.enchant(vanishing, 1);
         player.give(0, cursed);
@@ -124,15 +125,15 @@ public final class CaptureTests {
 
         DeathRecord record = player.newestRecord();
         for (CapturedEntry entry : record.entries()) {
-            Check.isFalse(helper, entry.stack().is(ModItems.SPIRIT_COMPASS.get()),
+            Check.isFalse(
+                    helper,
+                    entry.stack().is(ModItems.SPIRIT_COMPASS.get()),
                     "a spirit compass ended up inside the grave");
         }
-        Check.equal(helper, 0, player.countOf(ModItems.SPIRIT_COMPASS.get()),
-                "spirit compasses left in the inventory");
+        Check.equal(helper, 0, player.countOf(ModItems.SPIRIT_COMPASS.get()), "spirit compasses left in the inventory");
 
         DeathCaptureEvents.onRespawn(player.player());
-        Check.equal(helper, 1, player.countOf(ModItems.SPIRIT_COMPASS.get()),
-                "spirit compasses after respawn");
+        Check.equal(helper, 1, player.countOf(ModItems.SPIRIT_COMPASS.get()), "spirit compasses after respawn");
         helper.succeed();
     }
 
@@ -174,14 +175,20 @@ public final class CaptureTests {
 
         player.beginDeath();
         Check.isTrue(helper, DeathCaptureEvents.hasPending(player.player()), "a death is pending");
-        Check.equal(helper, 0, DeathCaptureEvents.modifyDroppedXp(player.player(), 50),
+        Check.equal(
+                helper,
+                0,
+                DeathCaptureEvents.modifyDroppedXp(player.player(), 50),
                 "dropped xp while a grave is pending");
-        Check.isTrue(helper, DeathCaptureEvents.captureDrop(player.player(), new ItemStack(Items.EMERALD, 3)),
+        Check.isTrue(
+                helper,
+                DeathCaptureEvents.captureDrop(player.player(), new ItemStack(Items.EMERALD, 3)),
                 "a foreign drop was swallowed by the grave");
-        Check.isFalse(helper, DeathCaptureEvents.captureDrop(player.player(), ItemStack.EMPTY),
-                "an empty drop was ignored");
-        Check.isFalse(helper, DeathCaptureEvents.captureDrop(player.player(),
-                        new ItemStack(ModItems.SPIRIT_COMPASS.get())),
+        Check.isFalse(
+                helper, DeathCaptureEvents.captureDrop(player.player(), ItemStack.EMPTY), "an empty drop was ignored");
+        Check.isFalse(
+                helper,
+                DeathCaptureEvents.captureDrop(player.player(), new ItemStack(ModItems.SPIRIT_COMPASS.get())),
                 "a dropped spirit compass was ignored");
         player.finishDeath();
 
@@ -189,7 +196,10 @@ public final class CaptureTests {
         Check.equal(helper, 2, record.entries().size(), "entries after absorbing a foreign drop");
         Check.equal(helper, 4, record.itemCount(), "item count after absorbing a foreign drop");
         Check.isFalse(helper, DeathCaptureEvents.hasPending(player.player()), "pending death cleared");
-        Check.equal(helper, 50, DeathCaptureEvents.modifyDroppedXp(player.player(), 50),
+        Check.equal(
+                helper,
+                50,
+                DeathCaptureEvents.modifyDroppedXp(player.player(), 50),
                 "dropped xp once no grave is pending");
         helper.succeed();
     }
@@ -200,8 +210,8 @@ public final class CaptureTests {
 
         player.simulateDeath();
 
-        int expected = GraveMenuHandlers.TERRAIN_SIZE * GraveMenuHandlers.TERRAIN_SIZE
-                * GraveMenuHandlers.TERRAIN_HEIGHT;
+        int expected =
+                GraveMenuHandlers.TERRAIN_SIZE * GraveMenuHandlers.TERRAIN_SIZE * GraveMenuHandlers.TERRAIN_HEIGHT;
         Check.equal(helper, expected, player.newestRecord().terrain().length, "terrain snapshot length");
         helper.succeed();
     }
@@ -221,14 +231,16 @@ public final class CaptureTests {
 
     private static void xpMathMatchesVanilla(GameTestHelper helper) {
         TestPlayer player = TestPlayer.join(helper);
-        for (int target : new int[]{0, 7, 100, 550, 1395, 5000, 25000}) {
+        for (int target : new int[] {0, 7, 100, 550, 1395, 5000, 25000}) {
             player.player().setExperienceLevels(0);
             player.player().experienceProgress = 0.0F;
             player.player().totalExperience = 0;
             player.player().giveExperiencePoints(target);
 
             int computed = player.storedXp();
-            Check.isTrue(helper, Math.abs(computed - target) <= 2,
+            Check.isTrue(
+                    helper,
+                    Math.abs(computed - target) <= 2,
                     "XpMath read back " + computed + " for " + target + " granted points");
         }
         helper.succeed();
@@ -251,19 +263,26 @@ public final class CaptureTests {
                 .thenExecute(player::killForReal)
                 .thenIdle(5)
                 .thenExecute(() -> {
-                    Check.isTrue(helper, player.records().size() == 1,
-                            "a death in water should create exactly one grave (graves=" + player.records().size()
+                    Check.isTrue(
+                            helper,
+                            player.records().size() == 1,
+                            "a death in water should create exactly one grave (graves="
+                                    + player.records().size()
                                     + ", inWater=" + player.player().isInWater()
                                     + ", dying=" + player.player().isDeadOrDying()
                                     + ", inventory=" + player.countItems()
                                     + ", pending=" + DeathCaptureEvents.hasPending(player.player()) + ")");
-                    Check.equal(helper, 14, player.newestRecord().itemCount(), "grave item count after a death in water");
+                    Check.equal(
+                            helper, 14, player.newestRecord().itemCount(), "grave item count after a death in water");
                     Check.equal(helper, 0, player.countItems(), "items left in the inventory");
 
                     AABB area = new AABB(player.player().blockPosition()).inflate(12.0);
-                    List<ItemEntity> items = helper.getLevel().getEntitiesOfClass(ItemEntity.class, area,
-                            entity -> entity.getItem().is(Items.NETHERITE_SCRAP)
-                                    || entity.getItem().is(Items.BLAZE_ROD));
+                    List<ItemEntity> items = helper.getLevel()
+                            .getEntitiesOfClass(
+                                    ItemEntity.class,
+                                    area,
+                                    entity -> entity.getItem().is(Items.NETHERITE_SCRAP)
+                                            || entity.getItem().is(Items.BLAZE_ROD));
                     Check.isTrue(helper, items.isEmpty(), items.size() + " items dropped on the ground");
                 })
                 .thenSucceed();
@@ -292,7 +311,9 @@ public final class CaptureTests {
             DeathCaptureEvents.onRespawn(player.player());
         }
 
-        Check.isTrue(helper, player.records().size() == 1,
+        Check.isTrue(
+                helper,
+                player.records().size() == 1,
                 "a death whose drop event never arrived must still leave a grave (graves="
                         + player.records().size() + ")");
         Check.equal(helper, 14, player.newestRecord().itemCount(), "rescued grave item count");
@@ -309,8 +330,11 @@ public final class CaptureTests {
                 .thenExecute(player::killForReal)
                 .thenIdle(5)
                 .thenExecute(() -> {
-                    Check.isTrue(helper, player.records().size() == 1,
-                            "a real death should create exactly one grave (graves=" + player.records().size()
+                    Check.isTrue(
+                            helper,
+                            player.records().size() == 1,
+                            "a real death should create exactly one grave (graves="
+                                    + player.records().size()
                                     + ", dying=" + player.player().isDeadOrDying()
                                     + ", health=" + player.player().getHealth()
                                     + ", pending=" + DeathCaptureEvents.hasPending(player.player()) + ")");
@@ -319,9 +343,12 @@ public final class CaptureTests {
                     Check.isTrue(helper, record.xp() > 350, "grave xp after a real death, saw " + record.xp());
 
                     AABB area = new AABB(player.player().blockPosition()).inflate(12.0);
-                    List<ItemEntity> items = helper.getLevel().getEntitiesOfClass(ItemEntity.class, area,
-                            entity -> entity.getItem().is(Items.NETHERITE_SCRAP)
-                                    || entity.getItem().is(Items.BLAZE_ROD));
+                    List<ItemEntity> items = helper.getLevel()
+                            .getEntitiesOfClass(
+                                    ItemEntity.class,
+                                    area,
+                                    entity -> entity.getItem().is(Items.NETHERITE_SCRAP)
+                                            || entity.getItem().is(Items.BLAZE_ROD));
                     Check.isTrue(helper, items.isEmpty(), items.size() + " items dropped on the ground");
                     List<ExperienceOrb> orbs = helper.getLevel().getEntitiesOfClass(ExperienceOrb.class, area);
                     Check.isTrue(helper, orbs.isEmpty(), orbs.size() + " xp orbs dropped on the ground");

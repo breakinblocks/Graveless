@@ -1,6 +1,8 @@
 package com.breakinblocks.graveless.gametest;
 
 import com.breakinblocks.graveless.Graveless;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.GameTestInfo;
 import net.minecraft.gametest.framework.GameTestListener;
@@ -10,15 +12,11 @@ import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class TestCleanup implements GameTestListener {
     private final List<Runnable> actions = new ArrayList<>();
     private boolean done;
 
-    private TestCleanup() {
-    }
+    private TestCleanup() {}
 
     public static TestCleanup attach(GameTestHelper helper) {
         TestCleanup cleanup = new TestCleanup();
@@ -58,8 +56,7 @@ public final class TestCleanup implements GameTestListener {
     }
 
     @Override
-    public void testStructureLoaded(GameTestInfo testInfo) {
-    }
+    public void testStructureLoaded(GameTestInfo testInfo) {}
 
     @Override
     public void testPassed(GameTestInfo testInfo, GameTestRunner runner) {
@@ -72,6 +69,5 @@ public final class TestCleanup implements GameTestListener {
     }
 
     @Override
-    public void testAddedForRerun(GameTestInfo original, GameTestInfo copy, GameTestRunner runner) {
-    }
+    public void testAddedForRerun(GameTestInfo original, GameTestInfo copy, GameTestRunner runner) {}
 }

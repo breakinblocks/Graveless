@@ -7,9 +7,18 @@ import com.breakinblocks.graveless.data.DeathRecord;
 import com.breakinblocks.graveless.data.GraveProfile;
 import com.breakinblocks.graveless.data.GraveStore;
 import com.breakinblocks.graveless.net.GravelessNetworking;
+import com.breakinblocks.graveless.platform.PayloadContext;
+import com.breakinblocks.graveless.platform.Services;
 import com.breakinblocks.graveless.restore.RestoreEngine;
 import com.breakinblocks.graveless.util.GraveBackups;
 import com.breakinblocks.graveless.util.SpiritCompassManager;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -28,16 +37,6 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-import com.breakinblocks.graveless.platform.Services;
-import com.breakinblocks.graveless.platform.PayloadContext;
-
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
 public class GraveMenuHandlers {
     public static final int TERRAIN_SIZE = 16;
@@ -66,19 +65,34 @@ public class GraveMenuHandlers {
         for (int i = records.size() - 1; i >= 0; i--) {
             DeathRecord record = records.get(i);
             summaries.add(new GravelessNetworking.GraveSummary(
-                    record.id(), record.pos(), record.epochMillis(), record.gameTime(),
-                    record.cause(), record.itemCount(), record.xp()));
+                    record.id(),
+                    record.pos(),
+                    record.epochMillis(),
+                    record.gameTime(),
+                    record.cause(),
+                    record.itemCount(),
+                    record.xp()));
         }
         List<GravelessNetworking.PlayerEntry> players = server.getPlayerList().getPlayers().stream()
-                .map(p -> new GravelessNetworking.PlayerEntry(p.getUUID(), p.getName().getString()))
+                .map(p -> new GravelessNetworking.PlayerEntry(
+                        p.getUUID(), p.getName().getString()))
                 .sorted(Comparator.comparing(entry -> entry.name().toLowerCase()))
                 .toList();
         List<GravelessNetworking.PlayerEntry> allowed = profile.allowed().stream()
                 .map(id -> new GravelessNetworking.PlayerEntry(id, GhostSyncEvents.ownerName(server, id)))
                 .toList();
-        Services.NETWORK.sendToPlayer(viewer, new GravelessNetworking.GraveListPayload(
-                ownerId, GhostSyncEvents.ownerName(server, ownerId), summaries, admin, profile.isEnabled(),
-                Optional.ofNullable(profile.trackedRecordId()), players, allowed, focusId));
+        Services.NETWORK.sendToPlayer(
+                viewer,
+                new GravelessNetworking.GraveListPayload(
+                        ownerId,
+                        GhostSyncEvents.ownerName(server, ownerId),
+                        summaries,
+                        admin,
+                        profile.isEnabled(),
+                        Optional.ofNullable(profile.trackedRecordId()),
+                        players,
+                        allowed,
+                        focusId));
     }
 
     public static void handleOpenRequest(GravelessNetworking.GraveOpenPayload payload, PayloadContext context) {
@@ -91,8 +105,9 @@ public class GraveMenuHandlers {
             if (found == null) {
                 return;
             }
-            if (!isAdmin(player) && (!found.profile().canAccess(found.ownerId(), player.getUUID())
-                    || !GhostSyncEvents.canReach(player, found.record()))) {
+            if (!isAdmin(player)
+                    && (!found.profile().canAccess(found.ownerId(), player.getUUID())
+                            || !GhostSyncEvents.canReach(player, found.record()))) {
                 return;
             }
             openFor(player, found.ownerId(), Optional.of(found.record().id()));
@@ -127,9 +142,13 @@ public class GraveMenuHandlers {
             }
             CapturedEntry entry = record.entries().remove(entryIndex);
             ItemStack stack = entry.stack().copy();
-            Graveless.LOGGER.info("{} extracted {} x{} from {}'s grave {}",
-                    actor.getName().getString(), stack.getItem(), stack.getCount(),
-                    GhostSyncEvents.ownerName(server, payload.ownerId()), record.id());
+            Graveless.LOGGER.info(
+                    "{} extracted {} x{} from {}'s grave {}",
+                    actor.getName().getString(),
+                    stack.getItem(),
+                    stack.getCount(),
+                    GhostSyncEvents.ownerName(server, payload.ownerId()),
+                    record.id());
             if (!actor.getInventory().add(stack)) {
                 actor.drop(stack, false);
             }
@@ -165,27 +184,28 @@ public class GraveMenuHandlers {
                 case GravelessNetworking.ProfileActionPayload.ACTION_TOGGLE_ENABLED -> {
                     profile.setEnabled(!profile.isEnabled());
                     player.sendSystemMessage(Component.translatable(
-                            profile.isEnabled() ? "graveless.command.enabled" : "graveless.command.disabled")
+                                    profile.isEnabled() ? "graveless.command.enabled" : "graveless.command.disabled")
                             .withStyle(ChatFormatting.AQUA));
                 }
                 case GravelessNetworking.ProfileActionPayload.ACTION_ALLOW ->
-                        payload.target().ifPresent(target -> {
-                            if (!target.equals(player.getUUID())) {
-                                profile.allowed().add(target);
-                            }
-                        });
+                    payload.target().ifPresent(target -> {
+                        if (!target.equals(player.getUUID())) {
+                            profile.allowed().add(target);
+                        }
+                    });
                 case GravelessNetworking.ProfileActionPayload.ACTION_DENY ->
-                        payload.target().ifPresent(profile.allowed()::remove);
-                case GravelessNetworking.ProfileActionPayload.ACTION_CLEAR -> profile.allowed().clear();
-                default -> {
-                }
+                    payload.target().ifPresent(profile.allowed()::remove);
+                case GravelessNetworking.ProfileActionPayload.ACTION_CLEAR ->
+                    profile.allowed().clear();
+                default -> {}
             }
             store.setDirty();
             openFor(player, player.getUUID());
         });
     }
 
-    public static void handleBackupListRequest(GravelessNetworking.BackupListRequestPayload payload, PayloadContext context) {
+    public static void handleBackupListRequest(
+            GravelessNetworking.BackupListRequestPayload payload, PayloadContext context) {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer admin) || !isAdmin(admin)) {
                 return;
@@ -202,15 +222,19 @@ public class GraveMenuHandlers {
             MinecraftServer server = admin.level().getServer();
             Path match = GraveBackups.list(server, payload.ownerId()).stream()
                     .filter(path -> path.getFileName().toString().equals(payload.fileName()))
-                    .findFirst().orElse(null);
+                    .findFirst()
+                    .orElse(null);
             if (match == null) {
                 return;
             }
             DeathRecord revived = reviveBackup(server, payload.ownerId(), match);
             if (revived != null) {
-                admin.sendSystemMessage(Component.translatable("graveless.command.restorebackup.done",
-                        payload.fileName(), revived.itemCount(),
-                        GhostSyncEvents.ownerName(server, payload.ownerId())).withStyle(ChatFormatting.AQUA));
+                admin.sendSystemMessage(Component.translatable(
+                                "graveless.command.restorebackup.done",
+                                payload.fileName(),
+                                revived.itemCount(),
+                                GhostSyncEvents.ownerName(server, payload.ownerId()))
+                        .withStyle(ChatFormatting.AQUA));
             }
             sendBackupList(admin, payload.ownerId());
             openFor(admin, payload.ownerId());
@@ -224,8 +248,15 @@ public class GraveMenuHandlers {
         }
         GraveStore store = GraveStore.get(server);
         GraveProfile profile = store.profile(ownerId);
-        DeathRecord revived = new DeathRecord(UUID.randomUUID(), record.pos(), record.gameTime(),
-                record.epochMillis(), record.cause(), record.xp(), record.entries(), record.terrain());
+        DeathRecord revived = new DeathRecord(
+                UUID.randomUUID(),
+                record.pos(),
+                record.gameTime(),
+                record.epochMillis(),
+                record.cause(),
+                record.xp(),
+                record.entries(),
+                record.terrain());
         profile.records().add(revived);
         int max = GravelessConfig.SERVER.maxRecordsPerPlayer.get();
         while (profile.records().size() > max) {
@@ -245,8 +276,12 @@ public class GraveMenuHandlers {
         for (Path file : GraveBackups.list(server, ownerId)) {
             DeathRecord record = GraveBackups.read(server, file);
             if (record != null) {
-                entries.add(new GravelessNetworking.BackupEntry(file.getFileName().toString(),
-                        record.epochMillis(), record.gameTime(), record.itemCount(), record.pos()));
+                entries.add(new GravelessNetworking.BackupEntry(
+                        file.getFileName().toString(),
+                        record.epochMillis(),
+                        record.gameTime(),
+                        record.itemCount(),
+                        record.pos()));
             }
         }
         Services.NETWORK.sendToPlayer(admin, new GravelessNetworking.BackupListPayload(ownerId, entries));
@@ -260,7 +295,8 @@ public class GraveMenuHandlers {
         });
     }
 
-    public static void handleDetailRequest(GravelessNetworking.GraveDetailRequestPayload payload, PayloadContext context) {
+    public static void handleDetailRequest(
+            GravelessNetworking.GraveDetailRequestPayload payload, PayloadContext context) {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) {
                 return;
@@ -268,9 +304,11 @@ public class GraveMenuHandlers {
             MinecraftServer server = player.level().getServer();
             GraveProfile profile = GraveStore.get(server).profile(payload.ownerId());
             DeathRecord record = profile.findRecord(payload.recordId());
-            if (record == null || (!payload.ownerId().equals(player.getUUID()) && !isAdmin(player)
-                    && (!profile.canAccess(payload.ownerId(), player.getUUID())
-                    || !GhostSyncEvents.canReach(player, record)))) {
+            if (record == null
+                    || (!payload.ownerId().equals(player.getUUID())
+                            && !isAdmin(player)
+                            && (!profile.canAccess(payload.ownerId(), player.getUUID())
+                                    || !GhostSyncEvents.canReach(player, record)))) {
                 return;
             }
             List<ItemStack> items = new ArrayList<>();
@@ -289,8 +327,8 @@ public class GraveMenuHandlers {
             } else {
                 terrain = buildTerrain(server, record);
             }
-            Services.NETWORK.sendToPlayer(player, new GravelessNetworking.GraveDetailPayload(
-                    record.id(), items, terrain));
+            Services.NETWORK.sendToPlayer(
+                    player, new GravelessNetworking.GraveDetailPayload(record.id(), items, terrain));
         });
     }
 
@@ -349,8 +387,7 @@ public class GraveMenuHandlers {
                         claimXp(server, store, profile, payload.ownerId(), record, player);
                     }
                 }
-                default -> {
-                }
+                default -> {}
             }
         });
     }
@@ -359,19 +396,29 @@ public class GraveMenuHandlers {
         return player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
     }
 
-    private static void deleteRecord(MinecraftServer server, GraveStore store, GraveProfile profile,
-                                     UUID ownerId, DeathRecord record, ServerPlayer actor) {
+    private static void deleteRecord(
+            MinecraftServer server,
+            GraveStore store,
+            GraveProfile profile,
+            UUID ownerId,
+            DeathRecord record,
+            ServerPlayer actor) {
         profile.records().remove(record);
         store.setDirty();
         GhostSyncEvents.broadcastRemoval(server, record.id());
         refreshOwner(server, ownerId, actor);
-        actor.sendSystemMessage(Component.translatable("graveless.menu.deleted",
-                record.itemCount()).withStyle(ChatFormatting.GRAY));
+        actor.sendSystemMessage(Component.translatable("graveless.menu.deleted", record.itemCount())
+                .withStyle(ChatFormatting.GRAY));
         openFor(actor, ownerId);
     }
 
-    private static void claimXp(MinecraftServer server, GraveStore store, GraveProfile profile,
-                                UUID ownerId, DeathRecord record, ServerPlayer actor) {
+    private static void claimXp(
+            MinecraftServer server,
+            GraveStore store,
+            GraveProfile profile,
+            UUID ownerId,
+            DeathRecord record,
+            ServerPlayer actor) {
         int xp = record.xp();
         if (xp <= 0) {
             return;
@@ -384,22 +431,28 @@ public class GraveMenuHandlers {
             refreshOwner(server, ownerId, actor);
         }
         store.setDirty();
-        actor.sendSystemMessage(Component.translatable("graveless.menu.xp_claimed", xp)
-                .withStyle(ChatFormatting.AQUA));
+        actor.sendSystemMessage(
+                Component.translatable("graveless.menu.xp_claimed", xp).withStyle(ChatFormatting.AQUA));
         openFor(actor, ownerId, Optional.of(record.id()));
     }
 
-    private static void restoreToOwner(MinecraftServer server, GraveStore store, GraveProfile profile,
-                                       UUID ownerId, DeathRecord record, ServerPlayer actor) {
+    private static void restoreToOwner(
+            MinecraftServer server,
+            GraveStore store,
+            GraveProfile profile,
+            UUID ownerId,
+            DeathRecord record,
+            ServerPlayer actor) {
         ServerPlayer owner = server.getPlayerList().getPlayer(ownerId);
         if (owner == null) {
-            actor.sendSystemMessage(Component.translatable("graveless.menu.owner_offline")
-                    .withStyle(ChatFormatting.RED));
+            actor.sendSystemMessage(
+                    Component.translatable("graveless.menu.owner_offline").withStyle(ChatFormatting.RED));
             return;
         }
         if (!RestoreEngine.canReceive(owner)) {
-            actor.sendSystemMessage(Component.translatable("graveless.restore.target_dead",
-                    owner.getName().getString()).withStyle(ChatFormatting.RED));
+            actor.sendSystemMessage(Component.translatable(
+                            "graveless.restore.target_dead", owner.getName().getString())
+                    .withStyle(ChatFormatting.RED));
             return;
         }
         RestoreEngine.Result result = RestoreEngine.claim(owner, profile, record, store);
@@ -407,11 +460,15 @@ public class GraveMenuHandlers {
             GhostSyncEvents.broadcastRemoval(server, record.id());
         }
         SpiritCompassManager.refresh(owner);
-        actor.sendSystemMessage(Component.translatable("graveless.command.restore.done",
-                result.restored(), owner.getName().getString(), result.remaining()).withStyle(ChatFormatting.AQUA));
+        actor.sendSystemMessage(Component.translatable(
+                        "graveless.command.restore.done",
+                        result.restored(),
+                        owner.getName().getString(),
+                        result.remaining())
+                .withStyle(ChatFormatting.AQUA));
         if (owner != actor) {
-            owner.sendSystemMessage(Component.translatable("graveless.restore.received",
-                    result.restored()).withStyle(ChatFormatting.AQUA));
+            owner.sendSystemMessage(Component.translatable("graveless.restore.received", result.restored())
+                    .withStyle(ChatFormatting.AQUA));
         }
         openFor(actor, ownerId);
     }
@@ -433,8 +490,15 @@ public class GraveMenuHandlers {
             return;
         }
         BlockPos anchor = GhostSyncEvents.anchor(level, record.pos().pos());
-        player.teleportTo(level, anchor.getX() + 0.5, anchor.getY(), anchor.getZ() + 0.5,
-                Set.of(), player.getYRot(), player.getXRot(), true);
+        player.teleportTo(
+                level,
+                anchor.getX() + 0.5,
+                anchor.getY(),
+                anchor.getZ() + 0.5,
+                Set.of(),
+                player.getYRot(),
+                player.getXRot(),
+                true);
         level.playSound(null, anchor, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.6F, 1.1F);
     }
 
@@ -488,6 +552,5 @@ public class GraveMenuHandlers {
         return state;
     }
 
-    private GraveMenuHandlers() {
-    }
+    private GraveMenuHandlers() {}
 }

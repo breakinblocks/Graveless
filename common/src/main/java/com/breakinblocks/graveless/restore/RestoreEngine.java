@@ -9,20 +9,17 @@ import com.breakinblocks.graveless.data.DeathRecord;
 import com.breakinblocks.graveless.data.GraveProfile;
 import com.breakinblocks.graveless.data.GraveStore;
 import com.breakinblocks.graveless.util.SpiritCompassManager;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
-
 public final class RestoreEngine {
-    private RestoreEngine() {
-    }
+    private RestoreEngine() {}
 
-    public record Result(int restored, int remaining, int xpRestored, boolean recordRemoved) {
-    }
+    public record Result(int restored, int remaining, int xpRestored, boolean recordRemoved) {}
 
     public static boolean canReceive(ServerPlayer player) {
         return player.isAlive() && !player.hasDisconnected();
@@ -50,8 +47,12 @@ public final class RestoreEngine {
                     record.entries().set(i, entry.withStack(leftover));
                 } catch (Exception e) {
                     failed.add(i);
-                    Graveless.LOGGER.error("Inventory hook {} failed restoring grave {} for {}",
-                            entry.handler(), record.id(), player.getUUID(), e);
+                    Graveless.LOGGER.error(
+                            "Inventory hook {} failed restoring grave {} for {}",
+                            entry.handler(),
+                            record.id(),
+                            player.getUUID(),
+                            e);
                 }
             }
             for (int i = 0; i < record.entries().size(); i++) {
@@ -67,8 +68,8 @@ public final class RestoreEngine {
                         player.getInventory().add(remaining);
                     }
                 } catch (Exception e) {
-                    Graveless.LOGGER.error("Failed restoring remaining items from grave {} for {}",
-                            record.id(), player.getUUID(), e);
+                    Graveless.LOGGER.error(
+                            "Failed restoring remaining items from grave {} for {}", record.id(), player.getUUID(), e);
                 }
             }
             xpRestored = record.xp();

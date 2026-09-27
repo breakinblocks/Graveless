@@ -3,6 +3,7 @@ package com.breakinblocks.graveless.integration.curios;
 import com.breakinblocks.graveless.capture.InventoryHook;
 import com.breakinblocks.graveless.data.CapturedEntry;
 import com.breakinblocks.graveless.registry.ModDataComponents;
+import java.util.List;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.ItemStack;
@@ -11,8 +12,6 @@ import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
 import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
-
-import java.util.List;
 
 public class CuriosInventoryHook implements InventoryHook {
     public static final String ID = "curios";
@@ -39,8 +38,7 @@ public class CuriosInventoryHook implements InventoryHook {
         for (int i = 0; i < stacks.getSlots(); i++) {
             ItemStack stack = stacks.getStackInSlot(i);
             if (!stack.isEmpty()) {
-                stack.set(ModDataComponents.CURIO_SLOT.get(),
-                        new ModDataComponents.CurioSlot(type, i, cosmetic));
+                stack.set(ModDataComponents.CURIO_SLOT.get(), new ModDataComponents.CurioSlot(type, i, cosmetic));
             }
         }
     }
@@ -76,7 +74,9 @@ public class CuriosInventoryHook implements InventoryHook {
         IDynamicStackHandler stacks = cosmetic ? stacksHandler.getCosmeticStacks() : stacksHandler.getStacks();
         int slot = entry.slot();
         if (!fallback) {
-            if (slot >= 0 && slot < stacks.getSlots() && stacks.getStackInSlot(slot).isEmpty()) {
+            if (slot >= 0
+                    && slot < stacks.getSlots()
+                    && stacks.getStackInSlot(slot).isEmpty()) {
                 place(handler, stacks, type, slot, cosmetic, stack);
             }
             return stack;
@@ -94,8 +94,13 @@ public class CuriosInventoryHook implements InventoryHook {
         return stack;
     }
 
-    private static void place(ICuriosItemHandler handler, IDynamicStackHandler stacks,
-                              String type, int slot, boolean cosmetic, ItemStack stack) {
+    private static void place(
+            ICuriosItemHandler handler,
+            IDynamicStackHandler stacks,
+            String type,
+            int slot,
+            boolean cosmetic,
+            ItemStack stack) {
         ItemStack placed = stack.copy();
         try {
             if (cosmetic) {

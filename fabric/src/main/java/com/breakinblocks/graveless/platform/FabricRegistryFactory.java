@@ -1,15 +1,14 @@
 package com.breakinblocks.graveless.platform;
 
 import com.breakinblocks.graveless.platform.services.IRegistryFactory;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
 
 public class FabricRegistryFactory implements IRegistryFactory {
 

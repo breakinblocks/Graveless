@@ -11,8 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public final class DeadPlayerTests {
-    private DeadPlayerTests() {
-    }
+    private DeadPlayerTests() {}
 
     static void register(TestRegistrar tests) {
         tests.add("dead_player_claim_keeps_the_grave", DeadPlayerTests::claimKeepsTheGrave);
@@ -57,7 +56,8 @@ public final class DeadPlayerTests {
             owner.respawn();
 
             Check.equal(helper, 1, owner.records().size(), "graves after a claim that arrived after death");
-            Check.equal(helper, 4, owner.newestRecord().itemCount(), "grave items after a claim that arrived after death");
+            Check.equal(
+                    helper, 4, owner.newestRecord().itemCount(), "grave items after a claim that arrived after death");
 
             owner.moveToRecord(record);
             claim(owner, record);
@@ -124,7 +124,10 @@ public final class DeadPlayerTests {
         DeathRecord record = graveAt(owner, new ItemStack(Items.DIAMOND, 4));
 
         afterDeath(helper, owner, () -> {
-            Check.equal(helper, 0, CommandTests.run(helper, "graveless restore " + owner.name()),
+            Check.equal(
+                    helper,
+                    0,
+                    CommandTests.run(helper, "graveless restore " + owner.name()),
                     "items restored to a dead player");
             Check.equal(helper, 1, owner.records().size(), "graves after a command restore to a dead player");
             Check.equal(helper, 4, record.itemCount(), "grave items after a command restore to a dead player");

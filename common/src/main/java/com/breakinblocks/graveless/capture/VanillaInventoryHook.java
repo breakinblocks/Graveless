@@ -2,15 +2,14 @@ package com.breakinblocks.graveless.capture;
 
 import com.breakinblocks.graveless.data.CapturedEntry;
 import com.breakinblocks.graveless.registry.ModItems;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class VanillaInventoryHook implements InventoryHook {
     public static final String ID = "inventory";

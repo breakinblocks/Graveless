@@ -4,8 +4,7 @@ import com.breakinblocks.graveless.Graveless;
 import com.breakinblocks.graveless.capture.InventoryHooks;
 
 public final class CuriosIntegration {
-    private CuriosIntegration() {
-    }
+    private CuriosIntegration() {}
 
     public static void init() {
         InventoryHooks.register(new CuriosInventoryHook());
