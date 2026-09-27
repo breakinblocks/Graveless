@@ -283,6 +283,11 @@ public class GravelessCommands {
                     index, records.size()));
             return 0;
         }
+        if (!RestoreEngine.canReceive(target)) {
+            context.getSource().sendFailure(Component.translatable("graveless.restore.target_dead",
+                    target.getName().getString()));
+            return 0;
+        }
         DeathRecord record = records.get(records.size() - index);
         RestoreEngine.Result result = RestoreEngine.claim(target, profile, record, store);
         SpiritCompassManager.refresh(target);

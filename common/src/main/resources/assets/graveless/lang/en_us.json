@@ -46,6 +46,7 @@
   "graveless.restore.received": "%s items were returned to you.",
   "graveless.restore.partial": "Recovered %s items. %s did not fit and remain in your grave.",
   "graveless.restore.complete": "Recovered %s items. Your grave is at peace.",
+  "graveless.restore.target_dead": "%s is dead. Restore the grave after they respawn.",
   "graveless.command.allowed": "%s may now see and recover your graves.",
   "graveless.command.denied": "%s may no longer access your graves.",
   "graveless.command.cleared": "Removed %s players from your grave access list.",

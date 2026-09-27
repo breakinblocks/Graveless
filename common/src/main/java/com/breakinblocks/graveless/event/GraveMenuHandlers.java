@@ -144,6 +144,9 @@ public class GraveMenuHandlers {
     }
 
     private static boolean canTakeFrom(ServerPlayer actor, UUID ownerId, GraveProfile profile, DeathRecord record) {
+        if (!RestoreEngine.canReceive(actor)) {
+            return false;
+        }
         if (isAdmin(actor)) {
             return true;
         }
@@ -392,6 +395,11 @@ public class GraveMenuHandlers {
         if (owner == null) {
             actor.sendSystemMessage(Component.translatable("graveless.menu.owner_offline")
                     .withStyle(ChatFormatting.RED));
+            return;
+        }
+        if (!RestoreEngine.canReceive(owner)) {
+            actor.sendSystemMessage(Component.translatable("graveless.restore.target_dead",
+                    owner.getName().getString()).withStyle(ChatFormatting.RED));
             return;
         }
         RestoreEngine.Result result = RestoreEngine.claim(owner, profile, record, store);

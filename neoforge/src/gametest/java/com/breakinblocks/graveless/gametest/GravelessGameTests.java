@@ -26,6 +26,7 @@ public final class GravelessGameTests {
         AdminTests.register(tests);
         ExtractTests.register(tests);
         CommandTests.register(tests);
+        DeadPlayerTests.register(tests);
         Graveless.LOGGER.info("Registered Graveless game tests");
     }
 }

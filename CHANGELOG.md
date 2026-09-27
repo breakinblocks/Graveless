@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.4
+
+- Fixed a grave's items and xp being lost when it was claimed just as the player died, such as clicking the ghost the moment a mob dealt the killing blow. The claim put everything into the dead player's inventory, which is thrown away on respawn. Claims, extractions and xp reclaims from a dead player are now ignored and the grave stays put.
+- Admin restores and `/graveless restore` now refuse while the target player is dead instead of handing the grave to them.
+
 ## 1.3.3
 
 - Fixed a death losing every item when the drop event never arrived, such as a disconnect or crash between dying and the grave being written. The pending items are now saved on respawn or logout instead of discarded.
