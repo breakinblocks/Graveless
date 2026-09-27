@@ -8,11 +8,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.component.LodestoneTracker;
 
 public final class CompassClientProperties {
-    private CompassClientProperties() {
-    }
+    private CompassClientProperties() {}
 
     public static void register() {
-        ItemProperties.register(ModItems.SPIRIT_COMPASS.get(), ResourceLocation.withDefaultNamespace("angle"),
+        ItemProperties.register(
+                ModItems.SPIRIT_COMPASS.get(),
+                ResourceLocation.withDefaultNamespace("angle"),
                 new CompassItemPropertyFunction((level, stack, entity) -> {
                     LodestoneTracker tracker = stack.get(DataComponents.LODESTONE_TRACKER);
                     return tracker == null ? null : tracker.target().orElse(null);

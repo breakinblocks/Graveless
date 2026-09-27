@@ -11,13 +11,11 @@ public class GravelessConfig {
     public static final ClientConfig CLIENT;
 
     static {
-        final Pair<ServerConfig, ModConfigSpec> serverPair =
-                new ModConfigSpec.Builder().configure(ServerConfig::new);
+        final Pair<ServerConfig, ModConfigSpec> serverPair = new ModConfigSpec.Builder().configure(ServerConfig::new);
         SERVER_SPEC = serverPair.getRight();
         SERVER = serverPair.getLeft();
 
-        final Pair<ClientConfig, ModConfigSpec> clientPair =
-                new ModConfigSpec.Builder().configure(ClientConfig::new);
+        final Pair<ClientConfig, ModConfigSpec> clientPair = new ModConfigSpec.Builder().configure(ClientConfig::new);
         CLIENT_SPEC = clientPair.getRight();
         CLIENT = clientPair.getLeft();
     }
@@ -36,37 +34,33 @@ public class GravelessConfig {
 
         ServerConfig(ModConfigSpec.Builder builder) {
             builder.push("general");
-            enabled = builder
-                    .comment("Master switch for Graveless death handling.")
+            enabled = builder.comment("Master switch for Graveless death handling.")
                     .define("enabled", true);
-            maxRecordsPerPlayer = builder
-                    .comment("Maximum death records retained per player. Oldest records are dropped first (backup files on disk are kept).")
+            maxRecordsPerPlayer = builder.comment(
+                            "Maximum death records retained per player. Oldest records are dropped first (backup files on disk are kept).")
                     .defineInRange("max_records_per_player", 30, 1, 1000);
-            maxBackupsPerPlayer = builder
-                    .comment("Maximum archived grave backup files kept on disk per player. The oldest files are deleted once a new death pushes a player over the limit. -1 keeps every backup forever.")
+            maxBackupsPerPlayer = builder.comment(
+                            "Maximum archived grave backup files kept on disk per player. The oldest files are deleted once a new death pushes a player over the limit. -1 keeps every backup forever.")
                     .defineInRange("max_backups_per_player", -1, -1, 10000);
-            visibilityRadius = builder
-                    .comment("Distance in blocks at which grave ghosts are sent to nearby players and remain visible.")
+            visibilityRadius = builder.comment(
+                            "Distance in blocks at which grave ghosts are sent to nearby players and remain visible.")
                     .defineInRange("visibility_radius", 256, 16, 512);
-            claimRange = builder
-                    .comment("Maximum distance in blocks from which a ghost can be claimed. The claim aim passes through blocks.")
+            claimRange = builder.comment(
+                            "Maximum distance in blocks from which a ghost can be claimed. The claim aim passes through blocks.")
                     .defineInRange("claim_range", 16, 2, 128);
-            requireLineOfSight = builder
-                    .comment("Require an unobstructed line of sight to the ghost to claim it. When enabled, claims no longer work through walls.")
+            requireLineOfSight = builder.comment(
+                            "Require an unobstructed line of sight to the ghost to claim it. When enabled, claims no longer work through walls.")
                     .define("require_line_of_sight", false);
             builder.pop();
             builder.push("protection");
-            protectionEnabled = builder
-                    .comment("Grant Spirit Ward (invisibility, night vision, mobs ignore you) when approaching your own grave.")
+            protectionEnabled = builder.comment(
+                            "Grant Spirit Ward (invisibility, night vision, mobs ignore you) when approaching your own grave.")
                     .define("protection_enabled", false);
-            protectionRange = builder
-                    .comment("Distance in blocks from your own grave at which Spirit Ward is granted.")
+            protectionRange = builder.comment("Distance in blocks from your own grave at which Spirit Ward is granted.")
                     .defineInRange("protection_range", 256, 8, 512);
-            protectionDuration = builder
-                    .comment("How long Spirit Ward lasts in seconds if the grave is not claimed.")
+            protectionDuration = builder.comment("How long Spirit Ward lasts in seconds if the grave is not claimed.")
                     .defineInRange("protection_duration", 120, 5, 600);
-            protectionLinger = builder
-                    .comment("How long Spirit Ward lingers in seconds after claiming the grave.")
+            protectionLinger = builder.comment("How long Spirit Ward lingers in seconds after claiming the grave.")
                     .defineInRange("protection_linger", 1, 0, 60);
             builder.pop();
         }
@@ -79,14 +73,12 @@ public class GravelessConfig {
 
         ClientConfig(ModConfigSpec.Builder builder) {
             builder.push("general");
-            useShaders = builder
-                    .comment("Use the custom ghost shader (fresnel rim glow, shimmer). Disable to fall back to plain translucent rendering if the shader causes issues on your system.")
+            useShaders = builder.comment(
+                            "Use the custom ghost shader (fresnel rim glow, shimmer). Disable to fall back to plain translucent rendering if the shader causes issues on your system.")
                     .define("use_shaders", true);
-            showBeam = builder
-                    .comment("Render the vertical light beam above your grave.")
+            showBeam = builder.comment("Render the vertical light beam above your grave.")
                     .define("show_beam", true);
-            debugLogging = builder
-                    .comment("Log extra client-side diagnostic information.")
+            debugLogging = builder.comment("Log extra client-side diagnostic information.")
                     .define("debug_logging", false);
             builder.pop();
         }

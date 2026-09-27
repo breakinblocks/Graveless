@@ -2,9 +2,9 @@ package com.breakinblocks.graveless;
 
 import com.breakinblocks.graveless.commands.GravelessCommands;
 import com.breakinblocks.graveless.event.DeathCaptureEvents;
-import com.breakinblocks.graveless.integration.accessories.AccessoriesIntegration;
 import com.breakinblocks.graveless.event.GhostSyncEvents;
 import com.breakinblocks.graveless.event.SpiritWardEvents;
+import com.breakinblocks.graveless.integration.accessories.AccessoriesIntegration;
 import com.breakinblocks.graveless.registry.ModItems;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -28,8 +28,8 @@ public class GravelessFabric implements ModInitializer {
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)
                 .register(entries -> entries.accept(ModItems.SPIRIT_COMPASS.get()));
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) ->
-                GravelessCommands.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register(
+                (dispatcher, registry, environment) -> GravelessCommands.register(dispatcher));
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -52,7 +52,7 @@ public class GravelessFabric implements ModInitializer {
             SpiritWardEvents.onRespawn(newPlayer);
         });
 
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) ->
-                GhostSyncEvents.reset(player));
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(
+                (player, origin, destination) -> GhostSyncEvents.reset(player));
     }
 }

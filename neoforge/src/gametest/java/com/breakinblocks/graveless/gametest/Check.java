@@ -1,12 +1,10 @@
 package com.breakinblocks.graveless.gametest;
 
+import java.util.Objects;
 import net.minecraft.gametest.framework.GameTestHelper;
 
-import java.util.Objects;
-
 public final class Check {
-    private Check() {
-    }
+    private Check() {}
 
     public static void isTrue(GameTestHelper helper, boolean condition, String message) {
         if (!condition) {

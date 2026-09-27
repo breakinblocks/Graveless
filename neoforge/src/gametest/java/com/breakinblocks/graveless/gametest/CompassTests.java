@@ -13,8 +13,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.LodestoneTracker;
 
 public final class CompassTests {
-    private CompassTests() {
-    }
+    private CompassTests() {}
 
     static void register(TestRegistrar tests) {
         tests.add("compass_arrives_with_the_first_grave", CompassTests::arrivesWithFirstGrave);
@@ -27,7 +26,10 @@ public final class CompassTests {
     private static void arrivesWithFirstGrave(GameTestHelper helper) {
         TestPlayer player = TestPlayer.join(helper);
         SpiritCompassManager.giveIfMissing(player.player());
-        Check.equal(helper, 0, player.countOf(ModItems.SPIRIT_COMPASS.get()),
+        Check.equal(
+                helper,
+                0,
+                player.countOf(ModItems.SPIRIT_COMPASS.get()),
                 "a player with no graves should not be handed a compass");
 
         player.give(0, new ItemStack(Items.DIAMOND, 1));
@@ -51,7 +53,10 @@ public final class CompassTests {
             DeathCaptureEvents.onLogin(player.player());
         }
 
-        Check.equal(helper, 1, player.countOf(ModItems.SPIRIT_COMPASS.get()),
+        Check.equal(
+                helper,
+                1,
+                player.countOf(ModItems.SPIRIT_COMPASS.get()),
                 "repeated respawns and logins should never stack up compasses");
         helper.succeed();
     }
@@ -67,14 +72,14 @@ public final class CompassTests {
 
         RestoreEngine.claim(player.player(), player.profile(), player.records().getFirst(), player.store());
         SpiritCompassManager.refresh(player.player());
-        Check.equal(helper, 1, player.countOf(ModItems.SPIRIT_COMPASS.get()),
-                "compass should stay while a grave remains");
+        Check.equal(
+                helper, 1, player.countOf(ModItems.SPIRIT_COMPASS.get()), "compass should stay while a grave remains");
 
         RestoreEngine.claim(player.player(), player.profile(), player.records().getFirst(), player.store());
         SpiritCompassManager.refresh(player.player());
         Check.isTrue(helper, player.records().isEmpty(), "both graves should be claimed");
-        Check.equal(helper, 0, player.countOf(ModItems.SPIRIT_COMPASS.get()),
-                "compass should vanish with the last grave");
+        Check.equal(
+                helper, 0, player.countOf(ModItems.SPIRIT_COMPASS.get()), "compass should vanish with the last grave");
         helper.succeed();
     }
 
@@ -84,18 +89,27 @@ public final class CompassTests {
         player.simulateDeath();
         DeathRecord first = player.newestRecord();
 
-        player.moveToAbsolute(player.player().getX() + 40.0, player.player().getY(), player.player().getZ());
+        player.moveToAbsolute(
+                player.player().getX() + 40.0,
+                player.player().getY(),
+                player.player().getZ());
         player.give(0, new ItemStack(Items.EMERALD, 1));
         player.simulateDeath();
         DeathRecord second = player.newestRecord();
         DeathCaptureEvents.onRespawn(player.player());
 
-        Check.equal(helper, targetOf(player, second), currentTarget(helper, player),
+        Check.equal(
+                helper,
+                targetOf(player, second),
+                currentTarget(helper, player),
                 "an unattuned compass should point at the newest grave");
 
         player.profile().setTrackedRecordId(first.id());
         SpiritCompassManager.refresh(player.player());
-        Check.equal(helper, targetOf(player, first), currentTarget(helper, player),
+        Check.equal(
+                helper,
+                targetOf(player, first),
+                currentTarget(helper, player),
                 "an attuned compass should point at the chosen grave");
         helper.succeed();
     }
@@ -106,7 +120,10 @@ public final class CompassTests {
         player.simulateDeath();
         DeathRecord first = player.newestRecord();
 
-        player.moveToAbsolute(player.player().getX() + 40.0, player.player().getY(), player.player().getZ());
+        player.moveToAbsolute(
+                player.player().getX() + 40.0,
+                player.player().getY(),
+                player.player().getZ());
         player.give(0, new ItemStack(Items.EMERALD, 1));
         player.simulateDeath();
         DeathRecord second = player.newestRecord();
@@ -119,7 +136,10 @@ public final class CompassTests {
         SpiritCompassManager.refresh(player.player());
 
         Check.isNull(helper, player.profile().trackedRecordId(), "stale compass attunement");
-        Check.equal(helper, targetOf(player, second), currentTarget(helper, player),
+        Check.equal(
+                helper,
+                targetOf(player, second),
+                currentTarget(helper, player),
                 "compass should fall back to the newest remaining grave");
         helper.succeed();
     }

@@ -24,12 +24,11 @@ public class GravelessFabricClient implements ClientModInitializer {
         CompassClientProperties.register();
 
         CoreShaderRegistrationCallback.EVENT.register(context ->
-                context.register(Graveless.id("ghost"), DefaultVertexFormat.NEW_ENTITY,
-                        GhostShaders::setGhostShader));
+                context.register(Graveless.id("ghost"), DefaultVertexFormat.NEW_ENTITY, GhostShaders::setGhostShader));
 
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
-            GhostRenderManager.renderGhosts(context.matrixStack(), context.consumers(),
-                    context.camera().getPosition());
+            GhostRenderManager.renderGhosts(
+                    context.matrixStack(), context.consumers(), context.camera().getPosition());
             Minecraft.getInstance().renderBuffers().bufferSource().endBatch();
         });
 

@@ -8,15 +8,14 @@ import io.wispforest.accessories.api.AccessoriesCapability;
 import io.wispforest.accessories.api.AccessoriesContainer;
 import io.wispforest.accessories.api.slot.SlotReference;
 import io.wispforest.accessories.impl.ExpandedSimpleContainer;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.item.ItemStack;
-
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.item.ItemStack;
 
 public class AccessoriesInventoryHook implements InventoryHook {
     public static final String ID = "accessories";
@@ -42,8 +41,8 @@ public class AccessoriesInventoryHook implements InventoryHook {
         pendingSlots.put(player.getUUID(), slots);
     }
 
-    private static void rememberSlots(String type, ExpandedSimpleContainer stacks, boolean cosmetic,
-                                       Map<ItemStack, CapturedEntry> slots) {
+    private static void rememberSlots(
+            String type, ExpandedSimpleContainer stacks, boolean cosmetic, Map<ItemStack, CapturedEntry> slots) {
         for (int slot = 0; slot < stacks.getContainerSize(); slot++) {
             ItemStack stack = stacks.getItem(slot);
             if (!stack.isEmpty()) {
@@ -63,8 +62,8 @@ public class AccessoriesInventoryHook implements InventoryHook {
         if (slots == null || !DeathCaptureEvents.hasPending(player)) {
             return;
         }
-        drops.removeIf(stack -> DeathCaptureEvents.captureDrop(player,
-                slots.getOrDefault(stack, CapturedEntry.loose(stack)).withStack(stack)));
+        drops.removeIf(stack -> DeathCaptureEvents.captureDrop(
+                player, slots.getOrDefault(stack, CapturedEntry.loose(stack)).withStack(stack)));
     }
 
     @Override
@@ -112,16 +111,23 @@ public class AccessoriesInventoryHook implements InventoryHook {
         return stack;
     }
 
-    private static boolean canPlace(ServerPlayer player, ExpandedSimpleContainer stacks, String type, int slot,
-                                    boolean cosmetic, ItemStack stack) {
-        if (slot < 0 || slot >= stacks.getContainerSize() || !stacks.getItem(slot).isEmpty()) {
+    private static boolean canPlace(
+            ServerPlayer player,
+            ExpandedSimpleContainer stacks,
+            String type,
+            int slot,
+            boolean cosmetic,
+            ItemStack stack) {
+        if (slot < 0
+                || slot >= stacks.getContainerSize()
+                || !stacks.getItem(slot).isEmpty()) {
             return false;
         }
         return cosmetic || AccessoriesAPI.canInsertIntoSlot(stack, SlotReference.of(player, type, slot));
     }
 
-    private static void place(AccessoriesContainer container, ExpandedSimpleContainer stacks, int slot,
-                              ItemStack stack) {
+    private static void place(
+            AccessoriesContainer container, ExpandedSimpleContainer stacks, int slot, ItemStack stack) {
         ItemStack placed = stack.copyWithCount(Math.min(stack.getCount(), stacks.getMaxStackSize(stack)));
         try {
             stacks.setItem(slot, placed);

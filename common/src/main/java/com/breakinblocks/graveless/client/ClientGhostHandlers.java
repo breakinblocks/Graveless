@@ -7,8 +7,7 @@ import com.breakinblocks.graveless.platform.PayloadContext;
 import net.minecraft.client.Minecraft;
 
 public final class ClientGhostHandlers {
-    private ClientGhostHandlers() {
-    }
+    private ClientGhostHandlers() {}
 
     public static void bindAll() {
         ClientPayloadDispatch.bind(GravelessNetworking.GhostAddPayload.TYPE, ClientGhostHandlers::handleAdd);

@@ -6,13 +6,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.ListBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public final class LenientCodecs {
-    private LenientCodecs() {
-    }
+    private LenientCodecs() {}
 
     public static <A> Codec<List<A>> lenientList(Codec<A> elementCodec, String label) {
         return new Codec<>() {
@@ -20,7 +18,8 @@ public final class LenientCodecs {
             public <T> DataResult<Pair<List<A>, T>> decode(DynamicOps<T> ops, T input) {
                 return ops.getList(input).map(consumer -> {
                     List<A> out = new ArrayList<>();
-                    consumer.accept(element -> elementCodec.parse(ops, element)
+                    consumer.accept(element -> elementCodec
+                            .parse(ops, element)
                             .resultOrPartial(error -> Graveless.LOGGER.error(
                                     "Dropped unreadable {} while loading grave data: {}", label, error))
                             .ifPresent(out::add));
@@ -36,8 +35,10 @@ public final class LenientCodecs {
                     if (encoded.result().isPresent()) {
                         builder.add(encoded);
                     } else {
-                        Graveless.LOGGER.error("Dropped unwritable {} while saving grave data: {}",
-                                label, encoded.error().map(Object::toString).orElse("unknown error"));
+                        Graveless.LOGGER.error(
+                                "Dropped unwritable {} while saving grave data: {}",
+                                label,
+                                encoded.error().map(Object::toString).orElse("unknown error"));
                     }
                 }
                 return builder.build(prefix);

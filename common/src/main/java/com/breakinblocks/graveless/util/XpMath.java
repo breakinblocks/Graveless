@@ -1,8 +1,7 @@
 package com.breakinblocks.graveless.util;
 
 public final class XpMath {
-    private XpMath() {
-    }
+    private XpMath() {}
 
     public static int totalPoints(int level, float progress) {
         return pointsAtLevel(level) + Math.round(progress * xpForLevelUp(level));

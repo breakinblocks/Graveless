@@ -8,7 +8,6 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.core.BlockPos;
@@ -35,8 +34,7 @@ public class GhostRenderManager {
     private static final float BEAM_FADE_START = 192.0F;
     private static final float BEAM_WIDTH = 0.28F;
 
-    private record GhostVisibility(float body, float outline) {
-    }
+    private record GhostVisibility(float body, float outline) {}
 
     private static GhostModel wideModel;
     private static GhostModel slimModel;
@@ -54,7 +52,9 @@ public class GhostRenderManager {
         float partialTick = minecraft.getTimer().getGameTimeDeltaPartialTick(false);
         Vec3 look = minecraft.player.getViewVector(partialTick);
         float time = minecraft.level.getGameTime() + partialTick;
-        Vec3 playerChest = minecraft.player.getPosition(partialTick)
+        Vec3 playerChest = minecraft
+                .player
+                .getPosition(partialTick)
                 .add(0.0, STRAND_ANCHOR_HEIGHT, 0.0)
                 .add(look.scale(STRAND_ANCHOR_FORWARD));
 
@@ -111,15 +111,21 @@ public class GhostRenderManager {
     }
 
     private static boolean isOccluded(Minecraft minecraft, Vec3 camPos, Vec3 heart) {
-        BlockHitResult hit = minecraft.level.clip(new ClipContext(
-                camPos, heart, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, minecraft.player));
-        return hit.getType() == HitResult.Type.BLOCK
-                && hit.getLocation().distanceToSqr(heart) > 1.5;
+        BlockHitResult hit = minecraft.level.clip(
+                new ClipContext(camPos, heart, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, minecraft.player));
+        return hit.getType() == HitResult.Type.BLOCK && hit.getLocation().distanceToSqr(heart) > 1.5;
     }
 
-    private static void renderGhostModel(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 camPos,
-                                         Vec3 base, GhostClientManager.ClientGhost ghost, float time,
-                                         float bob, GhostVisibility visibility, boolean occluded) {
+    private static void renderGhostModel(
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            Vec3 camPos,
+            Vec3 base,
+            GhostClientManager.ClientGhost ghost,
+            float time,
+            float bob,
+            GhostVisibility visibility,
+            boolean occluded) {
         PlayerSkin skin = GhostSkins.get(ghost.ownerId(), ghost.ownerName());
         GhostModel model = skin.model() == PlayerSkin.Model.SLIM ? slimModel : wideModel;
         ResourceLocation texture = skin.texture();
@@ -154,8 +160,14 @@ public class GhostRenderManager {
         poseStack.popPose();
     }
 
-    private static void renderBeamAt(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 camPos,
-                                     Vec3 base, float time, double dist, float farFade) {
+    private static void renderBeamAt(
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            Vec3 camPos,
+            Vec3 base,
+            float time,
+            double dist,
+            float farFade) {
         if (!GravelessConfig.CLIENT.showBeam.get()) {
             return;
         }
@@ -182,8 +194,8 @@ public class GhostRenderManager {
         }
     }
 
-    private static void beamQuad(Matrix4f matrix, VertexConsumer buffer,
-                                 float x1, float z1, float x2, float z2, float alpha) {
+    private static void beamQuad(
+            Matrix4f matrix, VertexConsumer buffer, float x1, float z1, float x2, float z2, float alpha) {
         effectVertex(matrix, buffer, x1, 0.0F, z1, alpha);
         effectVertex(matrix, buffer, x2, 0.0F, z2, alpha);
         effectVertex(matrix, buffer, x2, BEAM_FADE_START, z2, alpha);
@@ -195,8 +207,7 @@ public class GhostRenderManager {
         effectVertex(matrix, buffer, x1, BEAM_HEIGHT, z1, 0.0F);
     }
 
-    private static void effectVertex(Matrix4f matrix, VertexConsumer buffer,
-                                     float x, float y, float z, float alpha) {
+    private static void effectVertex(Matrix4f matrix, VertexConsumer buffer, float x, float y, float z, float alpha) {
         buffer.addVertex(matrix, x, y, z)
                 .setColor(0.78F, 0.9F, 1.0F, alpha)
                 .setUv(0.5F, 0.5F)
@@ -205,8 +216,14 @@ public class GhostRenderManager {
                 .setNormal(0.0F, 1.0F, 0.0F);
     }
 
-    private static void renderStrands(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 camPos,
-                                      Vec3 heart, Vec3 playerChest, float time, float alpha) {
+    private static void renderStrands(
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            Vec3 camPos,
+            Vec3 heart,
+            Vec3 playerChest,
+            float time,
+            float alpha) {
         Vec3 toPlayer = playerChest.subtract(heart);
         double dist = toPlayer.length();
         if (dist < 1.0 || dist > STRAND_RANGE) {
@@ -262,8 +279,8 @@ public class GhostRenderManager {
         poseStack.popPose();
     }
 
-    private static void renderRibbon(Matrix4f matrix, VertexConsumer buffer, float[][] points,
-                                     Vec3 camToHeart, float alpha) {
+    private static void renderRibbon(
+            Matrix4f matrix, VertexConsumer buffer, float[][] points, Vec3 camToHeart, float alpha) {
         int last = points.length - 1;
         float[][] sides = new float[points.length][3];
         float prevX = 0.0F;
@@ -324,14 +341,39 @@ public class GhostRenderManager {
             float[] s0 = sides[i];
             float[] s1 = sides[i + 1];
 
-            addRibbonVertex(matrix, buffer, points[i][0] + s0[0] * w0, points[i][1] + s0[1] * w0, points[i][2] + s0[2] * w0, a0);
-            addRibbonVertex(matrix, buffer, points[i][0] - s0[0] * w0, points[i][1] - s0[1] * w0, points[i][2] - s0[2] * w0, a0);
-            addRibbonVertex(matrix, buffer, points[i + 1][0] - s1[0] * w1, points[i + 1][1] - s1[1] * w1, points[i + 1][2] - s1[2] * w1, a1);
-            addRibbonVertex(matrix, buffer, points[i + 1][0] + s1[0] * w1, points[i + 1][1] + s1[1] * w1, points[i + 1][2] + s1[2] * w1, a1);
+            addRibbonVertex(
+                    matrix,
+                    buffer,
+                    points[i][0] + s0[0] * w0,
+                    points[i][1] + s0[1] * w0,
+                    points[i][2] + s0[2] * w0,
+                    a0);
+            addRibbonVertex(
+                    matrix,
+                    buffer,
+                    points[i][0] - s0[0] * w0,
+                    points[i][1] - s0[1] * w0,
+                    points[i][2] - s0[2] * w0,
+                    a0);
+            addRibbonVertex(
+                    matrix,
+                    buffer,
+                    points[i + 1][0] - s1[0] * w1,
+                    points[i + 1][1] - s1[1] * w1,
+                    points[i + 1][2] - s1[2] * w1,
+                    a1);
+            addRibbonVertex(
+                    matrix,
+                    buffer,
+                    points[i + 1][0] + s1[0] * w1,
+                    points[i + 1][1] + s1[1] * w1,
+                    points[i + 1][2] + s1[2] * w1,
+                    a1);
         }
     }
 
-    private static void addRibbonVertex(Matrix4f matrix, VertexConsumer buffer, float x, float y, float z, float alpha) {
+    private static void addRibbonVertex(
+            Matrix4f matrix, VertexConsumer buffer, float x, float y, float z, float alpha) {
         buffer.addVertex(matrix, x, y, z)
                 .setColor(0.88F, 0.94F, 1.0F, alpha)
                 .setUv(0.5F, 0.5F)

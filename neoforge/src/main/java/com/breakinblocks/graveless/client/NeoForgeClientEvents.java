@@ -51,7 +51,9 @@ public class NeoForgeClientEvents {
             return;
         }
         Minecraft minecraft = Minecraft.getInstance();
-        GhostRenderManager.renderGhosts(event.getPoseStack(), minecraft.renderBuffers().bufferSource(),
+        GhostRenderManager.renderGhosts(
+                event.getPoseStack(),
+                minecraft.renderBuffers().bufferSource(),
                 event.getCamera().getPosition());
         minecraft.renderBuffers().bufferSource().endBatch();
     }

@@ -1,19 +1,17 @@
 package com.breakinblocks.graveless.gametest;
 
 import com.breakinblocks.graveless.Graveless;
+import java.util.Collection;
 import net.minecraft.gametest.framework.GameTestGenerator;
 import net.minecraft.gametest.framework.TestFunction;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 
-import java.util.Collection;
-
 @EventBusSubscriber(modid = Graveless.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public final class GravelessGameTests {
 
-    public GravelessGameTests() {
-    }
+    public GravelessGameTests() {}
 
     @SubscribeEvent
     public static void register(RegisterGameTestsEvent event) {

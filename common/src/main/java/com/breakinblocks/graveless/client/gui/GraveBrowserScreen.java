@@ -1,28 +1,12 @@
 package com.breakinblocks.graveless.client.gui;
 
 import com.breakinblocks.graveless.client.GhostClientManager;
+import com.breakinblocks.graveless.client.render.GhostModel;
 import com.breakinblocks.graveless.client.render.GhostSkins;
 import com.breakinblocks.graveless.config.GravelessConfig;
 import com.breakinblocks.graveless.event.GraveMenuHandlers;
 import com.breakinblocks.graveless.net.GravelessNetworking;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.model.geom.ModelLayers;
-import com.breakinblocks.graveless.client.render.GhostModel;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
-import net.minecraft.client.resources.PlayerSkin;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import com.breakinblocks.graveless.platform.Services;
-
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -32,6 +16,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 public class GraveBrowserScreen extends Screen {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -96,15 +95,30 @@ public class GraveBrowserScreen extends Screen {
     private GhostModel wideModel;
     private GhostModel slimModel;
 
-    private record Layout(int left, int top, int panelW, int panelH, int bottom,
-                          int listX, int listY, int listW, int listH,
-                          int midX, int midW, int gridX, int gridY, int gridBottom,
-                          int topButtonY, int rightX, int rightW, int terrainX, int terrainY,
-                          int infoY, int deleteY) {
-    }
+    private record Layout(
+            int left,
+            int top,
+            int panelW,
+            int panelH,
+            int bottom,
+            int listX,
+            int listY,
+            int listW,
+            int listH,
+            int midX,
+            int midW,
+            int gridX,
+            int gridY,
+            int gridBottom,
+            int topButtonY,
+            int rightX,
+            int rightW,
+            int terrainX,
+            int terrainY,
+            int infoY,
+            int deleteY) {}
 
-    private record ButtonSpec(int action, int y, Component label, boolean enabled) {
-    }
+    private record ButtonSpec(int action, int y, Component label, boolean enabled) {}
 
     public GraveBrowserScreen(GravelessNetworking.GraveListPayload payload) {
         super(Component.translatable("graveless.menu.title"));
@@ -223,28 +237,31 @@ public class GraveBrowserScreen extends Screen {
         boolean hasSelection = selectedId != null && findSummary(selectedId) != null;
         int y = l.bottom() - BUTTON_H;
         if (admin) {
-            specs.add(new ButtonSpec(ACTION_TELEPORT, y,
-                    Component.translatable("graveless.menu.button.teleport"), hasSelection));
+            specs.add(new ButtonSpec(
+                    ACTION_TELEPORT, y, Component.translatable("graveless.menu.button.teleport"), hasSelection));
             y -= BUTTON_STEP;
-            specs.add(new ButtonSpec(ACTION_RESTORE, y,
-                    Component.translatable("graveless.menu.button.restore"), hasSelection));
+            specs.add(new ButtonSpec(
+                    ACTION_RESTORE, y, Component.translatable("graveless.menu.button.restore"), hasSelection));
             y -= BUTTON_STEP;
         }
         if (viewingSelf()) {
             boolean tracking = hasSelection && selectedId.equals(effectiveTrackedId());
-            specs.add(new ButtonSpec(ACTION_TRACK, y,
+            specs.add(new ButtonSpec(
+                    ACTION_TRACK,
+                    y,
                     Component.translatable(tracking ? "graveless.menu.button.tracking" : "graveless.menu.button.track"),
                     hasSelection && !tracking));
             y -= BUTTON_STEP;
         }
         GravelessNetworking.GraveSummary selected = hasSelection ? findSummary(selectedId) : null;
-        specs.add(new ButtonSpec(ACTION_CLAIM_XP, y,
+        specs.add(new ButtonSpec(
+                ACTION_CLAIM_XP,
+                y,
                 Component.translatable("graveless.menu.button.claim_xp"),
                 selected != null && selected.xp() > 0 && canTake(selected)));
         y -= BUTTON_STEP;
         if (admin) {
-            specs.add(new ButtonSpec(ACTION_BACKUPS, y,
-                    Component.translatable("graveless.menu.button.backups"), true));
+            specs.add(new ButtonSpec(ACTION_BACKUPS, y, Component.translatable("graveless.menu.button.backups"), true));
         }
         return specs;
     }
@@ -273,9 +290,28 @@ public class GraveBrowserScreen extends Screen {
         int terrainY = contentY + 24;
         int infoY = terrainY + TERRAIN_PX + 10;
         int deleteY = bottom - BUTTON_H;
-        return new Layout(left, top, panelW, panelH, bottom, listX, listY, listW, listH,
-                midX, midW, gridX, gridY, gridBottom, topButtonY,
-                rightX, rightW, terrainX, terrainY, infoY, deleteY);
+        return new Layout(
+                left,
+                top,
+                panelW,
+                panelH,
+                bottom,
+                listX,
+                listY,
+                listW,
+                listH,
+                midX,
+                midW,
+                gridX,
+                gridY,
+                gridBottom,
+                topButtonY,
+                rightX,
+                rightW,
+                terrainX,
+                terrainY,
+                infoY,
+                deleteY);
     }
 
     @Override
@@ -321,8 +357,9 @@ public class GraveBrowserScreen extends Screen {
     private void drawCorners(GuiGraphics graphics, Layout l) {
         int x1 = l.left() + l.panelW();
         int y1 = l.top() + l.panelH();
-        for (int[] corner : new int[][]{{l.left(), l.top(), 1, 1}, {x1, l.top(), -1, 1},
-                {l.left(), y1, 1, -1}, {x1, y1, -1, -1}}) {
+        for (int[] corner :
+                new int[][] {{l.left(), l.top(), 1, 1}, {x1, l.top(), -1, 1}, {l.left(), y1, 1, -1}, {x1, y1, -1, -1}
+                }) {
             fillFromCorner(graphics, corner[0], corner[1], 6 * corner[2], 2 * corner[3]);
             fillFromCorner(graphics, corner[0], corner[1], 2 * corner[2], 6 * corner[3]);
         }
@@ -352,10 +389,14 @@ public class GraveBrowserScreen extends Screen {
     private void drawListHeader(GuiGraphics graphics, Layout l, int mouseX, int mouseY) {
         int centerX = l.listX() + l.listW() / 2;
         if (!admin) {
-            graphics.drawCenteredString(font, viewingSelf()
+            graphics.drawCenteredString(
+                    font,
+                    viewingSelf()
                             ? Component.translatable("graveless.menu.outstanding")
                             : Component.translatable("graveless.menu.viewing", ownerName.toUpperCase()),
-                    centerX, l.top() + 26, TEXT_BRIGHT);
+                    centerX,
+                    l.top() + 26,
+                    TEXT_BRIGHT);
             return;
         }
         Component label = Component.translatable("graveless.menu.viewing", ownerName.toUpperCase());
@@ -374,12 +415,28 @@ public class GraveBrowserScreen extends Screen {
         }
         int y = l.bottom() - BUTTON_H;
         int half = (l.listW() - 4) / 2;
-        drawButton(graphics, l.listX(), y, half, BUTTON_H,
-                Component.translatable(ownerEnabled ? "graveless.menu.button.graves_on" : "graveless.menu.button.graves_off"),
-                ownerEnabled ? TEXT_CYAN : RED, ownerEnabled ? EDGE : RED_DIM, true,
+        drawButton(
+                graphics,
+                l.listX(),
+                y,
+                half,
+                BUTTON_H,
+                Component.translatable(
+                        ownerEnabled ? "graveless.menu.button.graves_on" : "graveless.menu.button.graves_off"),
+                ownerEnabled ? TEXT_CYAN : RED,
+                ownerEnabled ? EDGE : RED_DIM,
+                true,
                 overlay == OVERLAY_NONE && hovered(mouseX, mouseY, l.listX(), y, half, BUTTON_H));
-        drawButton(graphics, l.listX() + half + 4, y, half, BUTTON_H,
-                Component.translatable("graveless.menu.button.access"), TEXT_CYAN, EDGE, true,
+        drawButton(
+                graphics,
+                l.listX() + half + 4,
+                y,
+                half,
+                BUTTON_H,
+                Component.translatable("graveless.menu.button.access"),
+                TEXT_CYAN,
+                EDGE,
+                true,
                 overlay == OVERLAY_NONE && hovered(mouseX, mouseY, l.listX() + half + 4, y, half, BUTTON_H));
     }
 
@@ -388,8 +445,12 @@ public class GraveBrowserScreen extends Screen {
         graphics.renderOutline(l.listX(), l.listY(), l.listW(), l.listH(), EDGE_DIM);
 
         if (graves.isEmpty()) {
-            graphics.drawCenteredString(font, Component.translatable("graveless.menu.empty"),
-                    l.listX() + l.listW() / 2, l.listY() + l.listH() / 2 - 4, TEXT_MUTED);
+            graphics.drawCenteredString(
+                    font,
+                    Component.translatable("graveless.menu.empty"),
+                    l.listX() + l.listW() / 2,
+                    l.listY() + l.listH() / 2 - 4,
+                    TEXT_MUTED);
             return;
         }
 
@@ -404,36 +465,58 @@ public class GraveBrowserScreen extends Screen {
             }
             boolean selected = summary.recordId().equals(selectedId);
             boolean hoveredNow = overlay == OVERLAY_NONE
-                    && mouseX >= l.listX() + 2 && mouseX < l.listX() + innerW
-                    && mouseY >= rowY && mouseY < rowY + ROW_HEIGHT - 2
-                    && mouseY >= l.listY() && mouseY < l.listY() + l.listH();
+                    && mouseX >= l.listX() + 2
+                    && mouseX < l.listX() + innerW
+                    && mouseY >= rowY
+                    && mouseY < rowY + ROW_HEIGHT - 2
+                    && mouseY >= l.listY()
+                    && mouseY < l.listY() + l.listH();
             if (selected) {
                 graphics.fill(l.listX() + 2, rowY, l.listX() + innerW, rowY + ROW_HEIGHT - 2, 0x3325DFDF);
                 graphics.renderOutline(l.listX() + 2, rowY, innerW - 2, ROW_HEIGHT - 2, EDGE);
             } else {
                 graphics.fill(l.listX() + 2, rowY, l.listX() + innerW, rowY + ROW_HEIGHT - 2, 0xFF0A1013);
-                graphics.renderOutline(l.listX() + 2, rowY, innerW - 2, ROW_HEIGHT - 2, hoveredNow ? 0xFF2A8A90 : 0xFF12272B);
+                graphics.renderOutline(
+                        l.listX() + 2, rowY, innerW - 2, ROW_HEIGHT - 2, hoveredNow ? 0xFF2A8A90 : 0xFF12272B);
             }
             BlockPos pos = summary.pos().pos();
-            graphics.drawString(font, Component.translatable("graveless.menu.entry", i + 1),
-                    l.listX() + 6, rowY + 3, selected ? TEXT_CYAN : TEXT_BRIGHT);
-            graphics.drawString(font, timestamp(summary.epochMillis(), summary.gameTime()),
-                    l.listX() + 6, rowY + 13, TEXT_MUTED);
-            graphics.drawString(font, "X " + pos.getX() + "  Y " + pos.getY() + "  Z " + pos.getZ(),
-                    l.listX() + 6, rowY + 23, TEXT_MUTED);
-            graphics.drawString(font, dimensionName(summary.pos().dimension().location()),
-                    l.listX() + 6, rowY + 33, selected ? TEXT_CYAN : 0xFF3FA9AD);
+            graphics.drawString(
+                    font,
+                    Component.translatable("graveless.menu.entry", i + 1),
+                    l.listX() + 6,
+                    rowY + 3,
+                    selected ? TEXT_CYAN : TEXT_BRIGHT);
+            graphics.drawString(
+                    font, timestamp(summary.epochMillis(), summary.gameTime()), l.listX() + 6, rowY + 13, TEXT_MUTED);
+            graphics.drawString(
+                    font,
+                    "X " + pos.getX() + "  Y " + pos.getY() + "  Z " + pos.getZ(),
+                    l.listX() + 6,
+                    rowY + 23,
+                    TEXT_MUTED);
+            graphics.drawString(
+                    font,
+                    dimensionName(summary.pos().dimension().location()),
+                    l.listX() + 6,
+                    rowY + 33,
+                    selected ? TEXT_CYAN : 0xFF3FA9AD);
             if (summary.recordId().equals(tracked)) {
                 drawDiamond(graphics, l.listX() + innerW - 8, rowY + 7);
             }
             if (hoveredNow) {
-                setDeferredTooltip(List.of(
-                        Component.literal(summary.cause()),
-                        Component.translatable("graveless.menu.tooltip_items", summary.itemCount(), summary.xp())
-                                .withStyle(style -> style.withColor(0x7FD4D6)),
-                        Component.literal(summary.pos().dimension().location().toString())
-                                .withStyle(style -> style.withColor(0x5A7F82))),
-                        mouseX, mouseY);
+                setDeferredTooltip(
+                        List.of(
+                                Component.literal(summary.cause()),
+                                Component.translatable(
+                                                "graveless.menu.tooltip_items", summary.itemCount(), summary.xp())
+                                        .withStyle(style -> style.withColor(0x7FD4D6)),
+                                Component.literal(summary.pos()
+                                                .dimension()
+                                                .location()
+                                                .toString())
+                                        .withStyle(style -> style.withColor(0x5A7F82))),
+                        mouseX,
+                        mouseY);
             }
         }
         graphics.disableScissor();
@@ -452,10 +535,15 @@ public class GraveBrowserScreen extends Screen {
     private void drawInventory(GuiGraphics graphics, Layout l, int mouseX, int mouseY) {
         GravelessNetworking.GraveSummary summary = selectedId == null ? null : findSummary(selectedId);
         int centerX = l.midX() + l.midW() / 2;
-        graphics.drawCenteredString(font, Component.translatable("graveless.menu.inventory"), centerX, l.top() + 26, TEXT_BRIGHT);
+        graphics.drawCenteredString(
+                font, Component.translatable("graveless.menu.inventory"), centerX, l.top() + 26, TEXT_BRIGHT);
         if (summary != null) {
-            graphics.drawCenteredString(font, Component.translatable("graveless.menu.item_count", summary.itemCount()),
-                    centerX, l.top() + 36, TEXT_MUTED);
+            graphics.drawCenteredString(
+                    font,
+                    Component.translatable("graveless.menu.item_count", summary.itemCount()),
+                    centerX,
+                    l.top() + 36,
+                    TEXT_MUTED);
         }
 
         boolean takeable = summary != null && canTake(summary);
@@ -475,8 +563,10 @@ public class GraveBrowserScreen extends Screen {
                 graphics.renderOutline(slotX, slotY, SLOT_SIZE, SLOT_SIZE, SLOT_EDGE);
                 int index = (gridScroll + row) * GRID_COLS + col;
                 boolean hoveredNow = overlay == OVERLAY_NONE
-                        && mouseX >= slotX && mouseX < slotX + SLOT_SIZE
-                        && mouseY >= slotY && mouseY < slotY + SLOT_SIZE;
+                        && mouseX >= slotX
+                        && mouseX < slotX + SLOT_SIZE
+                        && mouseY >= slotY
+                        && mouseY < slotY + SLOT_SIZE;
                 if (hoveredNow) {
                     graphics.fill(slotX + 1, slotY + 1, slotX + SLOT_SIZE - 1, slotY + SLOT_SIZE - 1, 0x3330E5E5);
                 }
@@ -486,8 +576,8 @@ public class GraveBrowserScreen extends Screen {
                     graphics.renderItemDecorations(font, stack, slotX + 1, slotY + 1);
                     if (hoveredNow) {
                         List<Component> lines = new ArrayList<>(getTooltipFromItem(minecraft, stack));
-                        lines.add(Component.translatable(takeable
-                                        ? "graveless.menu.extract_hint" : "graveless.menu.extract_far")
+                        lines.add(Component.translatable(
+                                        takeable ? "graveless.menu.extract_hint" : "graveless.menu.extract_far")
                                 .withStyle(style -> style.withColor(takeable ? 0x41E9E9 : 0x6E9B9E)));
                         setDeferredTooltip(lines, mouseX, mouseY);
                     }
@@ -504,35 +594,62 @@ public class GraveBrowserScreen extends Screen {
             graphics.fill(trackX, thumbY, trackX + 4, thumbY + thumbH, EDGE);
             int shownFrom = gridScroll * GRID_COLS + 1;
             int shownTo = Math.min(items.size(), (gridScroll + viewRows) * GRID_COLS);
-            graphics.drawCenteredString(font, Component.translatable("graveless.menu.grid_window",
-                    shownFrom, shownTo, items.size()), centerX, l.gridBottom() + 2, TEXT_MUTED);
+            graphics.drawCenteredString(
+                    font,
+                    Component.translatable("graveless.menu.grid_window", shownFrom, shownTo, items.size()),
+                    centerX,
+                    l.gridBottom() + 2,
+                    TEXT_MUTED);
         }
         if (detail == null && selectedId != null) {
-            graphics.drawCenteredString(font, Component.translatable("graveless.menu.loading"),
-                    centerX, l.gridY() + viewRows * SLOT_SIZE / 2 - 4, TEXT_MUTED);
+            graphics.drawCenteredString(
+                    font,
+                    Component.translatable("graveless.menu.loading"),
+                    centerX,
+                    l.gridY() + viewRows * SLOT_SIZE / 2 - 4,
+                    TEXT_MUTED);
         }
     }
 
     private void drawTerrainPanel(GuiGraphics graphics, Layout l) {
         int centerX = l.rightX() + l.rightW() / 2;
-        graphics.drawCenteredString(font, Component.translatable("graveless.menu.terrain"), centerX, l.top() + 26, TEXT_BRIGHT);
-        graphics.drawCenteredString(font, Component.translatable("graveless.menu.terrain_size",
-                GraveMenuHandlers.TERRAIN_SIZE), centerX, l.top() + 36, TEXT_MUTED);
+        graphics.drawCenteredString(
+                font, Component.translatable("graveless.menu.terrain"), centerX, l.top() + 26, TEXT_BRIGHT);
+        graphics.drawCenteredString(
+                font,
+                Component.translatable("graveless.menu.terrain_size", GraveMenuHandlers.TERRAIN_SIZE),
+                centerX,
+                l.top() + 36,
+                TEXT_MUTED);
 
         int tx = l.terrainX() + 2;
         int ty = l.terrainY() + 2;
-        graphics.fill(l.terrainX(), l.terrainY(), l.terrainX() + TERRAIN_PX + 4, l.terrainY() + TERRAIN_PX + 4, 0xFF04080A);
+        graphics.fill(
+                l.terrainX(), l.terrainY(), l.terrainX() + TERRAIN_PX + 4, l.terrainY() + TERRAIN_PX + 4, 0xFF04080A);
         graphics.renderOutline(l.terrainX(), l.terrainY(), TERRAIN_PX + 4, TERRAIN_PX + 4, EDGE);
 
         BlockState[] blocks = selectedId == null ? null : dioramaBlocks(selectedId);
         if (blocks != null) {
             PlayerSkin skin = GhostSkins.get(ownerId, ownerName);
             GhostModel model = skin.model() == PlayerSkin.Model.SLIM ? slimModel : wideModel;
-            GraveDioramaRenderer.render(graphics, blocks, model, skin, dioramaYaw,
-                    tx, ty, tx + TERRAIN_PX, ty + TERRAIN_PX, TERRAIN_PX / 26.0F * dioramaZoom);
+            GraveDioramaRenderer.render(
+                    graphics,
+                    blocks,
+                    model,
+                    skin,
+                    dioramaYaw,
+                    tx,
+                    ty,
+                    tx + TERRAIN_PX,
+                    ty + TERRAIN_PX,
+                    TERRAIN_PX / 26.0F * dioramaZoom);
         } else {
-            graphics.drawCenteredString(font, Component.translatable("graveless.menu.loading"),
-                    centerX, l.terrainY() + TERRAIN_PX / 2, TEXT_MUTED);
+            graphics.drawCenteredString(
+                    font,
+                    Component.translatable("graveless.menu.loading"),
+                    centerX,
+                    l.terrainY() + TERRAIN_PX / 2,
+                    TEXT_MUTED);
         }
     }
 
@@ -557,50 +674,80 @@ public class GraveBrowserScreen extends Screen {
     private void drawButtons(GuiGraphics graphics, Layout l, int mouseX, int mouseY) {
         boolean hasSelection = selectedId != null && findSummary(selectedId) != null;
         for (ButtonSpec spec : buttonSpecs(l)) {
-            drawButton(graphics, l.midX(), spec.y(), l.midW(), BUTTON_H, spec.label(), TEXT_CYAN, EDGE,
-                    spec.enabled(), overlay == OVERLAY_NONE && hovered(mouseX, mouseY, l.midX(), spec.y(), l.midW(), BUTTON_H));
+            drawButton(
+                    graphics,
+                    l.midX(),
+                    spec.y(),
+                    l.midW(),
+                    BUTTON_H,
+                    spec.label(),
+                    TEXT_CYAN,
+                    EDGE,
+                    spec.enabled(),
+                    overlay == OVERLAY_NONE && hovered(mouseX, mouseY, l.midX(), spec.y(), l.midW(), BUTTON_H));
         }
         if (canDelete()) {
             int deleteX = l.rightX() + (l.rightW() - 100) / 2;
-            drawButton(graphics, deleteX, l.deleteY(), 100, BUTTON_H,
-                    Component.translatable(confirmDelete ? "graveless.menu.button.confirm_delete" : "graveless.menu.button.delete"),
-                    RED, confirmDelete ? RED : RED_DIM,
-                    hasSelection, overlay == OVERLAY_NONE && hovered(mouseX, mouseY, deleteX, l.deleteY(), 100, BUTTON_H));
+            drawButton(
+                    graphics,
+                    deleteX,
+                    l.deleteY(),
+                    100,
+                    BUTTON_H,
+                    Component.translatable(
+                            confirmDelete ? "graveless.menu.button.confirm_delete" : "graveless.menu.button.delete"),
+                    RED,
+                    confirmDelete ? RED : RED_DIM,
+                    hasSelection,
+                    overlay == OVERLAY_NONE && hovered(mouseX, mouseY, deleteX, l.deleteY(), 100, BUTTON_H));
         }
 
         GravelessNetworking.GraveSummary summary = hasSelection ? findSummary(selectedId) : null;
         if (summary != null) {
             int infoX = l.rightX() + 2;
-            graphics.drawString(font, Component.translatable("graveless.menu.distance", distanceText(summary)),
-                    infoX, l.infoY(), TEXT_BRIGHT);
-            graphics.drawString(font, Component.translatable("graveless.menu.recoverable", summary.itemCount()),
-                    infoX, l.infoY() + 10, TEXT_BRIGHT);
-            graphics.drawString(font, Component.translatable("graveless.menu.xp_stored", summary.xp()),
-                    infoX, l.infoY() + 20, TEXT_BRIGHT);
+            graphics.drawString(
+                    font,
+                    Component.translatable("graveless.menu.distance", distanceText(summary)),
+                    infoX,
+                    l.infoY(),
+                    TEXT_BRIGHT);
+            graphics.drawString(
+                    font,
+                    Component.translatable("graveless.menu.recoverable", summary.itemCount()),
+                    infoX,
+                    l.infoY() + 10,
+                    TEXT_BRIGHT);
+            graphics.drawString(
+                    font,
+                    Component.translatable("graveless.menu.xp_stored", summary.xp()),
+                    infoX,
+                    l.infoY() + 20,
+                    TEXT_BRIGHT);
         }
     }
 
-    private record OverlayBox(int x, int y, int w, int h, int rowH, int visible) {
-    }
+    private record OverlayBox(int x, int y, int w, int h, int rowH, int visible) {}
 
     private Component overlayTitle() {
-        return Component.translatable(switch (overlay) {
-            case OVERLAY_PICKER -> "graveless.menu.overlay.players";
-            case OVERLAY_ACCESS -> "graveless.menu.overlay.access";
-            case OVERLAY_ACCESS_ADD -> "graveless.menu.overlay.access_add";
-            default -> "graveless.menu.overlay.backups";
-        });
+        return Component.translatable(
+                switch (overlay) {
+                    case OVERLAY_PICKER -> "graveless.menu.overlay.players";
+                    case OVERLAY_ACCESS -> "graveless.menu.overlay.access";
+                    case OVERLAY_ACCESS_ADD -> "graveless.menu.overlay.access_add";
+                    default -> "graveless.menu.overlay.backups";
+                });
     }
 
     private OverlayBox overlayBox(Layout l) {
         int rowH = overlay == OVERLAY_BACKUPS ? 24 : 12;
-        int count = switch (overlay) {
-            case OVERLAY_PICKER -> players.size();
-            case OVERLAY_ACCESS -> Math.max(1, allowed.size());
-            case OVERLAY_ACCESS_ADD -> Math.max(1, accessCandidates().size());
-            case OVERLAY_BACKUPS -> Math.max(1, backups.size());
-            default -> 0;
-        };
+        int count =
+                switch (overlay) {
+                    case OVERLAY_PICKER -> players.size();
+                    case OVERLAY_ACCESS -> Math.max(1, allowed.size());
+                    case OVERLAY_ACCESS_ADD -> Math.max(1, accessCandidates().size());
+                    case OVERLAY_BACKUPS -> Math.max(1, backups.size());
+                    default -> 0;
+                };
         int visible = Math.min(count, overlay == OVERLAY_BACKUPS ? 6 : 9);
         int contentW = font.width(overlayTitle());
         switch (overlay) {
@@ -612,34 +759,37 @@ public class GraveBrowserScreen extends Screen {
             case OVERLAY_ACCESS -> {
                 contentW = Math.max(contentW, 130);
                 if (allowed.isEmpty()) {
-                    contentW = Math.max(contentW, font.width(
-                            Component.translatable("graveless.menu.overlay.access_empty")));
+                    contentW = Math.max(
+                            contentW, font.width(Component.translatable("graveless.menu.overlay.access_empty")));
                 }
                 for (GravelessNetworking.PlayerEntry entry : allowed) {
                     contentW = Math.max(contentW, font.width(entry.name()));
                 }
             }
             case OVERLAY_ACCESS_ADD -> {
-                contentW = Math.max(contentW, font.width(
-                        Component.translatable("graveless.menu.overlay.no_players")));
+                contentW = Math.max(contentW, font.width(Component.translatable("graveless.menu.overlay.no_players")));
                 for (GravelessNetworking.PlayerEntry entry : accessCandidates()) {
                     contentW = Math.max(contentW, font.width(entry.name()));
                 }
             }
             case OVERLAY_BACKUPS -> {
-                contentW = Math.max(contentW, font.width(
-                        Component.translatable("graveless.menu.overlay.backups_empty")));
-                contentW = Math.max(contentW, font.width(
-                        Component.translatable("graveless.menu.overlay.revive_confirm")));
+                contentW =
+                        Math.max(contentW, font.width(Component.translatable("graveless.menu.overlay.backups_empty")));
+                contentW =
+                        Math.max(contentW, font.width(Component.translatable("graveless.menu.overlay.revive_confirm")));
                 for (GravelessNetworking.BackupEntry entry : backups) {
                     BlockPos pos = entry.pos().pos();
-                    contentW = Math.max(contentW, font.width(Component.translatable(
-                            "graveless.menu.overlay.backup_line",
-                            entry.itemCount(), pos.getX(), pos.getY(), pos.getZ())));
+                    contentW = Math.max(
+                            contentW,
+                            font.width(Component.translatable(
+                                    "graveless.menu.overlay.backup_line",
+                                    entry.itemCount(),
+                                    pos.getX(),
+                                    pos.getY(),
+                                    pos.getZ())));
                 }
             }
-            default -> {
-            }
+            default -> {}
         }
         int w = Mth.clamp(contentW + 20, 120, l.panelW() - 16);
         int footer = overlay == OVERLAY_ACCESS ? BUTTON_H + 6 : 0;
@@ -685,40 +835,74 @@ public class GraveBrowserScreen extends Screen {
             case OVERLAY_PICKER -> drawOverlayPlayers(graphics, box, listTop, mouseX, mouseY, players, null);
             case OVERLAY_ACCESS -> {
                 if (allowed.isEmpty()) {
-                    graphics.drawCenteredString(font, Component.translatable("graveless.menu.overlay.access_empty"),
-                            box.x() + box.w() / 2, listTop + 2, TEXT_MUTED);
+                    graphics.drawCenteredString(
+                            font,
+                            Component.translatable("graveless.menu.overlay.access_empty"),
+                            box.x() + box.w() / 2,
+                            listTop + 2,
+                            TEXT_MUTED);
                 } else {
-                    drawOverlayPlayers(graphics, box, listTop, mouseX, mouseY, allowed,
+                    drawOverlayPlayers(
+                            graphics,
+                            box,
+                            listTop,
+                            mouseX,
+                            mouseY,
+                            allowed,
                             Component.translatable("graveless.menu.overlay.revoke_hint"));
                 }
                 int fy = box.y() + box.h() - BUTTON_H - 4;
                 int half = (box.w() - 12) / 2;
-                drawButton(graphics, box.x() + 4, fy, half, BUTTON_H,
-                        Component.translatable("graveless.menu.button.access_add"), TEXT_CYAN, EDGE, true,
+                drawButton(
+                        graphics,
+                        box.x() + 4,
+                        fy,
+                        half,
+                        BUTTON_H,
+                        Component.translatable("graveless.menu.button.access_add"),
+                        TEXT_CYAN,
+                        EDGE,
+                        true,
                         hovered(mouseX, mouseY, box.x() + 4, fy, half, BUTTON_H));
-                drawButton(graphics, box.x() + 8 + half, fy, half, BUTTON_H,
-                        Component.translatable("graveless.menu.button.access_clear"), RED, RED_DIM,
-                        !allowed.isEmpty(), hovered(mouseX, mouseY, box.x() + 8 + half, fy, half, BUTTON_H));
+                drawButton(
+                        graphics,
+                        box.x() + 8 + half,
+                        fy,
+                        half,
+                        BUTTON_H,
+                        Component.translatable("graveless.menu.button.access_clear"),
+                        RED,
+                        RED_DIM,
+                        !allowed.isEmpty(),
+                        hovered(mouseX, mouseY, box.x() + 8 + half, fy, half, BUTTON_H));
             }
             case OVERLAY_ACCESS_ADD -> {
                 List<GravelessNetworking.PlayerEntry> candidates = accessCandidates();
                 if (candidates.isEmpty()) {
-                    graphics.drawCenteredString(font, Component.translatable("graveless.menu.overlay.no_players"),
-                            box.x() + box.w() / 2, listTop + 2, TEXT_MUTED);
+                    graphics.drawCenteredString(
+                            font,
+                            Component.translatable("graveless.menu.overlay.no_players"),
+                            box.x() + box.w() / 2,
+                            listTop + 2,
+                            TEXT_MUTED);
                 } else {
                     drawOverlayPlayers(graphics, box, listTop, mouseX, mouseY, candidates, null);
                 }
             }
             case OVERLAY_BACKUPS -> drawOverlayBackups(graphics, box, listTop, mouseX, mouseY);
-            default -> {
-            }
+            default -> {}
         }
         graphics.pose().popPose();
     }
 
-    private void drawOverlayPlayers(GuiGraphics graphics, OverlayBox box, int listTop,
-                                    int mouseX, int mouseY, List<GravelessNetworking.PlayerEntry> entries,
-                                    Component hoverHint) {
+    private void drawOverlayPlayers(
+            GuiGraphics graphics,
+            OverlayBox box,
+            int listTop,
+            int mouseX,
+            int mouseY,
+            List<GravelessNetworking.PlayerEntry> entries,
+            Component hoverHint) {
         int maxScroll = Math.max(0, entries.size() - box.visible());
         overlayScroll = Mth.clamp(overlayScroll, 0, maxScroll);
         for (int i = 0; i < box.visible(); i++) {
@@ -736,17 +920,24 @@ public class GraveBrowserScreen extends Screen {
                     setDeferredTooltip(List.of(hoverHint), mouseX, mouseY);
                 }
             }
-            graphics.drawString(font, entry.name(), box.x() + 6, rowY + 2,
+            graphics.drawString(
+                    font,
+                    entry.name(),
+                    box.x() + 6,
+                    rowY + 2,
                     current ? TEXT_CYAN : hoveredNow ? TEXT_BRIGHT : TEXT_MUTED);
         }
         drawOverlayScrollbar(graphics, box, listTop, entries.size(), maxScroll);
     }
 
-    private void drawOverlayBackups(GuiGraphics graphics, OverlayBox box, int listTop,
-                                    int mouseX, int mouseY) {
+    private void drawOverlayBackups(GuiGraphics graphics, OverlayBox box, int listTop, int mouseX, int mouseY) {
         if (backups.isEmpty()) {
-            graphics.drawCenteredString(font, Component.translatable("graveless.menu.overlay.backups_empty"),
-                    box.x() + box.w() / 2, listTop + 2, TEXT_MUTED);
+            graphics.drawCenteredString(
+                    font,
+                    Component.translatable("graveless.menu.overlay.backups_empty"),
+                    box.x() + box.w() / 2,
+                    listTop + 2,
+                    TEXT_MUTED);
             return;
         }
         int maxScroll = Math.max(0, backups.size() - box.visible());
@@ -761,26 +952,41 @@ public class GraveBrowserScreen extends Screen {
             boolean hoveredNow = hovered(mouseX, mouseY, box.x() + 2, rowY, box.w() - 4, box.rowH());
             boolean armed = index == armedBackup;
             if (hoveredNow || armed) {
-                graphics.fill(box.x() + 2, rowY, box.x() + box.w() - 2, rowY + box.rowH(),
-                        armed ? 0x5525DFDF : 0x3325DFDF);
+                graphics.fill(
+                        box.x() + 2, rowY, box.x() + box.w() - 2, rowY + box.rowH(), armed ? 0x5525DFDF : 0x3325DFDF);
             }
             if (armed) {
-                graphics.drawString(font, Component.translatable("graveless.menu.overlay.revive_confirm"),
-                        box.x() + 6, rowY + 2, TEXT_CYAN);
+                graphics.drawString(
+                        font,
+                        Component.translatable("graveless.menu.overlay.revive_confirm"),
+                        box.x() + 6,
+                        rowY + 2,
+                        TEXT_CYAN);
             } else {
-                graphics.drawString(font, timestamp(entry.epochMillis(), entry.gameTime()),
-                        box.x() + 6, rowY + 2, hoveredNow ? TEXT_BRIGHT : TEXT_MUTED);
+                graphics.drawString(
+                        font,
+                        timestamp(entry.epochMillis(), entry.gameTime()),
+                        box.x() + 6,
+                        rowY + 2,
+                        hoveredNow ? TEXT_BRIGHT : TEXT_MUTED);
             }
             BlockPos pos = entry.pos().pos();
-            graphics.drawString(font, Component.translatable("graveless.menu.overlay.backup_line",
-                    entry.itemCount(), pos.getX(), pos.getY(), pos.getZ()),
-                    box.x() + 6, rowY + 12, TEXT_MUTED);
+            graphics.drawString(
+                    font,
+                    Component.translatable(
+                            "graveless.menu.overlay.backup_line",
+                            entry.itemCount(),
+                            pos.getX(),
+                            pos.getY(),
+                            pos.getZ()),
+                    box.x() + 6,
+                    rowY + 12,
+                    TEXT_MUTED);
         }
         drawOverlayScrollbar(graphics, box, listTop, backups.size(), maxScroll);
     }
 
-    private void drawOverlayScrollbar(GuiGraphics graphics, OverlayBox box, int listTop,
-                                      int count, int maxScroll) {
+    private void drawOverlayScrollbar(GuiGraphics graphics, OverlayBox box, int listTop, int count, int maxScroll) {
         if (maxScroll <= 0) {
             return;
         }
@@ -801,7 +1007,7 @@ public class GraveBrowserScreen extends Screen {
         int itemCount = detail == null ? 0 : detail.items().size();
         int viewRows = Math.max(1, (l.gridBottom() - l.gridY()) / SLOT_SIZE);
         int totalRows = Math.max(viewRows, (itemCount + GRID_COLS - 1) / GRID_COLS);
-        return new int[]{viewRows, totalRows, Math.max(0, totalRows - viewRows)};
+        return new int[] {viewRows, totalRows, Math.max(0, totalRows - viewRows)};
     }
 
     private int gridIndexAt(Layout l, int mouseX, int mouseY) {
@@ -829,8 +1035,17 @@ public class GraveBrowserScreen extends Screen {
         gridScroll = Mth.clamp((int) Math.round(ratio * metrics[1]) - metrics[0] / 2, 0, metrics[2]);
     }
 
-    private void drawButton(GuiGraphics graphics, int x, int y, int w, int h,
-                            Component label, int textColor, int edgeColor, boolean enabled, boolean hoveredNow) {
+    private void drawButton(
+            GuiGraphics graphics,
+            int x,
+            int y,
+            int w,
+            int h,
+            Component label,
+            int textColor,
+            int edgeColor,
+            boolean enabled,
+            boolean hoveredNow) {
         int fill = enabled && hoveredNow ? 0xFF12272C : 0xFF0B1417;
         graphics.fill(x, y, x + w, y + h, fill);
         graphics.renderOutline(x, y, w, h, enabled ? edgeColor : 0xFF12272B);
@@ -867,7 +1082,8 @@ public class GraveBrowserScreen extends Screen {
         if (!mc.level.dimension().equals(summary.pos().dimension())) {
             return dimensionName(summary.pos().dimension().location()).getString();
         }
-        double dist = mc.player.position().distanceTo(Vec3.atCenterOf(summary.pos().pos()));
+        double dist =
+                mc.player.position().distanceTo(Vec3.atCenterOf(summary.pos().pos()));
         return Component.translatable("graveless.menu.blocks", (int) dist).getString();
     }
 
@@ -895,8 +1111,7 @@ public class GraveBrowserScreen extends Screen {
             int index = gridIndexAt(l, mouseX, mouseY);
             if (index >= 0) {
                 click();
-                Services.NETWORK.sendToServer(new GravelessNetworking.GraveExtractPayload(
-                        ownerId, selectedId, index));
+                Services.NETWORK.sendToServer(new GravelessNetworking.GraveExtractPayload(ownerId, selectedId, index));
                 return true;
             }
         }
@@ -1049,8 +1264,7 @@ public class GraveBrowserScreen extends Screen {
                     armedBackup = -1;
                 }
             }
-            default -> {
-            }
+            default -> {}
         }
         return true;
     }
@@ -1062,18 +1276,20 @@ public class GraveBrowserScreen extends Screen {
                         ownerId, selectedId, GravelessNetworking.GraveActionPayload.ACTION_TELEPORT));
                 onClose();
             }
-            case ACTION_TRACK -> Services.NETWORK.sendToServer(new GravelessNetworking.GraveActionPayload(
-                    ownerId, selectedId, GravelessNetworking.GraveActionPayload.ACTION_TRACK));
-            case ACTION_RESTORE -> Services.NETWORK.sendToServer(new GravelessNetworking.GraveActionPayload(
-                    ownerId, selectedId, GravelessNetworking.GraveActionPayload.ACTION_RESTORE));
-            case ACTION_CLAIM_XP -> Services.NETWORK.sendToServer(new GravelessNetworking.GraveActionPayload(
-                    ownerId, selectedId, GravelessNetworking.GraveActionPayload.ACTION_CLAIM_XP));
+            case ACTION_TRACK ->
+                Services.NETWORK.sendToServer(new GravelessNetworking.GraveActionPayload(
+                        ownerId, selectedId, GravelessNetworking.GraveActionPayload.ACTION_TRACK));
+            case ACTION_RESTORE ->
+                Services.NETWORK.sendToServer(new GravelessNetworking.GraveActionPayload(
+                        ownerId, selectedId, GravelessNetworking.GraveActionPayload.ACTION_RESTORE));
+            case ACTION_CLAIM_XP ->
+                Services.NETWORK.sendToServer(new GravelessNetworking.GraveActionPayload(
+                        ownerId, selectedId, GravelessNetworking.GraveActionPayload.ACTION_CLAIM_XP));
             case ACTION_BACKUPS -> {
                 openOverlay(OVERLAY_BACKUPS);
                 Services.NETWORK.sendToServer(new GravelessNetworking.BackupListRequestPayload(ownerId));
             }
-            default -> {
-            }
+            default -> {}
         }
     }
 
@@ -1132,8 +1348,8 @@ public class GraveBrowserScreen extends Screen {
             return true;
         }
         int[] metrics = gridMetrics(l);
-        boolean overMid = hovered((int) mouseX, (int) mouseY, l.midX(), l.top() + 24, l.midW(),
-                l.gridBottom() - l.top() - 24);
+        boolean overMid =
+                hovered((int) mouseX, (int) mouseY, l.midX(), l.top() + 24, l.midW(), l.gridBottom() - l.top() - 24);
         boolean overPanel = hovered((int) mouseX, (int) mouseY, l.left(), l.top(), l.panelW(), l.panelH());
         if (metrics[2] > 0 && (overMid || overPanel)) {
             gridScroll = Mth.clamp(gridScroll - (int) Math.signum(scrollY), 0, metrics[2]);
@@ -1174,7 +1390,9 @@ public class GraveBrowserScreen extends Screen {
             return true;
         }
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null || !mc.level.dimension().equals(summary.pos().dimension())) {
+        if (mc.player == null
+                || mc.level == null
+                || !mc.level.dimension().equals(summary.pos().dimension())) {
             return false;
         }
         GhostClientManager.ClientGhost ghost = GhostClientManager.get(summary.recordId());

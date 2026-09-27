@@ -12,8 +12,8 @@ import net.minecraft.world.item.Rarity;
 public class ModItems {
     public static final Registrar<Item> ITEMS = Services.REGISTRIES.create(Registries.ITEM, Graveless.MOD_ID);
 
-    public static final RegistrySupplier<Item> SPIRIT_COMPASS = ITEMS.register("spirit_compass",
-            registryName -> new SpiritCompassItem(new Item.Properties()
-                    .stacksTo(1)
-                    .rarity(Rarity.UNCOMMON)));
+    public static final RegistrySupplier<Item> SPIRIT_COMPASS = ITEMS.register(
+            "spirit_compass",
+            registryName ->
+                    new SpiritCompassItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
 }

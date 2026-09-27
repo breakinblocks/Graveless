@@ -8,8 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public final class RestoreTests {
-    private RestoreTests() {
-    }
+    private RestoreTests() {}
 
     static void register(TestRegistrar tests) {
         tests.add("restore_returns_items_to_original_slots", RestoreTests::returnsItemsToOriginalSlots);
@@ -102,7 +101,9 @@ public final class RestoreTests {
         RestoreEngine.Result result = RestoreEngine.claim(player.player(), player.profile(), record, player.store());
         Check.equal(helper, stored, result.xpRestored(), "reported xp restored");
         Check.equal(helper, 0, record.xp(), "grave xp is drained after a claim");
-        Check.isTrue(helper, Math.abs(player.storedXp() - stored) <= 2,
+        Check.isTrue(
+                helper,
+                Math.abs(player.storedXp() - stored) <= 2,
                 "player xp after a claim, saw " + player.storedXp() + " expected " + stored);
         helper.succeed();
     }

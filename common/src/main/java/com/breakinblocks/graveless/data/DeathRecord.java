@@ -3,27 +3,29 @@ package com.breakinblocks.graveless.data;
 import com.breakinblocks.graveless.util.LenientCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.GlobalPos;
-import net.minecraft.core.UUIDUtil;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.UUIDUtil;
 
 public class DeathRecord {
     public static final Codec<DeathRecord> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            UUIDUtil.CODEC.fieldOf("id").forGetter(DeathRecord::id),
-            GlobalPos.CODEC.fieldOf("pos").forGetter(DeathRecord::pos),
-            Codec.LONG.fieldOf("game_time").forGetter(DeathRecord::gameTime),
-            Codec.LONG.optionalFieldOf("epoch_millis", 0L).forGetter(DeathRecord::epochMillis),
-            Codec.STRING.fieldOf("cause").forGetter(DeathRecord::cause),
-            Codec.INT.optionalFieldOf("xp", 0).forGetter(DeathRecord::xp),
-            LenientCodecs.lenientList(CapturedEntry.CODEC, "grave item entry")
-                    .fieldOf("entries").forGetter(DeathRecord::entries),
-            Codec.INT_STREAM.xmap(IntStream::toArray, stream -> IntStream.of(stream))
-                    .optionalFieldOf("terrain", new int[0]).forGetter(DeathRecord::terrain)
-    ).apply(instance, DeathRecord::new));
+                    UUIDUtil.CODEC.fieldOf("id").forGetter(DeathRecord::id),
+                    GlobalPos.CODEC.fieldOf("pos").forGetter(DeathRecord::pos),
+                    Codec.LONG.fieldOf("game_time").forGetter(DeathRecord::gameTime),
+                    Codec.LONG.optionalFieldOf("epoch_millis", 0L).forGetter(DeathRecord::epochMillis),
+                    Codec.STRING.fieldOf("cause").forGetter(DeathRecord::cause),
+                    Codec.INT.optionalFieldOf("xp", 0).forGetter(DeathRecord::xp),
+                    LenientCodecs.lenientList(CapturedEntry.CODEC, "grave item entry")
+                            .fieldOf("entries")
+                            .forGetter(DeathRecord::entries),
+                    Codec.INT_STREAM
+                            .xmap(IntStream::toArray, stream -> IntStream.of(stream))
+                            .optionalFieldOf("terrain", new int[0])
+                            .forGetter(DeathRecord::terrain))
+            .apply(instance, DeathRecord::new));
 
     private final UUID id;
     private final GlobalPos pos;
@@ -34,12 +36,26 @@ public class DeathRecord {
     private final List<CapturedEntry> entries;
     private int[] terrain;
 
-    public DeathRecord(UUID id, GlobalPos pos, long gameTime, long epochMillis, String cause, int xp, List<CapturedEntry> entries) {
+    public DeathRecord(
+            UUID id,
+            GlobalPos pos,
+            long gameTime,
+            long epochMillis,
+            String cause,
+            int xp,
+            List<CapturedEntry> entries) {
         this(id, pos, gameTime, epochMillis, cause, xp, entries, new int[0]);
     }
 
-    public DeathRecord(UUID id, GlobalPos pos, long gameTime, long epochMillis, String cause, int xp,
-                       List<CapturedEntry> entries, int[] terrain) {
+    public DeathRecord(
+            UUID id,
+            GlobalPos pos,
+            long gameTime,
+            long epochMillis,
+            String cause,
+            int xp,
+            List<CapturedEntry> entries,
+            int[] terrain) {
         this.id = id;
         this.pos = pos;
         this.gameTime = gameTime;

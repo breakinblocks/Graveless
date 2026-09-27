@@ -10,22 +10,21 @@ import io.wispforest.accessories.api.AccessoriesCapability;
 import io.wispforest.accessories.api.AccessoriesContainer;
 import io.wispforest.accessories.api.DropRule;
 import io.wispforest.accessories.api.events.OnDropCallback;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 public final class AccessoriesTests {
     private static final Map<UUID, DropRule> DROP_OVERRIDES = new HashMap<>();
     private static final Map<UUID, Integer> DROP_CALLS = new HashMap<>();
-    private AccessoriesTests() {
-    }
+
+    private AccessoriesTests() {}
 
     static void register(TestRegistrar tests) {
         if (!Graveless.isModLoaded("accessories")) {
@@ -73,7 +72,9 @@ public final class AccessoriesTests {
         Check.equal(helper, AccessoriesInventoryHook.ID, entry.handler(), "accessory entry handler");
         Check.equal(helper, type + "#cosmetic", entry.context(), "accessory entry context");
         Check.equal(helper, 0, entry.slot(), "accessory entry slot");
-        Check.isTrue(helper, container.getCosmeticAccessories().getItem(0).isEmpty(),
+        Check.isTrue(
+                helper,
+                container.getCosmeticAccessories().getItem(0).isEmpty(),
                 "the accessory should leave the slot on death");
 
         RestoreEngine.claim(player.player(), player.profile(), record, player.store());
@@ -102,18 +103,19 @@ public final class AccessoriesTests {
 
         RestoreEngine.claim(player.player(), player.profile(), record, player.store());
         Check.isTrue(helper, player.records().isEmpty(), "grave should be claimed");
-        Check.isTrue(helper, container.getCosmeticAccessories().getItem(0).is(Items.STICK),
+        Check.isTrue(
+                helper,
+                container.getCosmeticAccessories().getItem(0).is(Items.STICK),
                 "the occupying item should keep its slot");
-        Check.equal(helper, 1, player.countOf(Items.EMERALD),
-                "the blocked accessory should go to the main inventory");
+        Check.equal(helper, 1, player.countOf(Items.EMERALD), "the blocked accessory should go to the main inventory");
         helper.succeed();
     }
 
     private static void originalSlotsFirst(GameTestHelper helper) {
         TestPlayer player = TestPlayer.join(helper);
         AccessoriesContainer container = anyContainer(helper, player);
-        container.addTransientModifier(new AttributeModifier(Graveless.id("test_slots"), 2,
-                AttributeModifier.Operation.ADD_VALUE));
+        container.addTransientModifier(
+                new AttributeModifier(Graveless.id("test_slots"), 2, AttributeModifier.Operation.ADD_VALUE));
         container.update();
         Check.isTrue(helper, container.getSize() >= 3, "test has three accessory slots");
         player.give(0, new ItemStack(Items.STICK));
@@ -125,9 +127,16 @@ public final class AccessoriesTests {
         grave.entries().add(new CapturedEntry(AccessoriesInventoryHook.ID, context, 1, new ItemStack(Items.EMERALD)));
         container.getCosmeticAccessories().setItem(0, new ItemStack(Items.GOLD_INGOT));
         RestoreEngine.claim(player.player(), player.profile(), grave, player.store());
-        Check.isTrue(helper, container.getCosmeticAccessories().getItem(0).is(Items.GOLD_INGOT), "existing item preserved");
-        Check.isTrue(helper, container.getCosmeticAccessories().getItem(1).is(Items.EMERALD), "free original slot preserved");
-        Check.isTrue(helper, container.getCosmeticAccessories().getItem(2).is(Items.DIAMOND), "blocked item restored afterward");
+        Check.isTrue(
+                helper, container.getCosmeticAccessories().getItem(0).is(Items.GOLD_INGOT), "existing item preserved");
+        Check.isTrue(
+                helper,
+                container.getCosmeticAccessories().getItem(1).is(Items.EMERALD),
+                "free original slot preserved");
+        Check.isTrue(
+                helper,
+                container.getCosmeticAccessories().getItem(2).is(Items.DIAMOND),
+                "blocked item restored afterward");
         Check.isTrue(helper, grave.isEmpty(), "both accessories restored");
         helper.succeed();
     }
@@ -139,9 +148,15 @@ public final class AccessoriesTests {
         container.getCosmeticAccessories().setItem(0, new ItemStack(Items.EMERALD));
         player.give(0, new ItemStack(Items.DIAMOND));
         player.killForReal();
-        Check.isTrue(helper, container.getCosmeticAccessories().getItem(0).is(Items.EMERALD), "accessory gamerule keeps item equipped");
+        Check.isTrue(
+                helper,
+                container.getCosmeticAccessories().getItem(0).is(Items.EMERALD),
+                "accessory gamerule keeps item equipped");
         Check.equal(helper, 1, player.newestRecord().itemCount(), "ordinary inventory still captured");
-        Check.isTrue(helper, player.newestRecord().entries().getFirst().stack().is(Items.DIAMOND), "grave contains ordinary item only");
+        Check.isTrue(
+                helper,
+                player.newestRecord().entries().getFirst().stack().is(Items.DIAMOND),
+                "grave contains ordinary item only");
         helper.succeed();
     }
 
@@ -155,18 +170,31 @@ public final class AccessoriesTests {
             DROP_CALLS.remove(id);
         });
         ItemStack accessory = new ItemStack(Items.DIAMOND_HELMET);
-        accessory.enchant(helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
-                .getOrThrow(Enchantments.VANISHING_CURSE), 1);
+        accessory.enchant(
+                helper.getLevel()
+                        .registryAccess()
+                        .lookupOrThrow(Registries.ENCHANTMENT)
+                        .getOrThrow(Enchantments.VANISHING_CURSE),
+                1);
         container.getCosmeticAccessories().setItem(0, accessory);
         player.killForReal();
         Check.equal(helper, 1, DROP_CALLS.getOrDefault(id, 0).intValue(), "Accessories drop callback runs once");
         if (rule == DropRule.DROP) {
-            Check.equal(helper, 1, player.newestRecord().itemCount(), "explicit drop preserves even a vanishing accessory");
-            Check.equal(helper, AccessoriesInventoryHook.ID, player.newestRecord().entries().getFirst().handler(), "slot metadata retained");
+            Check.equal(
+                    helper, 1, player.newestRecord().itemCount(), "explicit drop preserves even a vanishing accessory");
+            Check.equal(
+                    helper,
+                    AccessoriesInventoryHook.ID,
+                    player.newestRecord().entries().getFirst().handler(),
+                    "slot metadata retained");
         } else {
             Check.isTrue(helper, player.records().isEmpty(), "kept or destroyed item does not enter a grave");
         }
-        Check.equal(helper, rule == DropRule.KEEP, !container.getCosmeticAccessories().getItem(0).isEmpty(), "slot follows resolved drop rule");
+        Check.equal(
+                helper,
+                rule == DropRule.KEEP,
+                !container.getCosmeticAccessories().getItem(0).isEmpty(),
+                "slot follows resolved drop rule");
         helper.succeed();
     }
 
@@ -177,16 +205,27 @@ public final class AccessoriesTests {
         player.simulateDeath();
         DeathRecord grave = player.newestRecord();
         grave.entries().clear();
-        grave.entries().add(new CapturedEntry(AccessoriesInventoryHook.ID, container.getSlotName() + "#cosmetic",
-                0, new ItemStack(Items.DIAMOND, 64)));
+        grave.entries()
+                .add(new CapturedEntry(
+                        AccessoriesInventoryHook.ID,
+                        container.getSlotName() + "#cosmetic",
+                        0,
+                        new ItemStack(Items.DIAMOND, 64)));
         RestoreEngine.claim(player.player(), player.profile(), grave, player.store());
         int equipped = 0;
         for (int slot = 0; slot < container.getSize(); slot++) {
             ItemStack stack = container.getCosmeticAccessories().getItem(slot);
             equipped += stack.getCount();
-            Check.isTrue(helper, stack.getCount() <= container.getCosmeticAccessories().getMaxStackSize(stack), "accessory slot limit honored");
+            Check.isTrue(
+                    helper,
+                    stack.getCount() <= container.getCosmeticAccessories().getMaxStackSize(stack),
+                    "accessory slot limit honored");
         }
-        Check.equal(helper, 64, equipped + player.countOf(Items.DIAMOND) + grave.itemCount(), "oversized restoration conserves items");
+        Check.equal(
+                helper,
+                64,
+                equipped + player.countOf(Items.DIAMOND) + grave.itemCount(),
+                "oversized restoration conserves items");
         helper.succeed();
     }
 }

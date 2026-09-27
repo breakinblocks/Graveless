@@ -6,6 +6,12 @@ import com.breakinblocks.graveless.data.GraveProfile;
 import com.breakinblocks.graveless.data.GraveStore;
 import com.breakinblocks.graveless.platform.Services;
 import com.breakinblocks.graveless.registry.ModEffects;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,13 +23,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 public class SpiritWardEvents {
     private static final Set<UUID> IN_RANGE = new HashSet<>();
@@ -90,11 +89,13 @@ public class SpiritWardEvents {
         if (!player.hasEffect(ModEffects.SPIRIT_WARD.holder())) {
             return;
         }
-        int linger = Math.min(GravelessConfig.SERVER.protectionLinger.get() * 20,
+        int linger = Math.min(
+                GravelessConfig.SERVER.protectionLinger.get() * 20,
                 player.getEffect(ModEffects.SPIRIT_WARD.holder()).getDuration());
         player.removeEffect(ModEffects.SPIRIT_WARD.holder());
         if (linger > 0) {
-            player.addEffect(new MobEffectInstance(ModEffects.SPIRIT_WARD.holder(), linger, 0, true, false, true), null);
+            player.addEffect(
+                    new MobEffectInstance(ModEffects.SPIRIT_WARD.holder(), linger, 0, true, false, true), null);
             LINGERING.add(player.getUUID());
         } else {
             LINGERING.remove(player.getUUID());
@@ -104,18 +105,19 @@ public class SpiritWardEvents {
     }
 
     private static void apply(ServerPlayer player, int durationTicks) {
-        player.addEffect(new MobEffectInstance(ModEffects.SPIRIT_WARD.holder(), durationTicks, 0, true, false, true), null);
+        player.addEffect(
+                new MobEffectInstance(ModEffects.SPIRIT_WARD.holder(), durationTicks, 0, true, false, true), null);
         maintainAuxiliaryEffects(player);
         AABB area = player.getBoundingBox().inflate(40.0);
-        List<Mob> mobs = player.level().getEntitiesOfClass(Mob.class, area,
-                mob -> mob.getTarget() == player);
+        List<Mob> mobs = player.level().getEntitiesOfClass(Mob.class, area, mob -> mob.getTarget() == player);
         for (Mob mob : mobs) {
             mob.setTarget(null);
         }
     }
 
     private static void maintainAuxiliaryEffects(ServerPlayer player) {
-        Map<Holder<MobEffect>, MobEffectInstance> owned = OWNED_EFFECTS.computeIfAbsent(player.getUUID(), id -> new HashMap<>());
+        Map<Holder<MobEffect>, MobEffectInstance> owned =
+                OWNED_EFFECTS.computeIfAbsent(player.getUUID(), id -> new HashMap<>());
         for (Holder<MobEffect> effect : List.of(MobEffects.INVISIBILITY, MobEffects.NIGHT_VISION)) {
             MobEffectInstance current = player.getEffect(effect);
             if (!isOwned(current, owned.get(effect))) {
@@ -130,9 +132,14 @@ public class SpiritWardEvents {
     }
 
     private static boolean isOwned(MobEffectInstance current, MobEffectInstance owned) {
-        return current != null && current == owned && current.getAmplifier() == 0
-                && current.isAmbient() && !current.isVisible() && current.showIcon()
-                && current.getDuration() >= 0 && current.getDuration() <= AUXILIARY_DURATION;
+        return current != null
+                && current == owned
+                && current.getAmplifier() == 0
+                && current.isAmbient()
+                && !current.isVisible()
+                && current.showIcon()
+                && current.getDuration() >= 0
+                && current.getDuration() <= AUXILIARY_DURATION;
     }
 
     private static void clearAuxiliaryEffects(ServerPlayer player) {
@@ -157,7 +164,8 @@ public class SpiritWardEvents {
             if (!record.pos().dimension().equals(player.level().dimension())) {
                 continue;
             }
-            BlockPos anchor = GhostSyncEvents.anchor(player.level(), record.pos().pos());
+            BlockPos anchor =
+                    GhostSyncEvents.anchor(player.level(), record.pos().pos());
             if (Vec3.atCenterOf(anchor).distanceToSqr(player.position()) <= radiusSqr) {
                 return true;
             }

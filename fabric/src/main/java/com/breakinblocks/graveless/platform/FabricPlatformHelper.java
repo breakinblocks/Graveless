@@ -33,7 +33,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
 
     @Override
     public void registerConfig(ConfigType type, ModConfigSpec spec) {
-        NeoForgeConfigRegistry.INSTANCE.register(Graveless.MOD_ID,
-                type == ConfigType.CLIENT ? ModConfig.Type.CLIENT : ModConfig.Type.SERVER, spec);
+        NeoForgeConfigRegistry.INSTANCE.register(
+                Graveless.MOD_ID, type == ConfigType.CLIENT ? ModConfig.Type.CLIENT : ModConfig.Type.SERVER, spec);
     }
 }

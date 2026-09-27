@@ -13,22 +13,23 @@ import com.breakinblocks.graveless.event.GhostSyncEvents;
 import com.breakinblocks.graveless.event.GraveMenuHandlers;
 import com.breakinblocks.graveless.event.SpiritWardEvents;
 import com.breakinblocks.graveless.net.GravelessNetworking.ClaimRequestPayload;
+import com.breakinblocks.graveless.net.GravelessNetworking.GhostAddPayload;
+import com.breakinblocks.graveless.net.GravelessNetworking.GhostRemovePayload;
+import com.breakinblocks.graveless.net.GravelessNetworking.GraveActionPayload;
 import com.breakinblocks.graveless.net.GravelessNetworking.GraveDetailPayload;
 import com.breakinblocks.graveless.net.GravelessNetworking.GraveDetailRequestPayload;
 import com.breakinblocks.graveless.net.GravelessNetworking.GraveExtractPayload;
-import com.breakinblocks.graveless.net.GravelessNetworking.GraveActionPayload;
 import com.breakinblocks.graveless.net.GravelessNetworking.GraveListPayload;
 import com.breakinblocks.graveless.net.GravelessNetworking.GraveOpenPayload;
-import com.breakinblocks.graveless.net.GravelessNetworking.GhostAddPayload;
-import com.breakinblocks.graveless.net.GravelessNetworking.GhostRemovePayload;
 import com.breakinblocks.graveless.registry.ModEffects;
 import com.breakinblocks.graveless.registry.ModItems;
 import com.breakinblocks.graveless.restore.RestoreEngine;
-import com.breakinblocks.graveless.util.SpiritCompassManager;
-import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.core.component.DataComponents;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -41,12 +42,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class RecoveryTests {
-    private RecoveryTests() {
-    }
+    private RecoveryTests() {}
 
     static void register(TestRegistrar tests) {
         tests.add("recovery_full_inventory_compass", RecoveryTests::compass);
@@ -69,7 +66,7 @@ public final class RecoveryTests {
     }
 
     private static void compass(GameTestHelper h) {
-        for (int compassSlot : new int[]{0, 17, Inventory.SLOT_OFFHAND}) {
+        for (int compassSlot : new int[] {0, 17, Inventory.SLOT_OFFHAND}) {
             TestPlayer p = TestPlayer.join(h);
             List<ItemStack> original = fillDistinctInventory(p);
             p.simulateDeath();
@@ -82,7 +79,9 @@ public final class RecoveryTests {
             Check.equal(h, 0, r.remaining(), "all stacks should return with compass in slot " + compassSlot);
             Check.equal(h, captured, r.restored(), "restored count");
             for (int slot = 0; slot < original.size(); slot++) {
-                Check.isTrue(h, ItemStack.matches(original.get(slot), p.itemAt(slot)),
+                Check.isTrue(
+                        h,
+                        ItemStack.matches(original.get(slot), p.itemAt(slot)),
                         "original item and components in slot " + slot);
             }
             Check.equal(h, 0, p.countOf(ModItems.SPIRIT_COMPASS.get()), "last grave removes compass");
@@ -120,13 +119,35 @@ public final class RecoveryTests {
         RestoreEngine.Result result = RestoreEngine.claim(p.player(), p.profile(), p.newestRecord(), p.store());
         Check.equal(h, 0, result.remaining(), "second grave is fully restored");
         Check.equal(h, 1, p.records().size(), "older grave remains");
-        List<ItemEntity> compasses = p.player().level().getEntitiesOfClass(ItemEntity.class,
-                p.player().getBoundingBox().inflate(4), e -> e.getItem().is(ModItems.SPIRIT_COMPASS.get()));
+        List<ItemEntity> compasses = p.player()
+                .level()
+                .getEntitiesOfClass(
+                        ItemEntity.class,
+                        p.player().getBoundingBox().inflate(4),
+                        e -> e.getItem().is(ModItems.SPIRIT_COMPASS.get()));
         Check.equal(h, 1, compasses.size(), "only the displaced compass is dropped");
-        Check.equal(h, older.pos().dimension(), compasses.getFirst().getItem()
-                .get(DataComponents.LODESTONE_TRACKER).target().orElseThrow().dimension(), "dropped compass dimension");
-        Check.equal(h, p.anchorOf(older), compasses.getFirst().getItem()
-                .get(DataComponents.LODESTONE_TRACKER).target().orElseThrow().pos(), "dropped compass target");
+        Check.equal(
+                h,
+                older.pos().dimension(),
+                compasses
+                        .getFirst()
+                        .getItem()
+                        .get(DataComponents.LODESTONE_TRACKER)
+                        .target()
+                        .orElseThrow()
+                        .dimension(),
+                "dropped compass dimension");
+        Check.equal(
+                h,
+                p.anchorOf(older),
+                compasses
+                        .getFirst()
+                        .getItem()
+                        .get(DataComponents.LODESTONE_TRACKER)
+                        .target()
+                        .orElseThrow()
+                        .pos(),
+                "dropped compass target");
         RestoreEngine.claim(p.player(), p.profile(), older, p.store());
         Check.equal(h, 1, older.itemCount(), "ordinary overflow remains in grave");
         Check.equal(h, 0, p.countOf(ModItems.SPIRIT_COMPASS.get()), "retry does not issue a new compass");
@@ -144,10 +165,15 @@ public final class RecoveryTests {
         DeathCaptureEvents.onRespawn(friend.player());
         owner.profile().allowed().add(friend.id());
         friend.moveToRecord(owner.newestRecord());
-        GhostSyncEvents.handleClaimRequest(new ClaimRequestPayload(owner.newestRecord().id()), friend.context());
+        GhostSyncEvents.handleClaimRequest(
+                new ClaimRequestPayload(owner.newestRecord().id()), friend.context());
         Check.isTrue(h, friend.itemAt(0).is(Items.DIAMOND_SWORD), "friend gets original slot");
         Check.equal(h, 1, friend.countOf(ModItems.SPIRIT_COMPASS.get()), "friend keeps compass for own grave");
-        Check.equal(h, friend.anchorOf(friend.newestRecord()), friend.compassTarget().target().orElseThrow().pos(), "friend compass target");
+        Check.equal(
+                h,
+                friend.anchorOf(friend.newestRecord()),
+                friend.compassTarget().target().orElseThrow().pos(),
+                "friend compass target");
         Check.equal(h, 0, owner.countOf(ModItems.SPIRIT_COMPASS.get()), "owner's last grave removes owner's compass");
         h.succeed();
     }
@@ -171,17 +197,25 @@ public final class RecoveryTests {
         owner.profile().allowed().add(friend.id());
         friend.moveToRecord(owner.newestRecord());
         friend.clearOutbound();
-        GraveMenuHandlers.handleOpenRequest(new GraveOpenPayload(owner.newestRecord().id()), friend.context());
+        GraveMenuHandlers.handleOpenRequest(
+                new GraveOpenPayload(owner.newestRecord().id()), friend.context());
         Check.equal(h, 1, friend.outbound(GraveListPayload.class).size(), "trusted player opens browser");
-        GraveMenuHandlers.handleDetailRequest(new GraveDetailRequestPayload(owner.id(), owner.newestRecord().id()), friend.context());
+        GraveMenuHandlers.handleDetailRequest(
+                new GraveDetailRequestPayload(owner.id(), owner.newestRecord().id()), friend.context());
         Check.equal(h, 1, friend.outbound(GraveDetailPayload.class).size(), "trusted player receives item details");
         friend.clearOutbound();
-        friend.moveToAbsolute(friend.player().getX() + 100, friend.player().getY(), friend.player().getZ());
-        GraveMenuHandlers.handleDetailRequest(new GraveDetailRequestPayload(owner.id(), owner.newestRecord().id()), friend.context());
-        Check.isTrue(h, friend.outbound(GraveDetailPayload.class).isEmpty(), "trusted details are refused out of range");
+        friend.moveToAbsolute(
+                friend.player().getX() + 100,
+                friend.player().getY(),
+                friend.player().getZ());
+        GraveMenuHandlers.handleDetailRequest(
+                new GraveDetailRequestPayload(owner.id(), owner.newestRecord().id()), friend.context());
+        Check.isTrue(
+                h, friend.outbound(GraveDetailPayload.class).isEmpty(), "trusted details are refused out of range");
         friend.moveToRecord(owner.newestRecord());
         owner.profile().allowed().clear();
-        GraveMenuHandlers.handleDetailRequest(new GraveDetailRequestPayload(owner.id(), owner.newestRecord().id()), friend.context());
+        GraveMenuHandlers.handleDetailRequest(
+                new GraveDetailRequestPayload(owner.id(), owner.newestRecord().id()), friend.context());
         Check.isTrue(h, friend.outbound(GraveDetailPayload.class).isEmpty(), "revoked access cannot load details");
         h.succeed();
     }
@@ -195,9 +229,21 @@ public final class RecoveryTests {
         p.fillInventory(new ItemStack(Items.STONE, 64));
         p.give(0, new ItemStack(Items.DIAMOND, 63));
         GraveMenuHandlers.handleExtract(new GraveExtractPayload(p.id(), record.id(), 0), p.context());
-        int dropped = p.player().level().getEntitiesOfClass(ItemEntity.class, p.player().getBoundingBox().inflate(4)).stream()
-                .filter(e -> e.getItem().is(Items.DIAMOND)).mapToInt(e -> e.getItem().getCount()).sum();
-        Check.equal(h, 67, p.countOf(Items.DIAMOND) + record.itemCount() + dropped, "all extracted diamonds must survive partial insertion");
+        int dropped =
+                p
+                        .player()
+                        .level()
+                        .getEntitiesOfClass(
+                                ItemEntity.class, p.player().getBoundingBox().inflate(4))
+                        .stream()
+                        .filter(e -> e.getItem().is(Items.DIAMOND))
+                        .mapToInt(e -> e.getItem().getCount())
+                        .sum();
+        Check.equal(
+                h,
+                67,
+                p.countOf(Items.DIAMOND) + record.itemCount() + dropped,
+                "all extracted diamonds must survive partial insertion");
         h.succeed();
     }
 
@@ -209,7 +255,11 @@ public final class RecoveryTests {
         installFailingHook(h, false);
         record.entries().addFirst(new CapturedEntry(VanillaInventoryHook.ID, "", 1, new ItemStack(Items.EMERALD)));
         RestoreEngine.Result result = RestoreEngine.claim(p.player(), p.profile(), record, p.store());
-        Check.equal(h, 2, record.itemCount() + p.countOf(Items.DIAMOND) + p.countOf(Items.EMERALD), "hook failure must preserve all pending items");
+        Check.equal(
+                h,
+                2,
+                record.itemCount() + p.countOf(Items.DIAMOND) + p.countOf(Items.EMERALD),
+                "hook failure must preserve all pending items");
         Check.equal(h, 1, result.restored(), "unaffected entries still restore");
         Check.equal(h, 1, result.remaining(), "failed entry stays in the grave");
         h.succeed();
@@ -219,10 +269,14 @@ public final class RecoveryTests {
         InventoryHook original = InventoryHooks.byId(VanillaInventoryHook.ID);
         TestCleanup.attach(h).onFinish(() -> InventoryHooks.register(original));
         InventoryHooks.register(new InventoryHook() {
-            public String id() { return original.id(); }
+            public String id() {
+                return original.id();
+            }
+
             public List<CapturedEntry> capture(ServerPlayer player, DamageSource source) {
                 return original.capture(player, source);
             }
+
             public ItemStack restore(ServerPlayer player, CapturedEntry entry) {
                 if (!entry.stack().is(Items.EMERALD)) {
                     return original.restore(player, entry);
@@ -267,7 +321,11 @@ public final class RecoveryTests {
         p.clearOutbound();
         GhostSyncEvents.reset(p.player());
         Check.equal(h, 1, p.outbound(GhostRemovePayload.class).size(), "world reset removes old client ghosts");
-        Check.equal(h, p.newestRecord().id(), p.outbound(GhostRemovePayload.class).getFirst().recordId(), "correct ghost removed");
+        Check.equal(
+                h,
+                p.newestRecord().id(),
+                p.outbound(GhostRemovePayload.class).getFirst().recordId(),
+                "correct ghost removed");
         GhostSyncEvents.onPlayerTick(p.player());
         Check.equal(h, 1, p.outbound(GhostAddPayload.class).size(), "next sync resends current ghosts");
         h.succeed();
@@ -286,8 +344,14 @@ public final class RecoveryTests {
         GhostClientManager.add(ghost);
         var hitPos = p.player().getEyePosition().add(2, 0, 0);
         var wall = new BlockHitResult(hitPos, Direction.WEST, BlockPos.containing(hitPos), false);
-        Check.equal(h, ghost, GhostInteraction.findTarget(p.player(), wall), "disabled line of sight permits wall targeting");
-        Check.isNull(h, GhostInteraction.findTarget(p.player(), new EntityHitResult(p.player(), hitPos)),
+        Check.equal(
+                h,
+                ghost,
+                GhostInteraction.findTarget(p.player(), wall),
+                "disabled line of sight permits wall targeting");
+        Check.isNull(
+                h,
+                GhostInteraction.findTarget(p.player(), new EntityHitResult(p.player(), hitPos)),
                 "ghost targeting does not steal an entity interaction");
         GravelessConfig.SERVER.requireLineOfSight.set(true);
         Check.isNull(h, GhostInteraction.findTarget(p.player(), wall), "enabled line of sight blocks wall targeting");
@@ -310,11 +374,15 @@ public final class RecoveryTests {
     private static void linger(GameTestHelper h) {
         TestPlayer p = warded(h);
         SpiritWardEvents.onPlayerTick(p.player());
-        GhostSyncEvents.handleClaimRequest(new ClaimRequestPayload(p.newestRecord().id()), p.context());
+        GhostSyncEvents.handleClaimRequest(
+                new ClaimRequestPayload(p.newestRecord().id()), p.context());
         Check.isTrue(h, p.player().hasEffect(ModEffects.SPIRIT_WARD.holder()), "linger begins after claim");
         p.player().tickCount += 20;
         SpiritWardEvents.onPlayerTick(p.player());
-        Check.isTrue(h, p.player().hasEffect(ModEffects.SPIRIT_WARD.holder()), "configured five-second linger must survive next ward check");
+        Check.isTrue(
+                h,
+                p.player().hasEffect(ModEffects.SPIRIT_WARD.holder()),
+                "configured five-second linger must survive next ward check");
         h.succeed();
     }
 
@@ -324,7 +392,10 @@ public final class RecoveryTests {
         SpiritWardEvents.onPlayerTick(p.player());
         p.moveToAbsolute(p.player().getX() + 100, p.player().getY(), p.player().getZ());
         SpiritWardEvents.onPlayerTick(p.player());
-        Check.isTrue(h, p.player().hasEffect(MobEffects.NIGHT_VISION), "pre-existing night vision potion must survive ward cleanup");
+        Check.isTrue(
+                h,
+                p.player().hasEffect(MobEffects.NIGHT_VISION),
+                "pre-existing night vision potion must survive ward cleanup");
         h.succeed();
     }
 
@@ -335,23 +406,38 @@ public final class RecoveryTests {
         p.player().addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 10000), null);
         SpiritWardEvents.beginWearOff(p.player());
         SpiritWardEvents.onLogout(p.player());
-        Check.equal(h, 10000, p.player().getEffect(MobEffects.NIGHT_VISION).getDuration(), "later night vision survives cleanup");
-        Check.equal(h, 10000, p.player().getEffect(MobEffects.INVISIBILITY).getDuration(), "later invisibility survives cleanup");
+        Check.equal(
+                h,
+                10000,
+                p.player().getEffect(MobEffects.NIGHT_VISION).getDuration(),
+                "later night vision survives cleanup");
+        Check.equal(
+                h,
+                10000,
+                p.player().getEffect(MobEffects.INVISIBILITY).getDuration(),
+                "later invisibility survives cleanup");
         h.succeed();
     }
 
     private static void lingerExpires(GameTestHelper h) {
         TestPlayer p = warded(h);
         SpiritWardEvents.onPlayerTick(p.player());
-        GhostSyncEvents.handleClaimRequest(new ClaimRequestPayload(p.newestRecord().id()), p.context());
+        GhostSyncEvents.handleClaimRequest(
+                new ClaimRequestPayload(p.newestRecord().id()), p.context());
         h.startSequence()
                 .thenIdle(40)
-                .thenExecute(() -> Check.isTrue(h, p.player().hasEffect(ModEffects.SPIRIT_WARD.holder()), "five-second linger survives two seconds"))
-                .thenWaitUntil(() -> Check.isFalse(h, p.player().hasEffect(ModEffects.SPIRIT_WARD.holder()), "linger expires"))
+                .thenExecute(() -> Check.isTrue(
+                        h,
+                        p.player().hasEffect(ModEffects.SPIRIT_WARD.holder()),
+                        "five-second linger survives two seconds"))
+                .thenWaitUntil(
+                        () -> Check.isFalse(h, p.player().hasEffect(ModEffects.SPIRIT_WARD.holder()), "linger expires"))
                 .thenExecute(() -> {
                     SpiritWardEvents.onPlayerTick(p.player());
-                    Check.isFalse(h, p.player().hasEffect(MobEffects.NIGHT_VISION), "owned night vision ends with ward");
-                    Check.isFalse(h, p.player().hasEffect(MobEffects.INVISIBILITY), "owned invisibility ends with ward");
+                    Check.isFalse(
+                            h, p.player().hasEffect(MobEffects.NIGHT_VISION), "owned night vision ends with ward");
+                    Check.isFalse(
+                            h, p.player().hasEffect(MobEffects.INVISIBILITY), "owned invisibility ends with ward");
                 })
                 .thenSucceed();
     }
@@ -360,7 +446,8 @@ public final class RecoveryTests {
         TestPlayer p = warded(h);
         GravelessConfig.SERVER.protectionLinger.set(0);
         SpiritWardEvents.onPlayerTick(p.player());
-        GhostSyncEvents.handleClaimRequest(new ClaimRequestPayload(p.newestRecord().id()), p.context());
+        GhostSyncEvents.handleClaimRequest(
+                new ClaimRequestPayload(p.newestRecord().id()), p.context());
         Check.isFalse(h, p.player().hasEffect(ModEffects.SPIRIT_WARD.holder()), "zero linger ends immediately");
         Check.isFalse(h, p.player().hasEffect(MobEffects.NIGHT_VISION), "zero linger removes owned night vision");
         h.succeed();
@@ -373,15 +460,16 @@ public final class RecoveryTests {
         if (xpOnly) {
             grave.entries().clear();
             grave.setXp(10);
-            GraveMenuHandlers.handleAction(new GraveActionPayload(p.id(), grave.id(),
-                    GraveActionPayload.ACTION_CLAIM_XP), p.context());
+            GraveMenuHandlers.handleAction(
+                    new GraveActionPayload(p.id(), grave.id(), GraveActionPayload.ACTION_CLAIM_XP), p.context());
         } else {
             GraveMenuHandlers.handleExtract(new GraveExtractPayload(p.id(), grave.id(), 0), p.context());
         }
         Check.isTrue(h, p.records().isEmpty(), "browser action empties the grave");
         p.player().tickCount += 20;
         SpiritWardEvents.onPlayerTick(p.player());
-        Check.isTrue(h, p.player().hasEffect(ModEffects.SPIRIT_WARD.holder()), "browser recovery grants configured linger");
+        Check.isTrue(
+                h, p.player().hasEffect(ModEffects.SPIRIT_WARD.holder()), "browser recovery grants configured linger");
         h.succeed();
     }
 }

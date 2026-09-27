@@ -2,6 +2,9 @@ package com.breakinblocks.graveless.data;
 
 import com.breakinblocks.graveless.Graveless;
 import com.mojang.serialization.Codec;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
@@ -10,10 +13,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class GraveStore extends SavedData {
     private static final String DATA_NAME = Graveless.MOD_ID + "_graves";
@@ -27,8 +26,7 @@ public class GraveStore extends SavedData {
 
     private final Map<UUID, GraveProfile> profiles = new HashMap<>();
 
-    public GraveStore() {
-    }
+    public GraveStore() {}
 
     private GraveStore(Map<UUID, GraveProfile> profiles) {
         this.profiles.putAll(profiles);

@@ -1,6 +1,10 @@
 package com.breakinblocks.graveless.platform;
 
 import com.breakinblocks.graveless.platform.services.INetworkHelper;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -9,11 +13,6 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class NeoForgeNetworkHelper implements INetworkHelper {
     private static final List<Consumer<PayloadRegistrar>> PENDING = new ArrayList<>();
@@ -24,19 +23,21 @@ public class NeoForgeNetworkHelper implements INetworkHelper {
     }
 
     @Override
-    public <T extends CustomPacketPayload> void registerToClient(CustomPacketPayload.Type<T> type,
-                                                                 StreamCodec<? super RegistryFriendlyByteBuf, T> codec,
-                                                                 BiConsumer<T, PayloadContext> handler) {
-        PENDING.add(registrar -> registrar.playToClient(type, codec,
-                (payload, context) -> handler.accept(payload, wrap(context))));
+    public <T extends CustomPacketPayload> void registerToClient(
+            CustomPacketPayload.Type<T> type,
+            StreamCodec<? super RegistryFriendlyByteBuf, T> codec,
+            BiConsumer<T, PayloadContext> handler) {
+        PENDING.add(registrar ->
+                registrar.playToClient(type, codec, (payload, context) -> handler.accept(payload, wrap(context))));
     }
 
     @Override
-    public <T extends CustomPacketPayload> void registerToServer(CustomPacketPayload.Type<T> type,
-                                                                 StreamCodec<? super RegistryFriendlyByteBuf, T> codec,
-                                                                 BiConsumer<T, PayloadContext> handler) {
-        PENDING.add(registrar -> registrar.playToServer(type, codec,
-                (payload, context) -> handler.accept(payload, wrap(context))));
+    public <T extends CustomPacketPayload> void registerToServer(
+            CustomPacketPayload.Type<T> type,
+            StreamCodec<? super RegistryFriendlyByteBuf, T> codec,
+            BiConsumer<T, PayloadContext> handler) {
+        PENDING.add(registrar ->
+                registrar.playToServer(type, codec, (payload, context) -> handler.accept(payload, wrap(context))));
     }
 
     @Override

@@ -5,7 +5,6 @@ import com.breakinblocks.graveless.commands.GravelessCommands;
 import com.breakinblocks.graveless.platform.NeoForgeNetworkHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;

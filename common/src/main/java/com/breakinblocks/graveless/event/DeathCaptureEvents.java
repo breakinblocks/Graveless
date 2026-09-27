@@ -14,6 +14,11 @@ import com.breakinblocks.graveless.registry.ModItems;
 import com.breakinblocks.graveless.util.GraveBackups;
 import com.breakinblocks.graveless.util.SpiritCompassManager;
 import com.breakinblocks.graveless.util.XpMath;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -26,12 +31,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public class DeathCaptureEvents {
     private static final Map<UUID, DeathRecord> PENDING = new HashMap<>();
@@ -58,7 +57,11 @@ public class DeathCaptureEvents {
             try {
                 hook.prepareDrops(player, source);
             } catch (Exception e) {
-                Graveless.LOGGER.error("Inventory hook {} failed during drop preparation for {}", hook.id(), player.getName().getString(), e);
+                Graveless.LOGGER.error(
+                        "Inventory hook {} failed during drop preparation for {}",
+                        hook.id(),
+                        player.getName().getString(),
+                        e);
             }
         }
         List<CapturedEntry> entries = new ArrayList<>();
@@ -66,7 +69,11 @@ public class DeathCaptureEvents {
             try {
                 entries.addAll(hook.capture(player, source));
             } catch (Exception e) {
-                Graveless.LOGGER.error("Inventory hook {} failed during capture for {}", hook.id(), player.getName().getString(), e);
+                Graveless.LOGGER.error(
+                        "Inventory hook {} failed during capture for {}",
+                        hook.id(),
+                        player.getName().getString(),
+                        e);
             }
         }
 
@@ -105,9 +112,12 @@ public class DeathCaptureEvents {
         ItemStack copy = stack.copy();
         ModDataComponents.CurioSlot curioTag = copy.remove(ModDataComponents.CURIO_SLOT.get());
         if (curioTag != null) {
-            record.entries().add(new CapturedEntry("curios",
-                    curioTag.cosmetic() ? curioTag.type() + "#cosmetic" : curioTag.type(),
-                    curioTag.index(), copy));
+            record.entries()
+                    .add(new CapturedEntry(
+                            "curios",
+                            curioTag.cosmetic() ? curioTag.type() + "#cosmetic" : curioTag.type(),
+                            curioTag.index(),
+                            copy));
         } else {
             record.entries().add(CapturedEntry.loose(copy));
         }
@@ -146,12 +156,16 @@ public class DeathCaptureEvents {
         if (record == null) {
             return;
         }
-        Graveless.LOGGER.warn("Drop capture for {} never completed ({}); saving {} item(s) taken at death",
-                player.getName().getString(), reason, record.itemCount());
+        Graveless.LOGGER.warn(
+                "Drop capture for {} never completed ({}); saving {} item(s) taken at death",
+                player.getName().getString(),
+                reason,
+                record.itemCount());
         try {
             finalizeRecord(player, record);
         } catch (Exception e) {
-            Graveless.LOGGER.error("Failed to save the rescued grave for {}", player.getName().getString(), e);
+            Graveless.LOGGER.error(
+                    "Failed to save the rescued grave for {}", player.getName().getString(), e);
         }
     }
 
@@ -160,7 +174,8 @@ public class DeathCaptureEvents {
             try {
                 hook.finishDrops(player);
             } catch (Exception e) {
-                Graveless.LOGGER.error("Inventory hook {} failed cleaning up death for {}", hook.id(), player.getUUID(), e);
+                Graveless.LOGGER.error(
+                        "Inventory hook {} failed cleaning up death for {}", hook.id(), player.getUUID(), e);
             }
         }
     }
@@ -198,10 +213,14 @@ public class DeathCaptureEvents {
         GraveBackups.write(server, player.getUUID(), record);
 
         BlockPos pos = record.pos().pos();
-        player.sendSystemMessage(Component.translatable("graveless.death.saved",
-                record.itemCount(),
-                pos.getX(), pos.getY(), pos.getZ(),
-                record.pos().dimension().location().toString()).withStyle(ChatFormatting.AQUA));
+        player.sendSystemMessage(Component.translatable(
+                        "graveless.death.saved",
+                        record.itemCount(),
+                        pos.getX(),
+                        pos.getY(),
+                        pos.getZ(),
+                        record.pos().dimension().location().toString())
+                .withStyle(ChatFormatting.AQUA));
         player.level().playSound(null, pos, SoundEvents.SOUL_ESCAPE.value(), SoundSource.PLAYERS, 1.0F, 0.7F);
     }
 }

@@ -12,8 +12,7 @@ public final class InventoryHooks {
         register(new VanillaInventoryHook());
     }
 
-    private InventoryHooks() {
-    }
+    private InventoryHooks() {}
 
     public static synchronized void register(InventoryHook hook) {
         HOOKS.put(hook.id(), hook);

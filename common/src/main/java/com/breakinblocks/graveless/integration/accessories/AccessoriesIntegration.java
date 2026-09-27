@@ -6,8 +6,7 @@ import io.wispforest.accessories.api.events.OnDeathCallback;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class AccessoriesIntegration {
-    private AccessoriesIntegration() {
-    }
+    private AccessoriesIntegration() {}
 
     public static void init() {
         AccessoriesInventoryHook hook = new AccessoriesInventoryHook();

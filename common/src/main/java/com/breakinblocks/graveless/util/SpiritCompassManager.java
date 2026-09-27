@@ -5,6 +5,10 @@ import com.breakinblocks.graveless.data.GraveProfile;
 import com.breakinblocks.graveless.data.GraveStore;
 import com.breakinblocks.graveless.event.GhostSyncEvents;
 import com.breakinblocks.graveless.registry.ModItems;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
@@ -15,17 +19,10 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.LodestoneTracker;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 public final class SpiritCompassManager {
-    private SpiritCompassManager() {
-    }
+    private SpiritCompassManager() {}
 
-    public record StoredCompass(int slot, ItemStack stack) {
-    }
+    public record StoredCompass(int slot, ItemStack stack) {}
 
     public static List<StoredCompass> suspend(ServerPlayer player) {
         List<StoredCompass> compasses = new ArrayList<>();
@@ -78,7 +75,8 @@ public final class SpiritCompassManager {
         Inventory inventory = player.getInventory();
         for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
             ItemStack stack = inventory.getItem(slot);
-            if (stack.is(ModItems.SPIRIT_COMPASS.get()) && !tracker.equals(stack.get(DataComponents.LODESTONE_TRACKER))) {
+            if (stack.is(ModItems.SPIRIT_COMPASS.get())
+                    && !tracker.equals(stack.get(DataComponents.LODESTONE_TRACKER))) {
                 stack.set(DataComponents.LODESTONE_TRACKER, tracker);
                 inventory.setChanged();
             }
@@ -101,9 +99,10 @@ public final class SpiritCompassManager {
             target = profile.records().getLast();
         }
         ServerLevel level = server.getLevel(target.pos().dimension());
-        BlockPos pos = level == null ? target.pos().pos() : GhostSyncEvents.anchor(level, target.pos().pos());
-        return new LodestoneTracker(
-                Optional.of(GlobalPos.of(target.pos().dimension(), pos)), false);
+        BlockPos pos = level == null
+                ? target.pos().pos()
+                : GhostSyncEvents.anchor(level, target.pos().pos());
+        return new LodestoneTracker(Optional.of(GlobalPos.of(target.pos().dimension(), pos)), false);
     }
 
     public static void giveIfMissing(ServerPlayer player) {

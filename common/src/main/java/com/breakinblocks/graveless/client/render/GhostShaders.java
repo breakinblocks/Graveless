@@ -7,8 +7,7 @@ public final class GhostShaders {
     @Nullable
     private static ShaderInstance ghostShader;
 
-    private GhostShaders() {
-    }
+    private GhostShaders() {}
 
     public static void setGhostShader(@Nullable ShaderInstance shader) {
         ghostShader = shader;

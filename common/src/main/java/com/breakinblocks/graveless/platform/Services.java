@@ -4,7 +4,6 @@ import com.breakinblocks.graveless.Graveless;
 import com.breakinblocks.graveless.platform.services.INetworkHelper;
 import com.breakinblocks.graveless.platform.services.IPlatformHelper;
 import com.breakinblocks.graveless.platform.services.IRegistryFactory;
-
 import java.util.ServiceLoader;
 
 public final class Services {
@@ -12,8 +11,7 @@ public final class Services {
     public static final IRegistryFactory REGISTRIES = load(IRegistryFactory.class);
     public static final INetworkHelper NETWORK = load(INetworkHelper.class);
 
-    private Services() {
-    }
+    private Services() {}
 
     public static <T> T load(Class<T> clazz) {
         T loadedService = ServiceLoader.load(clazz, Services.class.getClassLoader())

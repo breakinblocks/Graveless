@@ -1,9 +1,8 @@
 package com.breakinblocks.graveless.platform;
 
-import net.minecraft.resources.ResourceLocation;
-
 import java.util.function.Function;
 import java.util.function.Supplier;
+import net.minecraft.resources.ResourceLocation;
 
 public interface Registrar<T> {
     <I extends T> RegistrySupplier<I> register(String name, Function<ResourceLocation, I> factory);

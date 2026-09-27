@@ -13,10 +13,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Player.class)
 public abstract class PlayerMixin {
 
-    @Inject(method = "drop(Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/world/entity/item/ItemEntity;",
-            at = @At("HEAD"), cancellable = true)
-    private void graveless$captureDeathDrop(ItemStack stack, boolean dropAround,
-                                            CallbackInfoReturnable<ItemEntity> cir) {
+    @Inject(
+            method = "drop(Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/world/entity/item/ItemEntity;",
+            at = @At("HEAD"),
+            cancellable = true)
+    private void graveless$captureDeathDrop(
+            ItemStack stack, boolean dropAround, CallbackInfoReturnable<ItemEntity> cir) {
         if ((Object) this instanceof ServerPlayer player && DeathCaptureEvents.captureDrop(player, stack)) {
             stack.setCount(0);
             cir.setReturnValue(null);

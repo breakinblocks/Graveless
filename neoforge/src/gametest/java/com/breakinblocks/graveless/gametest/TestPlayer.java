@@ -11,6 +11,10 @@ import com.breakinblocks.graveless.registry.ModItems;
 import com.breakinblocks.graveless.util.XpMath;
 import com.mojang.authlib.GameProfile;
 import io.netty.channel.embedded.EmbeddedChannel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -34,11 +38,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.network.registration.NetworkRegistry;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public final class TestPlayer implements GameTestListener {
     private static final AtomicInteger COUNTER = new AtomicInteger();
@@ -263,8 +262,7 @@ public final class TestPlayer implements GameTestListener {
     }
 
     @Override
-    public void testStructureLoaded(GameTestInfo testInfo) {
-    }
+    public void testStructureLoaded(GameTestInfo testInfo) {}
 
     @Override
     public void testPassed(GameTestInfo testInfo, GameTestRunner runner) {
@@ -277,6 +275,5 @@ public final class TestPlayer implements GameTestListener {
     }
 
     @Override
-    public void testAddedForRerun(GameTestInfo original, GameTestInfo copy, GameTestRunner runner) {
-    }
+    public void testAddedForRerun(GameTestInfo original, GameTestInfo copy, GameTestRunner runner) {}
 }

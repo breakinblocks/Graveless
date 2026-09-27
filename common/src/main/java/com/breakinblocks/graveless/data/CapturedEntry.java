@@ -3,10 +3,9 @@ package com.breakinblocks.graveless.data;
 import com.breakinblocks.graveless.Graveless;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.item.ItemStack;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.item.ItemStack;
 
 public record CapturedEntry(String handler, String context, int slot, ItemStack stack) {
     public static final String LOOSE_HANDLER = "loose";
@@ -14,11 +13,11 @@ public record CapturedEntry(String handler, String context, int slot, ItemStack 
     private static final int MAX_SPLIT_STACKS = 40;
 
     public static final Codec<CapturedEntry> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.STRING.fieldOf("handler").forGetter(CapturedEntry::handler),
-            Codec.STRING.optionalFieldOf("context", "").forGetter(CapturedEntry::context),
-            Codec.INT.optionalFieldOf("slot", -1).forGetter(CapturedEntry::slot),
-            ItemStack.CODEC.fieldOf("stack").forGetter(CapturedEntry::stack)
-    ).apply(instance, CapturedEntry::new));
+                    Codec.STRING.fieldOf("handler").forGetter(CapturedEntry::handler),
+                    Codec.STRING.optionalFieldOf("context", "").forGetter(CapturedEntry::context),
+                    Codec.INT.optionalFieldOf("slot", -1).forGetter(CapturedEntry::slot),
+                    ItemStack.CODEC.fieldOf("stack").forGetter(CapturedEntry::stack))
+            .apply(instance, CapturedEntry::new));
 
     public static CapturedEntry loose(ItemStack stack) {
         return new CapturedEntry(LOOSE_HANDLER, "", -1, stack);
@@ -52,8 +51,11 @@ public record CapturedEntry(String handler, String context, int slot, ItemStack 
                 splits++;
             }
             if (count > 0) {
-                Graveless.LOGGER.warn("Oversized stack of {} exceeded {} split stacks; {} items were discarded",
-                        stack.getItem(), MAX_SPLIT_STACKS, count);
+                Graveless.LOGGER.warn(
+                        "Oversized stack of {} exceeded {} split stacks; {} items were discarded",
+                        stack.getItem(),
+                        MAX_SPLIT_STACKS,
+                        count);
             }
         }
         return out;

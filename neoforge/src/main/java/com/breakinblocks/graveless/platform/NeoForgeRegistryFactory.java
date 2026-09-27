@@ -1,15 +1,14 @@
 package com.breakinblocks.graveless.platform;
 
 import com.breakinblocks.graveless.platform.services.IRegistryFactory;
+import java.util.function.Function;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.function.Function;
 
 public class NeoForgeRegistryFactory implements IRegistryFactory {
     private static IEventBus modBus;

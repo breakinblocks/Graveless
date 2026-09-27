@@ -41,11 +41,19 @@ public final class GraveDioramaRenderer {
     private static final int SIZE = GraveMenuHandlers.TERRAIN_SIZE;
     private static final int HEIGHT = GraveMenuHandlers.TERRAIN_HEIGHT;
 
-    private GraveDioramaRenderer() {
-    }
+    private GraveDioramaRenderer() {}
 
-    public static void render(GuiGraphics graphics, BlockState[] blocks, GhostModel playerModel, PlayerSkin skin,
-                              float yaw, int x0, int y0, int x1, int y1, float scale) {
+    public static void render(
+            GuiGraphics graphics,
+            BlockState[] blocks,
+            GhostModel playerModel,
+            PlayerSkin skin,
+            float yaw,
+            int x0,
+            int y0,
+            int x1,
+            int y1,
+            float scale) {
         Minecraft minecraft = Minecraft.getInstance();
         MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
         DioramaView view = new DioramaView(blocks);
@@ -57,8 +65,7 @@ public final class GraveDioramaRenderer {
         pose.pushPose();
         pose.translate((x0 + x1) / 2.0F, (y0 + y1) / 2.0F, 250.0F);
         pose.scale(scale, -scale, scale);
-        pose.mulPose(new Quaternionf().rotationXYZ(
-                (float) Math.toRadians(30.0), (float) Math.toRadians(yaw), 0.0F));
+        pose.mulPose(new Quaternionf().rotationXYZ((float) Math.toRadians(30.0), (float) Math.toRadians(yaw), 0.0F));
         pose.translate(-(SIZE / 2.0F + 0.5F), -(ghostFeet + 0.9F), -(SIZE / 2.0F + 0.5F));
 
         Lighting.setupFor3DItems();
@@ -73,8 +80,12 @@ public final class GraveDioramaRenderer {
         graphics.disableScissor();
     }
 
-    private static void renderGhost(PoseStack pose, MultiBufferSource.BufferSource bufferSource,
-                                    GhostModel model, PlayerSkin skin, int ghostFeet) {
+    private static void renderGhost(
+            PoseStack pose,
+            MultiBufferSource.BufferSource bufferSource,
+            GhostModel model,
+            PlayerSkin skin,
+            int ghostFeet) {
         Lighting.setupForEntityInInventory();
         model.setupGhostAnim(0.0F);
         pose.pushPose();
@@ -84,12 +95,12 @@ public final class GraveDioramaRenderer {
         pose.translate(0.0F, -1.501F, 0.0F);
         ResourceLocation texture = skin.texture();
         VertexConsumer body = bufferSource.getBuffer(RenderType.entityTranslucentEmissive(texture));
-        model.renderToBuffer(pose, body, FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
-                FastColor.ARGB32.color(245, 255, 255, 255));
+        model.renderToBuffer(
+                pose, body, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, FastColor.ARGB32.color(245, 255, 255, 255));
         bufferSource.endBatch();
         VertexConsumer glow = bufferSource.getBuffer(GhostRenderTypes.ghostPreview(texture));
-        model.renderToBuffer(pose, glow, FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
-                FastColor.ARGB32.color(80, 160, 235, 255));
+        model.renderToBuffer(
+                pose, glow, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, FastColor.ARGB32.color(80, 160, 235, 255));
         bufferSource.endBatch();
         pose.popPose();
     }
@@ -107,8 +118,12 @@ public final class GraveDioramaRenderer {
         return feet;
     }
 
-    private static void renderPass(BlockRenderDispatcher dispatcher, DioramaView view, PoseStack pose,
-                                   MultiBufferSource.BufferSource bufferSource, boolean translucent) {
+    private static void renderPass(
+            BlockRenderDispatcher dispatcher,
+            DioramaView view,
+            PoseStack pose,
+            MultiBufferSource.BufferSource bufferSource,
+            boolean translucent) {
         RandomSource random = RandomSource.create();
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         for (int y = 0; y < HEIGHT; y++) {
@@ -221,17 +236,20 @@ public final class GraveDioramaRenderer {
         @Override
         public LevelLightEngine getLightEngine() {
             if (lightEngine == null) {
-                lightEngine = new LevelLightEngine(new LightChunkGetter() {
-                    @Override
-                    public @Nullable LightChunk getChunkForLighting(int chunkX, int chunkZ) {
-                        return null;
-                    }
+                lightEngine = new LevelLightEngine(
+                        new LightChunkGetter() {
+                            @Override
+                            public @Nullable LightChunk getChunkForLighting(int chunkX, int chunkZ) {
+                                return null;
+                            }
 
-                    @Override
-                    public BlockGetter getLevel() {
-                        return DioramaView.this;
-                    }
-                }, false, false);
+                            @Override
+                            public BlockGetter getLevel() {
+                                return DioramaView.this;
+                            }
+                        },
+                        false,
+                        false);
             }
             return lightEngine;
         }

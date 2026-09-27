@@ -4,19 +4,18 @@ import com.breakinblocks.graveless.Graveless;
 import com.breakinblocks.graveless.platform.Registrar;
 import com.breakinblocks.graveless.platform.RegistrySupplier;
 import com.breakinblocks.graveless.platform.Services;
+import java.util.function.Function;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
-import java.util.function.Function;
-
 public class ModBlocks {
     public static final Registrar<Block> BLOCKS = Services.REGISTRIES.create(Registries.BLOCK, Graveless.MOD_ID);
 
-    public static <B extends Block> RegistrySupplier<B> registerWithItem(String name,
-                                                                         Function<ResourceLocation, ? extends B> factory) {
+    public static <B extends Block> RegistrySupplier<B> registerWithItem(
+            String name, Function<ResourceLocation, ? extends B> factory) {
         RegistrySupplier<B> block = BLOCKS.register(name, factory::apply);
         ModItems.ITEMS.register(name, registryName -> new BlockItem(block.get(), new Item.Properties()));
         return block;

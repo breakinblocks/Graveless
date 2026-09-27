@@ -1,12 +1,11 @@
 package com.breakinblocks.graveless.gametest;
 
 import com.breakinblocks.graveless.Graveless;
-import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.gametest.framework.TestFunction;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.TestFunction;
 
 public final class TestRegistrar {
     private static final String EMPTY_STRUCTURE = Graveless.MOD_ID + ":empty";
@@ -14,8 +13,7 @@ public final class TestRegistrar {
 
     private final List<TestFunction> functions = new ArrayList<>();
 
-    TestRegistrar() {
-    }
+    TestRegistrar() {}
 
     public List<TestFunction> functions() {
         return functions;
@@ -38,7 +36,7 @@ public final class TestRegistrar {
     }
 
     private void register(String name, String batch, int maxTicks, Consumer<GameTestHelper> body) {
-        functions.add(new TestFunction(batch, Graveless.MOD_ID + "." + name, EMPTY_STRUCTURE,
-                maxTicks, 0L, true, body));
+        functions.add(
+                new TestFunction(batch, Graveless.MOD_ID + "." + name, EMPTY_STRUCTURE, maxTicks, 0L, true, body));
     }
 }

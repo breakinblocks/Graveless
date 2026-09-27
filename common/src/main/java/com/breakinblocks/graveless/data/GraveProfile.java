@@ -3,23 +3,26 @@ package com.breakinblocks.graveless.data;
 import com.breakinblocks.graveless.util.LenientCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.UUIDUtil;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import net.minecraft.core.UUIDUtil;
 
 public class GraveProfile {
     public static final Codec<GraveProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.BOOL.optionalFieldOf("enabled", true).forGetter(p -> p.enabled),
-            UUIDUtil.CODEC.listOf().optionalFieldOf("allowed", List.of()).forGetter(p -> List.copyOf(p.allowed)),
-            LenientCodecs.lenientList(DeathRecord.CODEC, "death record")
-                    .optionalFieldOf("records", List.of()).forGetter(p -> p.records),
-            UUIDUtil.CODEC.optionalFieldOf("tracked").forGetter(p -> Optional.ofNullable(p.trackedRecordId))
-    ).apply(instance, GraveProfile::new));
+                    Codec.BOOL.optionalFieldOf("enabled", true).forGetter(p -> p.enabled),
+                    UUIDUtil.CODEC
+                            .listOf()
+                            .optionalFieldOf("allowed", List.of())
+                            .forGetter(p -> List.copyOf(p.allowed)),
+                    LenientCodecs.lenientList(DeathRecord.CODEC, "death record")
+                            .optionalFieldOf("records", List.of())
+                            .forGetter(p -> p.records),
+                    UUIDUtil.CODEC.optionalFieldOf("tracked").forGetter(p -> Optional.ofNullable(p.trackedRecordId)))
+            .apply(instance, GraveProfile::new));
 
     private boolean enabled;
     private final Set<UUID> allowed;
