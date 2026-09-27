@@ -36,6 +36,7 @@ public final class GravelessGameTests {
         AccessoriesTests.register(tests);
         RecoveryTests.register(tests);
         CuriosTests.register(tests);
+        DeadPlayerTests.register(tests);
         return tests.functions();
     }
 }

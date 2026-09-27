@@ -55,7 +55,7 @@ public class GhostSyncEvents {
 
     public static void handleClaimRequest(GravelessNetworking.ClaimRequestPayload payload, PayloadContext context) {
         context.enqueueWork(() -> {
-            if (!(context.player() instanceof ServerPlayer player)) {
+            if (!(context.player() instanceof ServerPlayer player) || !RestoreEngine.canReceive(player)) {
                 return;
             }
             MinecraftServer server = player.level().getServer();

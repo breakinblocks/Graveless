@@ -31,6 +31,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -141,6 +142,11 @@ public final class TestPlayer implements GameTestListener {
 
     public void killForReal() {
         this.player.hurt(this.player.damageSources().fellOutOfWorld(), Float.MAX_VALUE);
+    }
+
+    public void respawn() {
+        this.player = this.server.getPlayerList().respawn(this.player, false, Entity.RemovalReason.KILLED);
+        this.player.connection.player = this.player;
     }
 
     public void give(int slot, ItemStack stack) {

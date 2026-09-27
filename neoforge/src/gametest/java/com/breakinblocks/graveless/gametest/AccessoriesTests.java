@@ -77,6 +77,8 @@ public final class AccessoriesTests {
                 container.getCosmeticAccessories().getItem(0).isEmpty(),
                 "the accessory should leave the slot on death");
 
+        player.respawn();
+        container = AccessoriesCapability.get(player.player()).getContainers().get(type);
         RestoreEngine.claim(player.player(), player.profile(), record, player.store());
         Check.isTrue(helper, player.records().isEmpty(), "grave should be claimed");
         ItemStack restored = container.getCosmeticAccessories().getItem(0);
@@ -89,12 +91,16 @@ public final class AccessoriesTests {
     private static void restoreFallsBackToInventory(GameTestHelper helper) {
         TestPlayer player = TestPlayer.join(helper);
         AccessoriesContainer container = anyContainer(helper, player);
+        String type = container.getSlotName();
         container.getCosmeticAccessories().setItem(0, new ItemStack(Items.EMERALD));
         container.markChanged();
 
         player.killForReal();
         DeathRecord record = player.newestRecord();
         Check.notNull(helper, record, "grave after an accessory death");
+
+        player.respawn();
+        container = AccessoriesCapability.get(player.player()).getContainers().get(type);
 
         for (int slot = 0; slot < container.getCosmeticAccessories().getContainerSize(); slot++) {
             container.getCosmeticAccessories().setItem(slot, new ItemStack(Items.STICK));
