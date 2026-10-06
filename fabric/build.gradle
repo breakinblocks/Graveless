@@ -9,6 +9,7 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     implementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${fcap_version}"
+    compileOnly "curse.maven:armor-cosmetic-1600093:${armor_cosmetic_fabric_file}"
 }
 
 loom {
@@ -60,6 +61,7 @@ publishMods {
             clientRequired = true
             serverRequired = true
             requires('fabric-api', 'forge-config-api-port')
+            optional('armor-cosmetic')
         }
     }
 

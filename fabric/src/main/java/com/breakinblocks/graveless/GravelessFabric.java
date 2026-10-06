@@ -4,6 +4,7 @@ import com.breakinblocks.graveless.commands.GravelessCommands;
 import com.breakinblocks.graveless.event.DeathCaptureEvents;
 import com.breakinblocks.graveless.event.GhostSyncEvents;
 import com.breakinblocks.graveless.event.SpiritWardEvents;
+import com.breakinblocks.graveless.integration.armorcosmetic.ArmorCosmeticIntegration;
 import com.breakinblocks.graveless.registry.ModItems;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -21,6 +22,10 @@ public class GravelessFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         Graveless.init();
+
+        if (Graveless.isModLoaded("armor_cosmetic")) {
+            ArmorCosmeticIntegration.init();
+        }
 
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)
                 .register(output -> output.accept(

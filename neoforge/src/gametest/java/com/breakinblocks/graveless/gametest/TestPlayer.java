@@ -91,6 +91,9 @@ public final class TestPlayer implements GameTestListener {
                 "sync_stack")) {
             adHoc.add(Identifier.fromNamespaceAndPath("curios", channelName));
         }
+        for (String channelName : List.of("sync_cos_armor", "sync_hidden_flags")) {
+            adHoc.add(Identifier.fromNamespaceAndPath("armor_cosmetic", channelName));
+        }
         server.getPlayerList().placeNewPlayer(connection, player, cookie);
         player.connection.markClientLoaded();
 

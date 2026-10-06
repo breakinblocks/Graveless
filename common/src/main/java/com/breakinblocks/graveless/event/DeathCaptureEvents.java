@@ -101,6 +101,15 @@ public class DeathCaptureEvents {
         return hasPending(player) ? 0 : amount;
     }
 
+    public static boolean captureEntry(ServerPlayer player, CapturedEntry entry) {
+        DeathRecord record = PENDING.get(player.getUUID());
+        if (record == null || entry.stack().isEmpty()) {
+            return false;
+        }
+        record.entries().add(entry);
+        return true;
+    }
+
     public static boolean captureDrop(ServerPlayer player, ItemStack stack) {
         DeathRecord record = PENDING.get(player.getUUID());
         if (record == null) {

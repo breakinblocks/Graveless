@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0
+
+- Added Armor Cosmetic support. Cosmetic armor now goes into the grave and is restored to its original cosmetic slots when claimed. If a slot is already filled, that piece goes to the main inventory. Before this, NeoForge restored cosmetic armor to the main inventory, and Fabric left it on the ground at the death spot instead of saving it to the grave.
+- NeoForge now requires 26.1.2.78 or newer.
+
 ## 1.3.4
 
 - Fixed a grave's items and xp being lost when it was claimed just as the player died, such as clicking the ghost the moment a mob dealt the killing blow. The claim put everything into the dead player's inventory, which is thrown away on respawn. Claims, extractions and xp reclaims from a dead player are now ignored and the grave stays put.
