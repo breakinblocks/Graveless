@@ -5,6 +5,7 @@ import com.breakinblocks.graveless.commands.GravelessCommands;
 import com.breakinblocks.graveless.platform.NeoForgeNetworkHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -15,6 +16,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 @EventBusSubscriber(modid = Graveless.MOD_ID)
@@ -44,14 +46,20 @@ public class NeoForgeServerEvents {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
+    @SubscribeEvent(priority = EventPriority.LOW, receiveCanceled = true)
     public static void onDrops(LivingDropsEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || !DeathCaptureEvents.hasPending(player)) {
             return;
         }
         if (!event.isCanceled()) {
             for (ItemEntity drop : event.getDrops()) {
-                DeathCaptureEvents.captureDrop(player, drop.getItem());
+                if (drop.isRemoved()) {
+                    continue;
+                }
+                ItemStack stack = drop.getItem();
+                if (DeathCaptureEvents.captureDrop(player, stack)) {
+                    stack.setCount(0);
+                }
             }
             event.setCanceled(true);
         }
@@ -63,6 +71,11 @@ public class NeoForgeServerEvents {
         if (!SpiritWardEvents.allowTarget(event.getNewAboutToBeSetTarget())) {
             event.setCanceled(true);
         }
+    }
+
+    @SubscribeEvent
+    public static void onServerTick(ServerTickEvent.Post event) {
+        DeathCaptureEvents.onServerTickEnd();
     }
 
     @SubscribeEvent

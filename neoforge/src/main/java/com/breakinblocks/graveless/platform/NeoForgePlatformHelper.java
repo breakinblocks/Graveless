@@ -37,6 +37,11 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
     }
 
     @Override
+    public boolean capturesInventoryFromDrops() {
+        return true;
+    }
+
+    @Override
     public void registerConfig(ConfigType type, ModConfigSpec spec) {
         container.registerConfig(type == ConfigType.CLIENT ? ModConfig.Type.CLIENT : ModConfig.Type.SERVER, spec);
     }

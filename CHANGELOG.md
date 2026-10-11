@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.1
+
+- Fixed soulbound items going into the grave instead of staying with the player on NeoForge. Graveless emptied the inventory as soon as the player died, so mods that keep soulbound gear by pulling it out of the death drops, such as Ars Elemental, found nothing to keep. The inventory is now collected from the death drops after other mods have taken what they keep, and each item still returns to its original slot.
+- Fixed items being duplicated when a player was killed with a magnetic weapon, such as Irregular Implements' Magnetic enchantment. The magnet put the drops into the killer's inventory and the grave saved a second copy of them. Graveless now takes the death drops before lowest-priority magnets see them, and leaves out any drop that was already picked up.
+- Items taken into a grave are now emptied out of the death drops, so a mod that spawns cancelled drops anyway can no longer duplicate them.
+- A death whose drops never arrive is now saved to a grave at the end of the same tick instead of on respawn, before any respawn handler can copy items from the old inventory.
+
 ## 1.4.0
 
 - Added Armor Cosmetic support. Cosmetic armor now goes into the grave and is restored to its original cosmetic slots when claimed. If a slot is already filled, that piece goes to the main inventory. Before this, NeoForge restored cosmetic armor to the main inventory, and Fabric left it on the ground at the death spot instead of saving it to the grave.
