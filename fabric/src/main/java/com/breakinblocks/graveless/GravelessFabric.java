@@ -32,6 +32,7 @@ public class GravelessFabric implements ModInitializer {
                 (dispatcher, registry, environment) -> GravelessCommands.register(dispatcher));
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+            DeathCaptureEvents.onServerTickEnd();
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 GhostSyncEvents.onPlayerTick(player);
                 SpiritWardEvents.onPlayerTick(player);

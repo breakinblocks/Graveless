@@ -13,5 +13,7 @@ public interface IPlatformHelper {
 
     boolean isFakePlayer(Player player);
 
+    boolean capturesInventoryFromDrops();
+
     void registerConfig(ConfigType type, ModConfigSpec spec);
 }
