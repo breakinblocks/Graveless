@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.6 for Minecraft 1.21.1
+
+- Fixed graves storing negative xp and returning nothing for players above about 21,800 levels. (breakinblocks/Graveless#3)
+
 ## 1.3.5 for Minecraft 1.21.1
 
 - Fixed soulbound items going into the grave instead of staying with the player on NeoForge. Graveless emptied the inventory as soon as the player died, so mods that keep soulbound gear by pulling it out of the death drops, such as Ars Elemental, found nothing to keep. The inventory is now collected from the death drops after other mods have taken what they keep, and each item still returns to its original slot.

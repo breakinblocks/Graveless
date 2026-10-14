@@ -104,7 +104,7 @@ public final class CaptureTests {
     private static void takesAndZeroesXp(GameTestHelper helper) {
         TestPlayer player = TestPlayer.join(helper);
         player.player().giveExperiencePoints(1000);
-        int before = player.storedXp();
+        long before = player.storedXp();
         Check.isTrue(helper, before > 900, "test setup granted xp, saw " + before);
 
         player.simulateDeath();
@@ -260,7 +260,7 @@ public final class CaptureTests {
             player.player().totalExperience = 0;
             player.player().giveExperiencePoints(target);
 
-            int computed = player.storedXp();
+            long computed = player.storedXp();
             Check.isTrue(
                     helper,
                     Math.abs(computed - target) <= 2,

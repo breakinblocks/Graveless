@@ -22,6 +22,12 @@ public final class Check {
         }
     }
 
+    public static void equal(GameTestHelper helper, long expected, long actual, String what) {
+        if (expected != actual) {
+            helper.fail(what + ": expected " + expected + " but was " + actual);
+        }
+    }
+
     public static void equal(GameTestHelper helper, Object expected, Object actual, String what) {
         if (!Objects.equals(expected, actual)) {
             helper.fail(what + ": expected " + expected + " but was " + actual);

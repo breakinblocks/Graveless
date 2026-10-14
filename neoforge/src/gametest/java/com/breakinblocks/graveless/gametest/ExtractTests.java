@@ -141,7 +141,7 @@ public final class ExtractTests {
     private static void xpClaimLeavesItems(GameTestHelper helper) {
         TestPlayer owner = TestPlayer.join(helper);
         owner.player().giveExperiencePoints(900);
-        int granted = owner.storedXp();
+        long granted = owner.storedXp();
         DeathRecord record = graveAt(owner, new ItemStack(Items.DIAMOND, 4));
         Check.equal(helper, granted, record.xp(), "grave xp matches what the player had");
 
