@@ -81,7 +81,7 @@ public final class DeadPlayerTests {
         TestPlayer owner = TestPlayer.join(helper);
         owner.player().giveExperiencePoints(900);
         DeathRecord record = graveAt(owner, new ItemStack(Items.DIAMOND, 4));
-        int stored = record.xp();
+        long stored = record.xp();
 
         afterDeath(helper, owner, () -> {
             GraveMenuHandlers.handleAction(

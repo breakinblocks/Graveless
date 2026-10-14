@@ -105,7 +105,7 @@ public class GravelessNetworking {
     }
 
     public record GraveSummary(
-            UUID recordId, GlobalPos pos, long epochMillis, long gameTime, String cause, int itemCount, int xp) {
+            UUID recordId, GlobalPos pos, long epochMillis, long gameTime, String cause, int itemCount, long xp) {
         public static final StreamCodec<FriendlyByteBuf, GraveSummary> STREAM_CODEC = StreamCodec.composite(
                 UUIDUtil.STREAM_CODEC,
                 GraveSummary::recordId,
@@ -119,7 +119,7 @@ public class GravelessNetworking {
                 GraveSummary::cause,
                 ByteBufCodecs.VAR_INT,
                 GraveSummary::itemCount,
-                ByteBufCodecs.VAR_INT,
+                ByteBufCodecs.VAR_LONG,
                 GraveSummary::xp,
                 GraveSummary::new);
     }

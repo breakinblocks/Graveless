@@ -12,6 +12,7 @@ import com.breakinblocks.graveless.platform.Services;
 import com.breakinblocks.graveless.restore.RestoreEngine;
 import com.breakinblocks.graveless.util.GraveBackups;
 import com.breakinblocks.graveless.util.SpiritCompassManager;
+import com.breakinblocks.graveless.util.XpMath;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -419,12 +420,12 @@ public class GraveMenuHandlers {
             UUID ownerId,
             DeathRecord record,
             ServerPlayer actor) {
-        int xp = record.xp();
+        long xp = record.xp();
         if (xp <= 0) {
             return;
         }
         record.setXp(0);
-        actor.giveExperiencePoints(xp);
+        XpMath.give(actor, xp);
         if (record.isEmpty()) {
             profile.records().remove(record);
             GhostSyncEvents.broadcastRemoval(server, record.id());
