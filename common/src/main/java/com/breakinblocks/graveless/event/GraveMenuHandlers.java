@@ -10,6 +10,7 @@ import com.breakinblocks.graveless.net.GravelessNetworking;
 import com.breakinblocks.graveless.restore.RestoreEngine;
 import com.breakinblocks.graveless.util.GraveBackups;
 import com.breakinblocks.graveless.util.SpiritCompassManager;
+import com.breakinblocks.graveless.util.XpMath;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -369,12 +370,12 @@ public class GraveMenuHandlers {
 
     private static void claimXp(MinecraftServer server, GraveStore store, GraveProfile profile,
                                 UUID ownerId, DeathRecord record, ServerPlayer actor) {
-        int xp = record.xp();
+        long xp = record.xp();
         if (xp <= 0) {
             return;
         }
         record.setXp(0);
-        actor.giveExperiencePoints(xp);
+        XpMath.give(actor, xp);
         if (record.isEmpty()) {
             profile.records().remove(record);
             GhostSyncEvents.broadcastRemoval(server, record.id());

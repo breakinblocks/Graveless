@@ -17,6 +17,7 @@ public final class RestoreTests {
         tests.add("restore_merges_into_a_matching_stack", RestoreTests::mergesIntoMatchingStack);
         tests.add("restore_returns_stored_xp", RestoreTests::returnsStoredXp);
         tests.add("restore_keeps_the_grave_until_it_is_empty", RestoreTests::keepsGraveUntilEmpty);
+        tests.add("restore_returns_xp_beyond_the_int_range", RestoreTests::returnsXpBeyondIntRange);
     }
 
     private static void returnsItemsToOriginalSlots(GameTestHelper helper) {
@@ -92,11 +93,11 @@ public final class RestoreTests {
         TestPlayer player = TestPlayer.join(helper);
         player.give(0, new ItemStack(Items.DIAMOND, 1));
         player.player().giveExperiencePoints(900);
-        int granted = player.storedXp();
+        long granted = player.storedXp();
         player.simulateDeath();
 
         DeathRecord record = player.newestRecord();
-        int stored = record.xp();
+        long stored = record.xp();
         Check.equal(helper, granted, stored, "grave xp matches what the player had");
 
         RestoreEngine.Result result = RestoreEngine.claim(player.player(), player.profile(), record, player.store());
@@ -121,6 +122,25 @@ public final class RestoreTests {
         Check.isFalse(helper, result.recordRemoved(), "grave stays while items remain");
         Check.equal(helper, 1, record.itemCount(), "grave still holds the item that did not fit");
         Check.equal(helper, 0, record.xp(), "grave xp is drained even on a partial claim");
+        helper.succeed();
+    }
+
+    private static void returnsXpBeyondIntRange(GameTestHelper helper) {
+        TestPlayer player = TestPlayer.join(helper);
+        player.player().setExperienceLevels(60000);
+        player.player().experienceProgress = 0.5F;
+        long granted = player.storedXp();
+        Check.isTrue(helper, granted > Integer.MAX_VALUE, "test setup is above the int range, saw " + granted);
+        player.simulateDeath();
+
+        DeathRecord record = player.newestRecord();
+        Check.equal(helper, granted, record.xp(), "grave xp for a 60000 level death");
+
+        RestoreEngine.Result result = RestoreEngine.claim(player.player(), player.profile(), record, player.store());
+        Check.equal(helper, granted, result.xpRestored(), "reported xp restored");
+        Check.equal(helper, 60000, player.player().experienceLevel, "player level after a claim");
+        Check.isTrue(helper, Math.abs(player.storedXp() - granted) <= 2,
+                "player xp after a claim, saw " + player.storedXp() + " expected " + granted);
         helper.succeed();
     }
 }

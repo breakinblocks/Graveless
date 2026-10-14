@@ -199,7 +199,7 @@ public final class TestPlayer implements GameTestListener {
         return count;
     }
 
-    public int storedXp() {
+    public long storedXp() {
         return XpMath.totalPoints(this.player.experienceLevel, this.player.experienceProgress);
     }
 

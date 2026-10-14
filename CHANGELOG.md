@@ -3,6 +3,7 @@
 ## 1.3.3
 
 - Fixed a death losing every item when the drop event never arrived, such as a disconnect or crash between dying and the grave being written. The pending items are now saved on respawn or logout instead of discarded.
+- Fixed graves storing negative xp and returning nothing for players above about 21,800 levels. (breakinblocks/Graveless#3)
 
 ## 1.3.2
 

@@ -18,7 +18,7 @@ public class DeathRecord {
             Codec.LONG.fieldOf("game_time").forGetter(DeathRecord::gameTime),
             Codec.LONG.optionalFieldOf("epoch_millis", 0L).forGetter(DeathRecord::epochMillis),
             Codec.STRING.fieldOf("cause").forGetter(DeathRecord::cause),
-            Codec.INT.optionalFieldOf("xp", 0).forGetter(DeathRecord::xp),
+            Codec.LONG.optionalFieldOf("xp", 0L).forGetter(DeathRecord::xp),
             LenientCodecs.lenientList(CapturedEntry.CODEC, "grave item entry")
                     .fieldOf("entries").forGetter(DeathRecord::entries),
             Codec.INT_STREAM.xmap(IntStream::toArray, stream -> IntStream.of(stream))
@@ -30,15 +30,15 @@ public class DeathRecord {
     private final long gameTime;
     private final long epochMillis;
     private final String cause;
-    private int xp;
+    private long xp;
     private final List<CapturedEntry> entries;
     private int[] terrain;
 
-    public DeathRecord(UUID id, GlobalPos pos, long gameTime, long epochMillis, String cause, int xp, List<CapturedEntry> entries) {
+    public DeathRecord(UUID id, GlobalPos pos, long gameTime, long epochMillis, String cause, long xp, List<CapturedEntry> entries) {
         this(id, pos, gameTime, epochMillis, cause, xp, entries, new int[0]);
     }
 
-    public DeathRecord(UUID id, GlobalPos pos, long gameTime, long epochMillis, String cause, int xp,
+    public DeathRecord(UUID id, GlobalPos pos, long gameTime, long epochMillis, String cause, long xp,
                        List<CapturedEntry> entries, int[] terrain) {
         this.id = id;
         this.pos = pos;
@@ -70,11 +70,11 @@ public class DeathRecord {
         return cause;
     }
 
-    public int xp() {
+    public long xp() {
         return xp;
     }
 
-    public void setXp(int xp) {
+    public void setXp(long xp) {
         this.xp = xp;
     }
 

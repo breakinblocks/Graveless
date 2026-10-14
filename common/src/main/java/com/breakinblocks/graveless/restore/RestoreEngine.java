@@ -9,6 +9,7 @@ import com.breakinblocks.graveless.data.DeathRecord;
 import com.breakinblocks.graveless.data.GraveProfile;
 import com.breakinblocks.graveless.data.GraveStore;
 import com.breakinblocks.graveless.util.SpiritCompassManager;
+import com.breakinblocks.graveless.util.XpMath;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -21,13 +22,13 @@ public final class RestoreEngine {
     private RestoreEngine() {
     }
 
-    public record Result(int restored, int remaining, int xpRestored, boolean recordRemoved) {
+    public record Result(int restored, int remaining, long xpRestored, boolean recordRemoved) {
     }
 
     public static Result claim(ServerPlayer player, GraveProfile profile, DeathRecord record, GraveStore store) {
         var compasses = SpiritCompassManager.suspend(player);
         int before = record.itemCount();
-        int xpRestored = 0;
+        long xpRestored = 0L;
         try {
             record.entries().sort(Comparator.comparingInt(RestoreEngine::restoreOrder));
             Set<Integer> failed = new HashSet<>();
@@ -66,7 +67,7 @@ public final class RestoreEngine {
             }
             xpRestored = record.xp();
             if (xpRestored > 0) {
-                player.giveExperiencePoints(xpRestored);
+                XpMath.give(player, xpRestored);
                 record.setXp(0);
             }
         } finally {

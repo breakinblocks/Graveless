@@ -70,7 +70,7 @@ public class DeathCaptureEvents {
             }
         }
 
-        int xp = XpMath.totalPoints(player.experienceLevel, player.experienceProgress);
+        long xp = XpMath.totalPoints(player.experienceLevel, player.experienceProgress);
         player.experienceLevel = 0;
         player.experienceProgress = 0.0F;
         player.totalExperience = 0;
