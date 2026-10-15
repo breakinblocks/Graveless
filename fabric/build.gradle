@@ -13,6 +13,32 @@ dependencies {
     modCompileOnly ("io.wispforest:accessories-fabric:${accessories_version}") { transitive = false }
     modLocalRuntime "io.wispforest:accessories-fabric:${accessories_version}"
     modLocalRuntime "io.wispforest:owo-lib:0.12.15.4+1.21"
+    modCompileOnly("dev.emi:trinkets:${trinkets_version}") { transitive = false }
+    modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:${cca_version}") { transitive = false }
+    modLocalRuntime("dev.emi:trinkets:${trinkets_version}") { transitive = false }
+    modLocalRuntime("org.ladysnake.cardinal-components-api:cardinal-components-base:${cca_version}") { transitive = false }
+    modLocalRuntime("org.ladysnake.cardinal-components-api:cardinal-components-entity:${cca_version}") { transitive = false }
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'graveless-gametest'
+        enableGameTests = true
+        enableClientGameTests = false
+    }
+}
+
+tasks.named('check') {
+    setDependsOn(dependsOn.findAll { it != 'runGameTest' })
+}
+
+tasks.named('runGameTest') {
+    doFirst {
+        def eula = file('build/run/gameTest/eula.txt')
+        eula.parentFile.mkdirs()
+        eula.text = 'eula=true'
+    }
 }
 
 loom {
@@ -67,6 +93,7 @@ publishMods {
             serverRequired = true
             requires('fabric-api', 'forge-config-api-port')
             optional { slug = 'accessories' }
+            optional { slug = 'trinkets' }
         }
     }
 
@@ -77,6 +104,7 @@ publishMods {
             minecraftVersions.add(minecraft_version)
             requires('fabric-api', 'forge-config-api-port')
             optional('accessories')
+            optional('trinkets')
         }
     }
 }

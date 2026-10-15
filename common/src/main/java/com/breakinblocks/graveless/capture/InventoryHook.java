@@ -13,6 +13,10 @@ public interface InventoryHook {
 
     List<CapturedEntry> capture(ServerPlayer player, DamageSource source);
 
+    default CapturedEntry dropEntry(ServerPlayer player, ItemStack stack) {
+        return null;
+    }
+
     /** Releases temporary slot metadata after death drops have been handled. */
     default void finishDrops(ServerPlayer player) {}
 

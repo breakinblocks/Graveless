@@ -2,6 +2,7 @@
 
 ## 1.3.7 for Minecraft 1.21.1
 
+- Added Trinkets support on Fabric. Trinkets now go into the grave and return to their original slots instead of dropping on the ground. (breakinblocks/Graveless#1)
 - Fixed curios kept on death, such as with the Curios `keepCurios` option, keeping a hidden Graveless marker that could stop them stacking.
 
 ## 1.3.6 for Minecraft 1.21.1

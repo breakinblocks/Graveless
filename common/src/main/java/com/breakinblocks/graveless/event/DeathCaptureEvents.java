@@ -116,6 +116,12 @@ public class DeathCaptureEvents {
         if (stack.isEmpty() || stack.is(ModItems.SPIRIT_COMPASS.get())) {
             return false;
         }
+        for (InventoryHook hook : InventoryHooks.all()) {
+            CapturedEntry entry = hook.dropEntry(player, stack);
+            if (entry != null) {
+                return captureDrop(player, entry.withStack(stack));
+            }
+        }
         DeathRecord record = pending.record();
         Integer slot = pending.slots().remove(stack);
         ItemStack copy = stack.copy();

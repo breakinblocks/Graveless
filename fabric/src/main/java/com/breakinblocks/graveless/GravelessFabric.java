@@ -5,6 +5,7 @@ import com.breakinblocks.graveless.event.DeathCaptureEvents;
 import com.breakinblocks.graveless.event.GhostSyncEvents;
 import com.breakinblocks.graveless.event.SpiritWardEvents;
 import com.breakinblocks.graveless.integration.accessories.AccessoriesIntegration;
+import com.breakinblocks.graveless.integration.trinkets.TrinketsIntegration;
 import com.breakinblocks.graveless.registry.ModItems;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -23,6 +24,10 @@ public class GravelessFabric implements ModInitializer {
 
         if (Graveless.isModLoaded("accessories")) {
             AccessoriesIntegration.init();
+        }
+
+        if (Graveless.isModLoaded("trinkets")) {
+            TrinketsIntegration.init();
         }
 
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)

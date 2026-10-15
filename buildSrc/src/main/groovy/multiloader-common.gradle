@@ -46,6 +46,16 @@ repositories {
         content { includeGroupAndSubgroups('org.sinytra') }
     }
     maven {
+        name = 'TerraformersMC'
+        url = 'https://maven.terraformersmc.com/releases'
+        content { includeGroup 'dev.emi' }
+    }
+    maven {
+        name = 'Ladysnake'
+        url = 'https://maven.ladysnake.org/releases'
+        content { includeGroupAndSubgroups('org.ladysnake') }
+    }
+    maven {
         name = 'Fuzs'
         url = 'https://raw.githubusercontent.com/Fuzss/modresources/main/maven'
         content { includeGroupAndSubgroups('fuzs') }
