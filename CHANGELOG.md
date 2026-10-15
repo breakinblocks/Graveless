@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.7 for Minecraft 1.21.1
+
+- Fixed curios kept on death, such as with the Curios `keepCurios` option, keeping a hidden Graveless marker that could stop them stacking.
+
 ## 1.3.6 for Minecraft 1.21.1
 
 - Fixed graves storing negative xp and returning nothing for players above about 21,800 levels. (breakinblocks/Graveless#3)

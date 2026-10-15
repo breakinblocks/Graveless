@@ -4,6 +4,7 @@ import com.breakinblocks.graveless.capture.InventoryHooks;
 import com.breakinblocks.graveless.data.CapturedEntry;
 import com.breakinblocks.graveless.data.DeathRecord;
 import com.breakinblocks.graveless.integration.curios.CuriosInventoryHook;
+import com.breakinblocks.graveless.registry.ModDataComponents;
 import com.breakinblocks.graveless.restore.RestoreEngine;
 import java.util.Map;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -11,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.type.capability.ICurio.DropRule;
+import top.theillusivec4.curios.common.CuriosConfig;
 import top.theillusivec4.curios.common.inventory.CurioStacksHandler;
 
 public final class CuriosTests {
@@ -19,6 +21,7 @@ public final class CuriosTests {
     static void register(TestRegistrar tests) {
         tests.add("curios_real_death_restores_equipped_and_cosmetic_slots", CuriosTests::realDeath);
         tests.add("curios_original_slots_precede_alternative_slots", CuriosTests::originalSlotsFirst);
+        tests.addIsolated("curios_kept_on_death_lose_slot_marker", CuriosTests::keptCuriosLoseMarker);
     }
 
     private static CurioStacksHandler slots(GameTestHelper helper, TestPlayer player) {
@@ -53,6 +56,26 @@ public final class CuriosTests {
                 recipientSlots.getCosmeticStacks().getStackInSlot(1).is(Items.EMERALD),
                 "cosmetic slot restored");
         Check.equal(helper, 0, recipient.countItems(), "restored Curios stay out of main inventory");
+        helper.succeed();
+    }
+
+    private static void keptCuriosLoseMarker(GameTestHelper helper) {
+        TestCleanup cleanup = TestCleanup.attach(helper);
+        cleanup.config(CuriosConfig.SERVER.keepCurios, CuriosConfig.KeepCurios.ON);
+        TestPlayer owner = TestPlayer.join(helper);
+        var stacks = slots(helper, owner);
+        stacks.getStacks().setStackInSlot(0, new ItemStack(Items.DIAMOND));
+        stacks.getCosmeticStacks().setStackInSlot(1, new ItemStack(Items.EMERALD));
+        owner.killForReal();
+        ItemStack kept = stacks.getStacks().getStackInSlot(0);
+        ItemStack keptCosmetic = stacks.getCosmeticStacks().getStackInSlot(1);
+        Check.isTrue(helper, kept.is(Items.DIAMOND), "kept Curio stays equipped");
+        Check.isTrue(helper, keptCosmetic.is(Items.EMERALD), "kept cosmetic Curio stays equipped");
+        Check.isTrue(helper, !kept.has(ModDataComponents.CURIO_SLOT.get()), "kept Curio loses the slot marker");
+        Check.isTrue(
+                helper,
+                !keptCosmetic.has(ModDataComponents.CURIO_SLOT.get()),
+                "kept cosmetic Curio loses the slot marker");
         helper.succeed();
     }
 
