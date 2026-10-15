@@ -125,21 +125,21 @@ public class GhostRenderManager {
 
         poseStack.pushPose();
         poseStack.translate(base.x - camPos.x, base.y - camPos.y + bob, base.z - camPos.z);
-        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - bodyRot));
+        poseStack.rotate(Axis.YP.rotationDegrees(180.0F - bodyRot));
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.translate(0.0F, -1.501F, 0.0F);
 
         int bodyTint = ARGB.color((int) (visibility.body() * 255.0F), 210, 235, 255);
         int outlineColor = ARGB.color((int) (visibility.outline() * 255.0F), 120, 235, 255);
         collector.submitModel(model, state, poseStack, GhostRenderTypes.ghost(texture),
-                FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bodyTint, null, outlineColor, null);
+                FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bodyTint, null, outlineColor);
 
         if (!GhostRenderTypes.shadersEnabled() && visibility.body() >= 0.01F) {
             poseStack.pushPose();
             poseStack.scale(1.05F, 1.03F, 1.05F);
             int auraTint = ARGB.color((int) (visibility.body() * 70.0F), 150, 200, 255);
             collector.submitModel(model, state, poseStack, RenderTypes.entityTranslucentEmissive(texture),
-                    FULL_BRIGHT, OverlayTexture.NO_OVERLAY, auraTint, null, 0, null);
+                    FULL_BRIGHT, OverlayTexture.NO_OVERLAY, auraTint, null, 0);
             poseStack.popPose();
         }
 

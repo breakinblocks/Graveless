@@ -4,6 +4,7 @@ import com.breakinblocks.graveless.commands.GravelessCommands;
 import com.breakinblocks.graveless.event.DeathCaptureEvents;
 import com.breakinblocks.graveless.event.GhostSyncEvents;
 import com.breakinblocks.graveless.event.SpiritWardEvents;
+import com.breakinblocks.graveless.integration.armorcosmetic.ArmorCosmeticIntegration;
 import com.breakinblocks.graveless.registry.ModItems;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -22,6 +23,10 @@ public class GravelessFabric implements ModInitializer {
     public void onInitialize() {
         Graveless.init();
 
+        if (Graveless.isModLoaded("armor_cosmetic")) {
+            ArmorCosmeticIntegration.init();
+        }
+
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.TOOLS_AND_UTILITIES)
                 .register(output -> output.accept(new ItemStack(ModItems.SPIRIT_COMPASS.get()),
                         CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
@@ -30,6 +35,7 @@ public class GravelessFabric implements ModInitializer {
                 GravelessCommands.register(dispatcher));
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+            DeathCaptureEvents.onServerTickEnd();
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 GhostSyncEvents.onPlayerTick(player);
                 SpiritWardEvents.onPlayerTick(player);

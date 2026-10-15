@@ -25,7 +25,14 @@ public final class RestoreEngine {
     public record Result(int restored, int remaining, long xpRestored, boolean recordRemoved) {
     }
 
+    public static boolean canReceive(ServerPlayer player) {
+        return player.isAlive() && !player.hasDisconnected();
+    }
+
     public static Result claim(ServerPlayer player, GraveProfile profile, DeathRecord record, GraveStore store) {
+        if (!canReceive(player)) {
+            return new Result(0, record.itemCount(), 0, false);
+        }
         var compasses = SpiritCompassManager.suspend(player);
         int before = record.itemCount();
         long xpRestored = 0L;

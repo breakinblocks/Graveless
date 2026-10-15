@@ -20,7 +20,7 @@ public abstract class MinecraftMixin {
     @Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
     private void graveless$onAttack(CallbackInfoReturnable<Boolean> cir) {
         if (player != null && GhostInteraction.onAttackPressed(player)) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, player.getMainHandItem().getAttackAnimation(), false);
             cir.setReturnValue(true);
         }
     }
@@ -28,7 +28,7 @@ public abstract class MinecraftMixin {
     @Inject(method = "startUseItem", at = @At("HEAD"), cancellable = true)
     private void graveless$onUse(CallbackInfo ci) {
         if (player != null && GhostInteraction.onUsePressed(player, InteractionHand.MAIN_HAND)) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, player.getMainHandItem().getInteractAnimation(), false);
             ci.cancel();
         }
     }

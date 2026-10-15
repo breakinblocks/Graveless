@@ -74,7 +74,7 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
 
         float ghostFeet = groundLayer(state.blocks());
         poseStack.scale(1.0F, -1.0F, 1.0F);
-        poseStack.mulPose(new Quaternionf().rotationXYZ(
+        poseStack.rotate(new Quaternionf().rotationXYZ(
                 (float) Math.toRadians(30.0), (float) Math.toRadians(state.yaw()), 0.0F));
         poseStack.translate(-(SIZE / 2.0F + 0.5F), -(ghostFeet + 0.9F), -(SIZE / 2.0F + 0.5F));
 
@@ -103,16 +103,16 @@ public class GraveDioramaRenderer extends PictureInPictureRenderer<GraveDioramaR
         avatar.lightCoords = FULL_BRIGHT;
         poseStack.pushPose();
         poseStack.translate(SIZE / 2.0F + 0.5F, groundLayer(state.blocks()) + 0.05F, SIZE / 2.0F + 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(205.0F));
+        poseStack.rotate(Axis.YP.rotationDegrees(205.0F));
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.translate(0.0F, -1.501F, 0.0F);
         Identifier texture = state.skin().body().texturePath();
         collector.submitModel(state.playerModel(), avatar, poseStack,
                 RenderTypes.entityTranslucentEmissive(texture), FULL_BRIGHT,
-                OverlayTexture.NO_OVERLAY, ARGB.color(245, 255, 255, 255), null, 0, null);
+                OverlayTexture.NO_OVERLAY, ARGB.color(245, 255, 255, 255), null, 0);
         collector.submitModel(state.playerModel(), avatar, poseStack,
                 GhostRenderTypes.ghostPreview(texture), FULL_BRIGHT,
-                OverlayTexture.NO_OVERLAY, ARGB.color(80, 160, 235, 255), null, 0, null);
+                OverlayTexture.NO_OVERLAY, ARGB.color(80, 160, 235, 255), null, 0);
         poseStack.popPose();
     }
 

@@ -1,6 +1,7 @@
 package com.breakinblocks.graveless;
 
 import com.breakinblocks.graveless.client.GravelessClient;
+import com.breakinblocks.graveless.integration.armorcosmetic.ArmorCosmeticIntegration;
 import com.breakinblocks.graveless.integration.curios.CuriosIntegration;
 import com.breakinblocks.graveless.platform.NeoForgePlatformHelper;
 import com.breakinblocks.graveless.platform.NeoForgeRegistryFactory;
@@ -44,6 +45,9 @@ public class GravelessNeoForge {
         event.enqueueWork(() -> {
             if (Graveless.isModLoaded("curios")) {
                 CuriosIntegration.init();
+            }
+            if (Graveless.isModLoaded("armor_cosmetic")) {
+                ArmorCosmeticIntegration.init();
             }
         });
     }

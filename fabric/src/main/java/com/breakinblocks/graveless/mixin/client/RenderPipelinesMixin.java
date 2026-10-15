@@ -1,7 +1,7 @@
 package com.breakinblocks.graveless.mixin.client;
 
 import com.breakinblocks.graveless.client.render.GhostRenderTypes;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import net.minecraft.client.renderer.RenderPipelines;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,7 +14,7 @@ import java.util.List;
 @Mixin(RenderPipelines.class)
 public abstract class RenderPipelinesMixin {
 
-    @Inject(method = "getStaticPipelines", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "requiredPipelines", at = @At("RETURN"), cancellable = true)
     private static void graveless$addPipelines(CallbackInfoReturnable<List<RenderPipeline>> cir) {
         List<RenderPipeline> pipelines = new ArrayList<>(cir.getReturnValue());
         pipelines.addAll(GhostRenderTypes.pipelines());

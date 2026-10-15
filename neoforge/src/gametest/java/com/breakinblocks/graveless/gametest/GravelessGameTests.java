@@ -19,6 +19,9 @@ public final class GravelessGameTests {
         RestoreTests.register(tests);
         RecoveryTests.register(tests);
         CuriosTests.register(tests);
+        if (Graveless.isModLoaded("armor_cosmetic")) {
+            ArmorCosmeticTests.register(tests);
+        }
         GhostTests.register(tests);
         CompassTests.register(tests);
         WardTests.register(tests);
@@ -26,6 +29,7 @@ public final class GravelessGameTests {
         AdminTests.register(tests);
         ExtractTests.register(tests);
         CommandTests.register(tests);
+        DeadPlayerTests.register(tests);
         Graveless.LOGGER.info("Registered Graveless game tests");
     }
 }

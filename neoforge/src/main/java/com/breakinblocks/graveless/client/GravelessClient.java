@@ -3,7 +3,7 @@ package com.breakinblocks.graveless.client;
 import com.breakinblocks.graveless.client.gui.GraveDioramaRenderState;
 import com.breakinblocks.graveless.client.gui.GraveDioramaRenderer;
 import com.breakinblocks.graveless.client.render.GhostRenderTypes;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;

@@ -25,7 +25,7 @@ public final class CommandTests {
                 CommandTests::pruneAllUsesConfiguredRetention);
     }
 
-    private static int run(GameTestHelper helper, String command) {
+    static int run(GameTestHelper helper, String command) {
         MinecraftServer server = helper.getLevel().getServer();
         try {
             return server.getCommands().getDispatcher().execute(command, server.createCommandSourceStack());

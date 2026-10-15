@@ -3,6 +3,7 @@ package com.breakinblocks.graveless.event;
 import com.breakinblocks.graveless.Graveless;
 import com.breakinblocks.graveless.capture.InventoryHook;
 import com.breakinblocks.graveless.capture.InventoryHooks;
+import com.breakinblocks.graveless.capture.VanillaInventoryHook;
 import com.breakinblocks.graveless.config.GravelessConfig;
 import com.breakinblocks.graveless.data.CapturedEntry;
 import com.breakinblocks.graveless.data.DeathRecord;
@@ -24,6 +25,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.gamerules.GameRules;
 
@@ -34,7 +36,10 @@ import java.util.Map;
 import java.util.UUID;
 
 public class DeathCaptureEvents {
-    private static final Map<UUID, DeathRecord> PENDING = new HashMap<>();
+    private static final Map<UUID, Pending> PENDING = new HashMap<>();
+
+    private record Pending(ServerPlayer player, DeathRecord record, Inventory inventory, Map<ItemStack, Integer> slots) {
+    }
 
     public static void onDeath(ServerPlayer player, DamageSource source) {
         if (Services.PLATFORM.isFakePlayer(player)) {
@@ -83,7 +88,9 @@ public class DeathCaptureEvents {
                 source.getLocalizedDeathMessage(player).getString(),
                 xp,
                 entries);
-        PENDING.put(player.getUUID(), record);
+        Inventory inventory = player.getInventory();
+        PENDING.put(
+                player.getUUID(), new Pending(player, record, inventory, VanillaInventoryHook.pendingSlots(inventory)));
     }
 
     public static boolean hasPending(ServerPlayer player) {
@@ -94,20 +101,33 @@ public class DeathCaptureEvents {
         return hasPending(player) ? 0 : amount;
     }
 
+    public static boolean captureEntry(ServerPlayer player, CapturedEntry entry) {
+        Pending pending = PENDING.get(player.getUUID());
+        if (pending == null || entry.stack().isEmpty()) {
+            return false;
+        }
+        pending.record().entries().add(entry);
+        return true;
+    }
+
     public static boolean captureDrop(ServerPlayer player, ItemStack stack) {
-        DeathRecord record = PENDING.get(player.getUUID());
-        if (record == null) {
+        Pending pending = PENDING.get(player.getUUID());
+        if (pending == null) {
             return false;
         }
         if (stack.isEmpty() || stack.is(ModItems.SPIRIT_COMPASS.get())) {
             return false;
         }
+        DeathRecord record = pending.record();
+        Integer slot = pending.slots().remove(stack);
         ItemStack copy = stack.copy();
         ModDataComponents.CurioSlot curioTag = copy.remove(ModDataComponents.CURIO_SLOT.get());
         if (curioTag != null) {
             record.entries().add(new CapturedEntry("curios",
                     curioTag.cosmetic() ? curioTag.type() + "#cosmetic" : curioTag.type(),
                     curioTag.index(), copy));
+        } else if (slot != null) {
+            record.entries().add(new CapturedEntry(VanillaInventoryHook.ID, "", slot, copy));
         } else {
             record.entries().add(CapturedEntry.loose(copy));
         }
@@ -115,9 +135,18 @@ public class DeathCaptureEvents {
     }
 
     public static void finishDrops(ServerPlayer player) {
-        DeathRecord record = PENDING.remove(player.getUUID());
-        if (record != null) {
-            finalizeRecord(player, record);
+        Pending pending = PENDING.remove(player.getUUID());
+        if (pending != null) {
+            finalizeRecord(player, pending.record());
+        }
+    }
+
+    public static void onServerTickEnd() {
+        if (PENDING.isEmpty()) {
+            return;
+        }
+        for (Pending pending : List.copyOf(PENDING.values())) {
+            rescuePending(pending.player(), "end of tick");
         }
     }
 
@@ -126,10 +155,17 @@ public class DeathCaptureEvents {
     }
 
     public static void rescuePending(ServerPlayer player, String reason) {
-        DeathRecord record = PENDING.remove(player.getUUID());
-        if (record == null) {
+        Pending pending = PENDING.remove(player.getUUID());
+        if (pending == null) {
             return;
         }
+        DeathRecord record = pending.record();
+        pending.slots().forEach((stack, slot) -> {
+            if (!stack.isEmpty() && pending.inventory().getItem(slot) == stack) {
+                pending.inventory().setItem(slot, ItemStack.EMPTY);
+                record.entries().add(new CapturedEntry(VanillaInventoryHook.ID, "", slot, stack));
+            }
+        });
         Graveless.LOGGER.warn("Drop capture for {} never completed ({}); saving {} item(s) taken at death",
                 player.getName().getString(), reason, record.itemCount());
         try {

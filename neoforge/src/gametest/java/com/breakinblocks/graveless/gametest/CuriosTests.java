@@ -30,6 +30,8 @@ public final class CuriosTests {
         Check.notNull(helper, InventoryHooks.byId(CuriosInventoryHook.ID), "Curios restore hook is registered");
         var stacks = new CurioStacksHandler(player.player().getData(CuriosRegistry.INVENTORY.get()),
                 "ring", 3, true, true, true, DropRule.ALWAYS_DROP);
+        stacks.getStacks().grow(3 - stacks.getStacks().getSlots());
+        stacks.getCosmeticStacks().grow(3 - stacks.getCosmeticStacks().getSlots());
         inventory.setCurios(Map.of("ring", stacks));
         return stacks;
     }

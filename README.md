@@ -112,7 +112,7 @@ limit on demand, or a one-off limit if you pass a keep count.
 
 ## Requirements
 
-Minecraft 26.2 on either NeoForge or Fabric, with Java 25. Works in singleplayer and on servers.
+Minecraft 26.3 on either NeoForge or Fabric, with Java 25. Works in singleplayer and on servers.
 
 Curios is supported on NeoForge when present.
 

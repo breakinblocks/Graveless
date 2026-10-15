@@ -11,6 +11,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.LodestoneTracker;
@@ -55,7 +56,7 @@ public final class SpiritCompassManager {
             } else {
                 inventory.add(stack);
                 if (!stack.isEmpty()) {
-                    player.drop(stack, false);
+                    player.drop(stack, false, Prediction.SERVER_ONLY);
                 }
             }
         }
@@ -116,7 +117,7 @@ public final class SpiritCompassManager {
             ItemStack stack = new ItemStack(ModItems.SPIRIT_COMPASS.get());
             stack.set(DataComponents.LODESTONE_TRACKER, trackerFor(player, profile));
             if (!player.getInventory().add(stack)) {
-                player.drop(stack, false);
+                player.drop(stack, false, Prediction.SERVER_ONLY);
             }
         }
         refresh(player);

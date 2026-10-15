@@ -32,6 +32,11 @@ public class FabricPlatformHelper implements IPlatformHelper {
     }
 
     @Override
+    public boolean capturesInventoryFromDrops() {
+        return false;
+    }
+
+    @Override
     public void registerConfig(ConfigType type, ModConfigSpec spec) {
         ConfigRegistry.INSTANCE.register(Graveless.MOD_ID,
                 type == ConfigType.CLIENT ? ModConfig.Type.CLIENT : ModConfig.Type.SERVER, spec);

@@ -29,20 +29,25 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.level.GameType;
+import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.network.registration.ChannelAttributes;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 public final class TestPlayer implements GameTestListener {
     private static final AtomicInteger COUNTER = new AtomicInteger();
@@ -58,6 +63,7 @@ public final class TestPlayer implements GameTestListener {
     private final EmbeddedChannel channel;
     private final UUID id;
     private ServerPlayer player;
+    private DamageSource deathSource;
     private boolean removed;
 
     private TestPlayer(MinecraftServer server, EmbeddedChannel channel, ServerPlayer player) {
@@ -81,6 +87,9 @@ public final class TestPlayer implements GameTestListener {
         for (String channelName : List.of("break", "grabbed_item", "server_page", "quick_move",
                 "sync_active", "sync_curios", "sync_data", "sync_modifiers", "sync_render", "sync_stack")) {
             adHoc.add(Identifier.fromNamespaceAndPath("curios", channelName));
+        }
+        for (String channelName : List.of("sync_cos_armor", "sync_hidden_flags")) {
+            adHoc.add(Identifier.fromNamespaceAndPath("armor_cosmetic", channelName));
         }
         server.getPlayerList().placeNewPlayer(connection, player, cookie);
         player.connection.markClientLoaded();
@@ -163,6 +172,11 @@ public final class TestPlayer implements GameTestListener {
                 this.player.damageSources().fellOutOfWorld(), Float.MAX_VALUE);
     }
 
+    public void respawn() {
+        this.player = this.server.getPlayerList().respawn(this.player, false, Entity.RemovalReason.KILLED);
+        this.player.connection.player = this.player;
+    }
+
     public void give(int slot, ItemStack stack) {
         this.player.getInventory().setItem(slot, stack);
     }
@@ -229,12 +243,25 @@ public final class TestPlayer implements GameTestListener {
     }
 
     public void beginDeath() {
-        DamageSource source = this.player.damageSources().generic();
-        DeathCaptureEvents.onDeath(this.player, source);
+        this.deathSource = this.player.damageSources().generic();
+        DeathCaptureEvents.onDeath(this.player, this.deathSource);
     }
 
     public void finishDeath() {
+        finishDeath(stack -> false);
+    }
+
+    public List<ItemStack> finishDeath(Predicate<ItemStack> keptByAnotherMod) {
+        List<ItemStack> kept = new ArrayList<>();
+        if (DeathCaptureEvents.hasPending(this.player)) {
+            this.player.captureDrops(new ArrayList<>());
+            this.player.getInventory().dropAll();
+            Collection<ItemEntity> drops = this.player.captureDrops(null);
+            drops.removeIf(drop -> keptByAnotherMod.test(drop.getItem()) && kept.add(drop.getItem()));
+            CommonHooks.onLivingDrops(this.player, this.deathSource, drops, false);
+        }
         DeathCaptureEvents.finishDrops(this.player);
+        return kept;
     }
 
     public PayloadContext context() {

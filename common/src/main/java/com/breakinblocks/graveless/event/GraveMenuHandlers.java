@@ -21,6 +21,7 @@ import net.minecraft.server.permissions.Permissions;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -132,7 +133,7 @@ public class GraveMenuHandlers {
                     actor.getName().getString(), stack.getItem(), stack.getCount(),
                     GhostSyncEvents.ownerName(server, payload.ownerId()), record.id());
             if (!actor.getInventory().add(stack)) {
-                actor.drop(stack, false);
+                actor.drop(stack, false, Prediction.SERVER_ONLY);
             }
             if (record.isEmpty()) {
                 profile.records().remove(record);
@@ -145,6 +146,9 @@ public class GraveMenuHandlers {
     }
 
     private static boolean canTakeFrom(ServerPlayer actor, UUID ownerId, GraveProfile profile, DeathRecord record) {
+        if (!RestoreEngine.canReceive(actor)) {
+            return false;
+        }
         if (isAdmin(actor)) {
             return true;
         }
@@ -393,6 +397,11 @@ public class GraveMenuHandlers {
         if (owner == null) {
             actor.sendSystemMessage(Component.translatable("graveless.menu.owner_offline")
                     .withStyle(ChatFormatting.RED));
+            return;
+        }
+        if (!RestoreEngine.canReceive(owner)) {
+            actor.sendSystemMessage(Component.translatable("graveless.restore.target_dead",
+                    owner.getName().getString()).withStyle(ChatFormatting.RED));
             return;
         }
         RestoreEngine.Result result = RestoreEngine.claim(owner, profile, record, store);
