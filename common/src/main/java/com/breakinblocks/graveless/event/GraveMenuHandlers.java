@@ -2,6 +2,7 @@ package com.breakinblocks.graveless.event;
 
 import com.breakinblocks.graveless.Graveless;
 import com.breakinblocks.graveless.config.GravelessConfig;
+import com.breakinblocks.graveless.data.BackupState;
 import com.breakinblocks.graveless.data.CapturedEntry;
 import com.breakinblocks.graveless.data.DeathRecord;
 import com.breakinblocks.graveless.data.GraveProfile;
@@ -154,7 +155,7 @@ public class GraveMenuHandlers {
                 actor.drop(stack, false);
             }
             if (record.isEmpty()) {
-                profile.records().remove(record);
+                profile.removeRecord(record, BackupState.CLAIMED);
                 GhostSyncEvents.broadcastRemoval(server, record.id());
                 refreshOwner(server, payload.ownerId(), actor);
             }
@@ -257,12 +258,10 @@ public class GraveMenuHandlers {
                 record.cause(),
                 record.xp(),
                 record.entries(),
-                record.terrain());
+                record.terrain(),
+                Optional.of(record.sourceId()));
         profile.records().add(revived);
-        int max = GravelessConfig.SERVER.maxRecordsPerPlayer.get();
-        while (profile.records().size() > max) {
-            profile.records().removeFirst();
-        }
+        profile.trimRecords(GravelessConfig.SERVER.maxRecordsPerPlayer.get());
         store.setDirty();
         ServerPlayer online = server.getPlayerList().getPlayer(ownerId);
         if (online != null) {
@@ -273,16 +272,20 @@ public class GraveMenuHandlers {
 
     private static void sendBackupList(ServerPlayer admin, UUID ownerId) {
         MinecraftServer server = admin.level().getServer();
+        GraveProfile profile = GraveStore.get(server).profile(ownerId);
         List<GravelessNetworking.BackupEntry> entries = new ArrayList<>();
         for (Path file : GraveBackups.list(server, ownerId)) {
             DeathRecord record = GraveBackups.read(server, file);
             if (record != null) {
+                GraveProfile.BackupStatus status = profile.backupStatus(record.id());
                 entries.add(new GravelessNetworking.BackupEntry(
                         file.getFileName().toString(),
                         record.epochMillis(),
                         record.gameTime(),
                         record.itemCount(),
-                        record.pos()));
+                        record.pos(),
+                        status.state(),
+                        status.liveItems()));
             }
         }
         Services.NETWORK.sendToPlayer(admin, new GravelessNetworking.BackupListPayload(ownerId, entries));
@@ -404,7 +407,7 @@ public class GraveMenuHandlers {
             UUID ownerId,
             DeathRecord record,
             ServerPlayer actor) {
-        profile.records().remove(record);
+        profile.removeRecord(record, BackupState.DELETED);
         store.setDirty();
         GhostSyncEvents.broadcastRemoval(server, record.id());
         refreshOwner(server, ownerId, actor);
@@ -427,7 +430,7 @@ public class GraveMenuHandlers {
         record.setXp(0);
         XpMath.give(actor, xp);
         if (record.isEmpty()) {
-            profile.records().remove(record);
+            profile.removeRecord(record, BackupState.CLAIMED);
             GhostSyncEvents.broadcastRemoval(server, record.id());
             refreshOwner(server, ownerId, actor);
         }

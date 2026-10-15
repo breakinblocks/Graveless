@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import net.minecraft.core.GlobalPos;
@@ -24,7 +25,8 @@ public class DeathRecord {
                     Codec.INT_STREAM
                             .xmap(IntStream::toArray, stream -> IntStream.of(stream))
                             .optionalFieldOf("terrain", new int[0])
-                            .forGetter(DeathRecord::terrain))
+                            .forGetter(DeathRecord::terrain),
+                    UUIDUtil.CODEC.optionalFieldOf("source").forGetter(record -> Optional.ofNullable(record.source)))
             .apply(instance, DeathRecord::new));
 
     private final UUID id;
@@ -35,6 +37,7 @@ public class DeathRecord {
     private long xp;
     private final List<CapturedEntry> entries;
     private int[] terrain;
+    private final UUID source;
 
     public DeathRecord(
             UUID id,
@@ -56,6 +59,19 @@ public class DeathRecord {
             long xp,
             List<CapturedEntry> entries,
             int[] terrain) {
+        this(id, pos, gameTime, epochMillis, cause, xp, entries, terrain, Optional.empty());
+    }
+
+    public DeathRecord(
+            UUID id,
+            GlobalPos pos,
+            long gameTime,
+            long epochMillis,
+            String cause,
+            long xp,
+            List<CapturedEntry> entries,
+            int[] terrain,
+            Optional<UUID> source) {
         this.id = id;
         this.pos = pos;
         this.gameTime = gameTime;
@@ -64,10 +80,15 @@ public class DeathRecord {
         this.xp = xp;
         this.entries = new ArrayList<>(entries);
         this.terrain = terrain;
+        this.source = source.orElse(null);
     }
 
     public UUID id() {
         return id;
+    }
+
+    public UUID sourceId() {
+        return source != null ? source : id;
     }
 
     public GlobalPos pos() {

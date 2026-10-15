@@ -34,6 +34,24 @@ public class CuriosInventoryHook implements InventoryHook {
         });
     }
 
+    @Override
+    public void finishDrops(ServerPlayer player) {
+        ICuriosItemHandler handler = CuriosApi.getCuriosInventoryOrNull(player);
+        if (handler == null) {
+            return;
+        }
+        handler.getCurios().forEach((type, stacksHandler) -> {
+            untagStacks(stacksHandler.getStacks());
+            untagStacks(stacksHandler.getCosmeticStacks());
+        });
+    }
+
+    private static void untagStacks(IDynamicStackHandler stacks) {
+        for (int i = 0; i < stacks.getSlots(); i++) {
+            stacks.getStackInSlot(i).remove(ModDataComponents.CURIO_SLOT.get());
+        }
+    }
+
     private static void tagStacks(String type, IDynamicStackHandler stacks, boolean cosmetic) {
         for (int i = 0; i < stacks.getSlots(); i++) {
             ItemStack stack = stacks.getStackInSlot(i);

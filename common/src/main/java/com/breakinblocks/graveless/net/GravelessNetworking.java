@@ -1,6 +1,7 @@
 package com.breakinblocks.graveless.net;
 
 import com.breakinblocks.graveless.Graveless;
+import com.breakinblocks.graveless.data.BackupState;
 import com.breakinblocks.graveless.event.GhostSyncEvents;
 import com.breakinblocks.graveless.event.GraveMenuHandlers;
 import com.breakinblocks.graveless.platform.Services;
@@ -190,7 +191,14 @@ public class GravelessNetworking {
         }
     }
 
-    public record BackupEntry(String fileName, long epochMillis, long gameTime, int itemCount, GlobalPos pos) {
+    public record BackupEntry(
+            String fileName,
+            long epochMillis,
+            long gameTime,
+            int itemCount,
+            GlobalPos pos,
+            BackupState state,
+            int liveItems) {
         public static final StreamCodec<FriendlyByteBuf, BackupEntry> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.STRING_UTF8,
                 BackupEntry::fileName,
@@ -202,6 +210,10 @@ public class GravelessNetworking {
                 BackupEntry::itemCount,
                 GlobalPos.STREAM_CODEC,
                 BackupEntry::pos,
+                BackupState.STREAM_CODEC,
+                BackupEntry::state,
+                ByteBufCodecs.VAR_INT,
+                BackupEntry::liveItems,
                 BackupEntry::new);
     }
 

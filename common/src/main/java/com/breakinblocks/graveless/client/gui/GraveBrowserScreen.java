@@ -3,6 +3,7 @@ package com.breakinblocks.graveless.client.gui;
 import com.breakinblocks.graveless.client.GhostClientManager;
 import com.breakinblocks.graveless.client.render.GhostSkins;
 import com.breakinblocks.graveless.config.GravelessConfig;
+import com.breakinblocks.graveless.data.BackupState;
 import com.breakinblocks.graveless.event.GraveMenuHandlers;
 import com.breakinblocks.graveless.net.GravelessNetworking;
 import com.breakinblocks.graveless.platform.Services;
@@ -373,24 +374,25 @@ public class GraveBrowserScreen extends Screen {
     private void drawListHeader(GuiGraphicsExtractor graphics, Layout l, int mouseX, int mouseY) {
         int centerX = l.listX() + l.listW() / 2;
         if (!admin) {
-            graphics.centeredText(
-                    font,
+            fittedCenteredText(
+                    graphics,
                     viewingSelf()
                             ? Component.translatable("graveless.menu.outstanding")
                             : Component.translatable("graveless.menu.viewing", ownerName.toUpperCase()),
                     centerX,
                     l.top() + 26,
+                    l.listW() - 4,
                     TEXT_BRIGHT);
             return;
         }
         Component label = Component.translatable("graveless.menu.viewing", ownerName.toUpperCase());
-        int w = font.width(label) + 12;
+        int w = Math.min(font.width(label) + 12, l.listW());
         int x = centerX - w / 2;
         int y = l.top() + 23;
         boolean hoveredNow = overlay == OVERLAY_NONE && hovered(mouseX, mouseY, x, y, w, 12);
         graphics.fill(x, y, x + w, y + 12, hoveredNow ? 0xFF12272C : 0xFF0B1417);
         graphics.outline(x, y, w, 12, hoveredNow || overlay == OVERLAY_PICKER ? EDGE : EDGE_DIM);
-        graphics.centeredText(font, label, centerX, y + 2, TEXT_CYAN);
+        fittedCenteredText(graphics, label, centerX, y + 2, w - 8, TEXT_CYAN);
     }
 
     private void drawSelfButtons(GuiGraphicsExtractor graphics, Layout l, int mouseX, int mouseY) {
@@ -775,6 +777,13 @@ public class GraveBrowserScreen extends Screen {
                                     pos.getX(),
                                     pos.getY(),
                                     pos.getZ())));
+                    if (entry.state() != BackupState.UNKNOWN) {
+                        contentW = Math.max(
+                                contentW,
+                                font.width(timestamp(entry.epochMillis(), entry.gameTime()))
+                                        + 8
+                                        + font.width(backupStateLabel(entry)));
+                    }
                 }
             }
             default -> {}
@@ -956,6 +965,15 @@ public class GraveBrowserScreen extends Screen {
                         box.x() + 6,
                         rowY + 2,
                         hoveredNow ? TEXT_BRIGHT : TEXT_MUTED);
+                if (entry.state() != BackupState.UNKNOWN) {
+                    Component label = backupStateLabel(entry);
+                    graphics.text(
+                            font,
+                            label,
+                            box.x() + box.w() - 8 - font.width(label),
+                            rowY + 2,
+                            backupStateColor(entry.state()));
+                }
             }
             BlockPos pos = entry.pos().pos();
             graphics.text(
@@ -1037,7 +1055,34 @@ public class GraveBrowserScreen extends Screen {
         int fill = enabled && hoveredNow ? 0xFF12272C : 0xFF0B1417;
         graphics.fill(x, y, x + w, y + h, fill);
         graphics.outline(x, y, w, h, enabled ? edgeColor : 0xFF12272B);
-        graphics.centeredText(font, label, x + w / 2, y + (h - 8) / 2, enabled ? textColor : TEXT_MUTED);
+        fittedCenteredText(graphics, label, x + w / 2, y + (h - 8) / 2, w - 6, enabled ? textColor : TEXT_MUTED);
+    }
+
+    private void fittedCenteredText(
+            GuiGraphicsExtractor graphics, Component label, int centerX, int y, int maxWidth, int color) {
+        int labelW = font.width(label);
+        if (labelW <= maxWidth) {
+            graphics.centeredText(font, label, centerX, y, color);
+            return;
+        }
+        float scale = (float) maxWidth / labelW;
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(centerX, y + 4);
+        graphics.pose().scale(scale, scale);
+        graphics.centeredText(font, label, 0, -4, color);
+        graphics.pose().popMatrix();
+    }
+
+    private static Component backupStateLabel(GravelessNetworking.BackupEntry entry) {
+        return entry.state().label(entry.itemCount(), entry.liveItems());
+    }
+
+    private static int backupStateColor(BackupState state) {
+        return switch (state) {
+            case LIVE -> TEXT_CYAN;
+            case CLAIMED -> RED;
+            default -> TEXT_BRIGHT;
+        };
     }
 
     private String timestamp(long epochMillis, long gameTime) {

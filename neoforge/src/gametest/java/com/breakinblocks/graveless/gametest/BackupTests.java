@@ -1,13 +1,17 @@
 package com.breakinblocks.graveless.gametest;
 
 import com.breakinblocks.graveless.config.GravelessConfig;
+import com.breakinblocks.graveless.data.BackupState;
 import com.breakinblocks.graveless.data.DeathRecord;
+import com.breakinblocks.graveless.data.GraveProfile;
 import com.breakinblocks.graveless.event.GraveMenuHandlers;
+import com.breakinblocks.graveless.net.GravelessNetworking;
 import com.breakinblocks.graveless.restore.RestoreEngine;
 import com.breakinblocks.graveless.util.GraveBackups;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.GameTestSequence;
 import net.minecraft.world.item.ItemStack;
@@ -22,10 +26,14 @@ public final class BackupTests {
         tests.add("backup_revives_as_a_fresh_grave", BackupTests::revivesAsFreshGrave);
         tests.add("backup_owners_lists_the_archive", BackupTests::ownersListsArchive);
         tests.add("backup_prune_keeps_the_requested_count", BackupTests::pruneKeepsRequestedCount);
+        tests.add("backup_state_follows_claim_and_revive", BackupTests::stateFollowsClaimAndRevive);
+        tests.add("backup_state_marks_deleted_graves", BackupTests::stateMarksDeletedGraves);
+        tests.add("backup_state_is_forgotten_when_pruned", BackupTests::stateForgottenWhenPruned);
 
         tests.addIsolated("backup_retention_trims_the_oldest", 400, BackupTests::retentionTrimsOldest);
         tests.addIsolated(
                 "backup_retention_unlimited_keeps_everything", 400, BackupTests::retentionUnlimitedKeepsEverything);
+        tests.addIsolated("backup_state_marks_graves_over_the_cap", 100, BackupTests::stateMarksGravesOverCap);
     }
 
     private static void writtenAndReadable(GameTestHelper helper) {
@@ -181,6 +189,111 @@ public final class BackupTests {
                         GraveBackups.list(player.server(), player.id()).size(),
                         "unlimited retention should keep every archive file"))
                 .thenSucceed();
+    }
+
+    private static void stateFollowsClaimAndRevive(GameTestHelper helper) {
+        TestPlayer player = TestPlayer.join(helper);
+        player.give(0, new ItemStack(Items.DIAMOND, 3));
+        player.give(1, new ItemStack(Items.EMERALD, 2));
+        player.simulateDeath();
+        DeathRecord original = player.newestRecord();
+        UUID backupId = original.id();
+
+        GraveProfile.BackupStatus fresh = player.profile().backupStatus(backupId);
+        Check.equal(helper, BackupState.LIVE, fresh.state(), "state of an unclaimed grave");
+        Check.equal(helper, 5, fresh.liveItems(), "live items of an unclaimed grave");
+
+        original.entries().removeFirst();
+        GraveProfile.BackupStatus partial = player.profile().backupStatus(backupId);
+        Check.equal(helper, BackupState.LIVE, partial.state(), "state of a partly emptied grave");
+        Check.isTrue(helper, partial.liveItems() < 5, "live items should drop as the grave empties");
+
+        RestoreEngine.claim(player.player(), player.profile(), original, player.store());
+        Check.equal(
+                helper,
+                BackupState.CLAIMED,
+                player.profile().backupStatus(backupId).state(),
+                "state after claiming");
+
+        Path file = GraveBackups.list(player.server(), player.id()).getFirst();
+        DeathRecord revived = GraveMenuHandlers.reviveBackup(player.server(), player.id(), file);
+        Check.notNull(helper, revived, "backup could not be revived");
+        Check.equal(helper, backupId, revived.sourceId(), "a revived grave should point back at its backup");
+        Check.equal(
+                helper,
+                BackupState.LIVE,
+                player.profile().backupStatus(backupId).state(),
+                "state after reviving");
+
+        RestoreEngine.claim(player.player(), player.profile(), revived, player.store());
+        Check.equal(
+                helper,
+                BackupState.CLAIMED,
+                player.profile().backupStatus(backupId).state(),
+                "state after claiming the revived grave");
+        helper.succeed();
+    }
+
+    private static void stateMarksDeletedGraves(GameTestHelper helper) {
+        TestPlayer player = TestPlayer.join(helper);
+        player.give(0, new ItemStack(Items.DIAMOND, 3));
+        player.simulateDeath();
+        DeathRecord record = player.newestRecord();
+
+        GraveMenuHandlers.handleAction(
+                new GravelessNetworking.GraveActionPayload(
+                        player.id(), record.id(), GravelessNetworking.GraveActionPayload.ACTION_DELETE),
+                player.context());
+        Check.isTrue(helper, player.records().isEmpty(), "the owner could not delete their grave");
+        Check.equal(
+                helper,
+                BackupState.DELETED,
+                player.profile().backupStatus(record.id()).state(),
+                "state after deleting");
+        helper.succeed();
+    }
+
+    private static void stateForgottenWhenPruned(GameTestHelper helper) {
+        TestPlayer player = TestPlayer.join(helper);
+        player.give(0, new ItemStack(Items.DIAMOND, 3));
+        player.simulateDeath();
+        DeathRecord record = player.newestRecord();
+        RestoreEngine.claim(player.player(), player.profile(), record, player.store());
+        Check.equal(
+                helper,
+                BackupState.CLAIMED,
+                player.profile().backupStatus(record.id()).state(),
+                "state after claim");
+
+        GraveBackups.prune(player.server(), player.id(), 0);
+        Check.equal(
+                helper,
+                BackupState.UNKNOWN,
+                player.profile().backupStatus(record.id()).state(),
+                "state should be dropped with its backup file");
+        helper.succeed();
+    }
+
+    private static void stateMarksGravesOverCap(GameTestHelper helper) {
+        TestCleanup cleanup = TestCleanup.attach(helper);
+        cleanup.config(GravelessConfig.SERVER.maxRecordsPerPlayer, 1);
+
+        TestPlayer player = TestPlayer.join(helper);
+        player.give(0, new ItemStack(Items.DIAMOND, 1));
+        player.simulateDeath();
+        UUID first = player.newestRecord().id();
+        player.give(0, new ItemStack(Items.DIAMOND, 2));
+        player.simulateDeath();
+        UUID second = player.newestRecord().id();
+
+        Check.equal(
+                helper,
+                BackupState.OVERFLOW,
+                player.profile().backupStatus(first).state(),
+                "state of a grave pushed out by the cap");
+        Check.equal(
+                helper, BackupState.LIVE, player.profile().backupStatus(second).state(), "state of the newest grave");
+        helper.succeed();
     }
 
     static GameTestSequence deaths(GameTestSequence sequence, TestPlayer player, int count) {

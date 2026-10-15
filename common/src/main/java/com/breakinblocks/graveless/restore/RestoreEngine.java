@@ -4,6 +4,7 @@ import com.breakinblocks.graveless.Graveless;
 import com.breakinblocks.graveless.capture.InventoryHook;
 import com.breakinblocks.graveless.capture.InventoryHooks;
 import com.breakinblocks.graveless.capture.VanillaInventoryHook;
+import com.breakinblocks.graveless.data.BackupState;
 import com.breakinblocks.graveless.data.CapturedEntry;
 import com.breakinblocks.graveless.data.DeathRecord;
 import com.breakinblocks.graveless.data.GraveProfile;
@@ -81,7 +82,7 @@ public final class RestoreEngine {
         } finally {
             record.entries().removeIf(entry -> entry.stack().isEmpty());
             if (record.isEmpty()) {
-                profile.records().remove(record);
+                profile.removeRecord(record, BackupState.CLAIMED);
             }
             store.setDirty();
             SpiritCompassManager.resume(player, compasses);

@@ -3,9 +3,12 @@ package com.breakinblocks.graveless.util;
 import com.breakinblocks.graveless.Graveless;
 import com.breakinblocks.graveless.config.GravelessConfig;
 import com.breakinblocks.graveless.data.DeathRecord;
+import com.breakinblocks.graveless.data.GraveProfile;
+import com.breakinblocks.graveless.data.GraveStore;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -77,14 +80,24 @@ public final class GraveBackups {
             return 0;
         }
         int deleted = 0;
+        List<UUID> forgotten = new ArrayList<>();
         for (Path file : files.subList(keep, files.size())) {
             try {
                 if (Files.deleteIfExists(file)) {
                     deleted++;
+                    UUID recordId = recordIdOf(file);
+                    if (recordId != null) {
+                        forgotten.add(recordId);
+                    }
                 }
             } catch (IOException e) {
                 Graveless.LOGGER.error("Failed to delete grave backup {}", file, e);
             }
+        }
+        GraveStore store = GraveStore.get(server);
+        GraveProfile profile = store.profiles().get(owner);
+        if (profile != null && profile.forgetBackupStates(forgotten)) {
+            store.setDirty();
         }
         if (deleted > 0) {
             Graveless.LOGGER.info("Pruned {} archived grave files for {} (keeping {})", deleted, owner, keep);
@@ -115,6 +128,19 @@ public final class GraveBackups {
                     .orElse(null);
         } catch (Exception e) {
             Graveless.LOGGER.error("Failed to read grave backup {}", file, e);
+            return null;
+        }
+    }
+
+    private static UUID recordIdOf(Path path) {
+        String name = path.getFileName().toString();
+        int dash = name.indexOf('-');
+        if (dash < 0 || !name.endsWith(".nbt")) {
+            return null;
+        }
+        try {
+            return UUID.fromString(name.substring(dash + 1, name.length() - ".nbt".length()));
+        } catch (IllegalArgumentException e) {
             return null;
         }
     }

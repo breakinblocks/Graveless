@@ -1,6 +1,7 @@
 package com.breakinblocks.graveless.gametest;
 
 import com.breakinblocks.graveless.capture.VanillaInventoryHook;
+import com.breakinblocks.graveless.data.BackupState;
 import com.breakinblocks.graveless.data.CapturedEntry;
 import com.breakinblocks.graveless.data.DeathRecord;
 import com.breakinblocks.graveless.data.GraveProfile;
@@ -8,6 +9,7 @@ import com.breakinblocks.graveless.event.GhostSyncEvents;
 import com.breakinblocks.graveless.util.LenientCodecs;
 import com.mojang.serialization.Codec;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -107,12 +109,14 @@ public final class DataTests {
                         new CapturedEntry(VanillaInventoryHook.ID, "", 4, new ItemStack(Items.DIAMOND, 7)),
                         new CapturedEntry("curios", "ring", 1, new ItemStack(Items.GOLD_INGOT, 2)),
                         CapturedEntry.loose(new ItemStack(Items.APPLE, 5))),
-                terrain);
+                terrain,
+                Optional.of(UUID.randomUUID()));
 
         Tag encoded = DeathRecord.CODEC.encodeStart(ops, original).getOrThrow();
         DeathRecord decoded = DeathRecord.CODEC.parse(ops, encoded).getOrThrow();
 
         Check.equal(helper, original.id(), decoded.id(), "record id");
+        Check.equal(helper, original.sourceId(), decoded.sourceId(), "record backup source");
         Check.equal(helper, original.pos(), decoded.pos(), "record position");
         Check.equal(helper, (int) original.gameTime(), (int) decoded.gameTime(), "record game time");
         Check.equal(helper, original.epochMillis(), decoded.epochMillis(), "record timestamp");
@@ -143,7 +147,13 @@ public final class DataTests {
                 "test",
                 5,
                 List.of(CapturedEntry.loose(new ItemStack(Items.STONE, 8))));
-        GraveProfile original = new GraveProfile(false, List.of(allowed), List.of(record), Optional.of(tracked));
+        UUID claimedBackup = UUID.randomUUID();
+        GraveProfile original = new GraveProfile(
+                false,
+                List.of(allowed),
+                List.of(record),
+                Optional.of(tracked),
+                Map.of(claimedBackup, BackupState.CLAIMED));
 
         Tag encoded = GraveProfile.CODEC.encodeStart(ops, original).getOrThrow();
         GraveProfile decoded = GraveProfile.CODEC.parse(ops, encoded).getOrThrow();
@@ -154,6 +164,12 @@ public final class DataTests {
         Check.equal(helper, tracked, decoded.trackedRecordId(), "tracked record id");
         Check.equal(helper, 1, decoded.records().size(), "record count");
         Check.notNull(helper, decoded.findRecord(tracked), "tracked record is findable");
+        Check.equal(
+                helper,
+                BackupState.CLAIMED,
+                decoded.backupStatus(claimedBackup).state(),
+                "claimed backup state survives a round trip");
+        Check.equal(helper, BackupState.LIVE, decoded.backupStatus(tracked).state(), "live backup state");
         helper.succeed();
     }
 

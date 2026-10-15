@@ -147,7 +147,22 @@ public class DeathCaptureEvents {
     public static void finishDrops(ServerPlayer player) {
         Pending pending = PENDING.remove(player.getUUID());
         if (pending != null) {
+            releaseHooks(player);
             finalizeRecord(player, pending.record());
+        }
+    }
+
+    private static void releaseHooks(ServerPlayer player) {
+        for (InventoryHook hook : InventoryHooks.all()) {
+            try {
+                hook.finishDrops(player);
+            } catch (Exception e) {
+                Graveless.LOGGER.error(
+                        "Inventory hook {} failed after drops for {}",
+                        hook.id(),
+                        player.getName().getString(),
+                        e);
+            }
         }
     }
 
@@ -169,6 +184,7 @@ public class DeathCaptureEvents {
         if (pending == null) {
             return;
         }
+        releaseHooks(player);
         DeathRecord record = pending.record();
         pending.slots().forEach((stack, slot) -> {
             if (!stack.isEmpty() && pending.inventory().getItem(slot) == stack) {
@@ -214,10 +230,7 @@ public class DeathCaptureEvents {
         GraveStore store = GraveStore.get(server);
         GraveProfile profile = store.profile(player.getUUID());
         profile.records().add(record);
-        int max = GravelessConfig.SERVER.maxRecordsPerPlayer.get();
-        while (profile.records().size() > max) {
-            profile.records().removeFirst();
-        }
+        profile.trimRecords(GravelessConfig.SERVER.maxRecordsPerPlayer.get());
         store.setDirty();
         GraveBackups.write(server, player.getUUID(), record);
 

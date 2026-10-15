@@ -11,6 +11,8 @@ public interface InventoryHook {
 
     default void prepareDrops(ServerPlayer player, DamageSource source) {}
 
+    default void finishDrops(ServerPlayer player) {}
+
     List<CapturedEntry> capture(ServerPlayer player, DamageSource source);
 
     /**

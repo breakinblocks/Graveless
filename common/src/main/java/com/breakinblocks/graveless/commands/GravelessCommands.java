@@ -1,6 +1,7 @@
 package com.breakinblocks.graveless.commands;
 
 import com.breakinblocks.graveless.Graveless;
+import com.breakinblocks.graveless.data.BackupState;
 import com.breakinblocks.graveless.data.DeathRecord;
 import com.breakinblocks.graveless.data.GraveProfile;
 import com.breakinblocks.graveless.data.GraveStore;
@@ -26,6 +27,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
@@ -210,6 +212,7 @@ public class GravelessCommands {
             context.getSource().sendFailure(Component.translatable("graveless.command.backups.empty", target.name()));
             return 0;
         }
+        GraveProfile profile = GraveStore.get(server).profile(target.id());
         context.getSource()
                 .sendSuccess(
                         () -> Component.translatable("graveless.command.backups.header", target.name(), files.size()),
@@ -231,24 +234,34 @@ public class GravelessCommands {
                 continue;
             }
             BlockPos pos = record.pos().pos();
-            context.getSource()
-                    .sendSuccess(
-                            () -> Component.translatable(
-                                            "graveless.command.backups.entry",
-                                            index,
-                                            record.itemCount(),
-                                            timestamp(record),
-                                            pos.getX(),
-                                            pos.getY(),
-                                            pos.getZ(),
-                                            record.pos()
-                                                    .dimension()
-                                                    .identifier()
-                                                    .toString())
-                                    .withStyle(ChatFormatting.GRAY),
-                            false);
+            MutableComponent line = Component.translatable(
+                            "graveless.command.backups.entry",
+                            index,
+                            record.itemCount(),
+                            timestamp(record),
+                            pos.getX(),
+                            pos.getY(),
+                            pos.getZ(),
+                            record.pos().dimension().identifier().toString())
+                    .withStyle(ChatFormatting.GRAY);
+            GraveProfile.BackupStatus status = profile.backupStatus(record.id());
+            if (status.state() != BackupState.UNKNOWN) {
+                line.append(Component.literal(" [")
+                        .append(status.state().label(record.itemCount(), status.liveItems()))
+                        .append("]")
+                        .withStyle(stateColor(status.state())));
+            }
+            context.getSource().sendSuccess(() -> line, false);
         }
         return files.size();
+    }
+
+    private static ChatFormatting stateColor(BackupState state) {
+        return switch (state) {
+            case LIVE -> ChatFormatting.AQUA;
+            case CLAIMED -> ChatFormatting.RED;
+            default -> ChatFormatting.WHITE;
+        };
     }
 
     private static int restoreBackup(CommandContext<CommandSourceStack> context, int index)
