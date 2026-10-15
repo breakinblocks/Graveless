@@ -3,6 +3,7 @@ package com.breakinblocks.graveless;
 import com.breakinblocks.graveless.client.GravelessClient;
 import com.breakinblocks.graveless.integration.armorcosmetic.ArmorCosmeticIntegration;
 import com.breakinblocks.graveless.integration.curios.CuriosIntegration;
+import com.breakinblocks.graveless.integration.trinkets.TrinketsIntegration;
 import com.breakinblocks.graveless.platform.NeoForgePlatformHelper;
 import com.breakinblocks.graveless.platform.NeoForgeRegistryFactory;
 import com.breakinblocks.graveless.registry.ModItems;
@@ -48,6 +49,9 @@ public class GravelessNeoForge {
             }
             if (Graveless.isModLoaded("armor_cosmetic")) {
                 ArmorCosmeticIntegration.init();
+            }
+            if (Graveless.isModLoaded(TrinketsIntegration.MOD_ID)) {
+                TrinketsIntegration.init();
             }
         });
     }

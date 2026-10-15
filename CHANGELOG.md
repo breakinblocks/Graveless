@@ -2,6 +2,7 @@
 
 ## 1.4.3
 
+- Added Trinkets Updated support: trinkets go into the grave and return to their original slots instead of dropping on Fabric. (breakinblocks/Graveless#1)
 - Backups now show whether their grave is live, claimed, deleted or dropped at the grave limit, in `/graveless backups` and the browser. (breakinblocks/Graveless#5)
 - Fixed long button labels running past their borders in some languages, such as Brazilian Portuguese.
 - Fixed curios kept on death, such as with the Curios `keepCurios` option, keeping a hidden Graveless marker that could stop them stacking.

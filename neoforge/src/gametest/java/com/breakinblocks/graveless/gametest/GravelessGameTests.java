@@ -19,6 +19,7 @@ public final class GravelessGameTests {
         RecoveryTests.register(tests);
         CuriosTests.register(tests);
         ArmorCosmeticTests.register(tests);
+        TrinketsTests.register(tests);
         GhostTests.register(tests);
         CompassTests.register(tests);
         WardTests.register(tests);

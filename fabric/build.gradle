@@ -10,6 +10,29 @@ dependencies {
     implementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     implementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${fcap_version}"
     compileOnly "curse.maven:armor-cosmetic-1600093:${armor_cosmetic_fabric_file}"
+    compileOnly("eu.pb4:trinkets:${trinkets_updated_version}") { transitive = false }
+    localRuntime("eu.pb4:trinkets:${trinkets_updated_version}") { transitive = false }
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'graveless-gametest'
+        enableGameTests = true
+        enableClientGameTests = false
+    }
+}
+
+tasks.named('check') {
+    setDependsOn(dependsOn.findAll { it != 'runGameTest' })
+}
+
+tasks.named('runGameTest') {
+    doFirst {
+        def eula = file('build/run/gameTest/eula.txt')
+        eula.parentFile.mkdirs()
+        eula.text = 'eula=true'
+    }
 }
 
 loom {
@@ -62,6 +85,7 @@ publishMods {
             serverRequired = true
             requires('fabric-api', 'forge-config-api-port')
             optional('armor-cosmetic')
+            optional('trinkets-updated')
         }
     }
 

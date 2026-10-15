@@ -119,7 +119,7 @@ Minecraft 26.1 on either NeoForge or Fabric. Works in singleplayer and on server
 | NeoForge | `graveless-neoforge-<mc>-<version>.jar` | nothing |
 | Fabric | `graveless-fabric-<mc>-<version>.jar` | Fabric API, Forge Config API Port |
 
-Curios is supported on NeoForge when present. Accessories support on Fabric is waiting on an Accessories build for 26.1.
+Curios is supported on NeoForge when present. Trinkets Updated is supported on both loaders when present. Accessories support on Fabric is waiting on an Accessories build for 26.1.
 
 ## License
 

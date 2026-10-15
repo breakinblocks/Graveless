@@ -15,6 +15,10 @@ public interface InventoryHook {
 
     List<CapturedEntry> capture(ServerPlayer player, DamageSource source);
 
+    default CapturedEntry dropEntry(ServerPlayer player, ItemStack stack) {
+        return null;
+    }
+
     /**
      * Restores into the original destination, leaving fallback until all original slots are tried.
      * The entry stack is the live remainder: shrink it as transfers succeed, including before

@@ -63,6 +63,8 @@ dependencies {
     gametestImplementation "top.theillusivec4.curios:curios-neoforge:${curios_version}"
     compileOnly "curse.maven:armor-cosmetic-1600093:${armor_cosmetic_neoforge_file}"
     gametestImplementation "curse.maven:armor-cosmetic-1600093:${armor_cosmetic_neoforge_file}"
+    compileOnly("eu.pb4:trinkets:${trinkets_updated_version}") { transitive = false }
+    gametestImplementation("eu.pb4:trinkets:${trinkets_updated_version}") { transitive = false }
 }
 
 publishMods {
@@ -101,6 +103,7 @@ publishMods {
             accessToken = providers.environmentVariable('MODRINTH_TOKEN')
             minecraftVersions.add(minecraft_version)
             optional('curios')
+            optional('trinkets-updated')
         }
     }
 }

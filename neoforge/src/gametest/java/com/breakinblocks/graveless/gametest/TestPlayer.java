@@ -99,6 +99,9 @@ public final class TestPlayer implements GameTestListener {
         for (String channelName : List.of("sync_cos_armor", "sync_hidden_flags")) {
             adHoc.add(Identifier.fromNamespaceAndPath("armor_cosmetic", channelName));
         }
+        for (String channelName : List.of("sync_slots", "sync_inventory", "break", "sync_config")) {
+            adHoc.add(Identifier.fromNamespaceAndPath("trinkets", channelName));
+        }
         server.getPlayerList().placeNewPlayer(connection, player, cookie);
         player.connection.markClientLoaded();
 
