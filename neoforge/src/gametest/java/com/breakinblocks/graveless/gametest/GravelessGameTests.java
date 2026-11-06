@@ -22,6 +22,7 @@ public final class GravelessGameTests {
         if (Graveless.isModLoaded("armor_cosmetic")) {
             ArmorCosmeticTests.register(tests);
         }
+        TrinketsTests.register(tests);
         GhostTests.register(tests);
         CompassTests.register(tests);
         WardTests.register(tests);

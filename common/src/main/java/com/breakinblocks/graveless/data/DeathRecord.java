@@ -8,22 +8,27 @@ import net.minecraft.core.UUIDUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
 public class DeathRecord {
     public static final Codec<DeathRecord> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            UUIDUtil.CODEC.fieldOf("id").forGetter(DeathRecord::id),
-            GlobalPos.CODEC.fieldOf("pos").forGetter(DeathRecord::pos),
-            Codec.LONG.fieldOf("game_time").forGetter(DeathRecord::gameTime),
-            Codec.LONG.optionalFieldOf("epoch_millis", 0L).forGetter(DeathRecord::epochMillis),
-            Codec.STRING.fieldOf("cause").forGetter(DeathRecord::cause),
-            Codec.LONG.optionalFieldOf("xp", 0L).forGetter(DeathRecord::xp),
-            LenientCodecs.lenientList(CapturedEntry.CODEC, "grave item entry")
-                    .fieldOf("entries").forGetter(DeathRecord::entries),
-            Codec.INT_STREAM.xmap(IntStream::toArray, stream -> IntStream.of(stream))
-                    .optionalFieldOf("terrain", new int[0]).forGetter(DeathRecord::terrain)
-    ).apply(instance, DeathRecord::new));
+                    UUIDUtil.CODEC.fieldOf("id").forGetter(DeathRecord::id),
+                    GlobalPos.CODEC.fieldOf("pos").forGetter(DeathRecord::pos),
+                    Codec.LONG.fieldOf("game_time").forGetter(DeathRecord::gameTime),
+                    Codec.LONG.optionalFieldOf("epoch_millis", 0L).forGetter(DeathRecord::epochMillis),
+                    Codec.STRING.fieldOf("cause").forGetter(DeathRecord::cause),
+                    Codec.LONG.optionalFieldOf("xp", 0L).forGetter(DeathRecord::xp),
+                    LenientCodecs.lenientList(CapturedEntry.CODEC, "grave item entry")
+                            .fieldOf("entries")
+                            .forGetter(DeathRecord::entries),
+                    Codec.INT_STREAM
+                            .xmap(IntStream::toArray, stream -> IntStream.of(stream))
+                            .optionalFieldOf("terrain", new int[0])
+                            .forGetter(DeathRecord::terrain),
+                    UUIDUtil.CODEC.optionalFieldOf("source").forGetter(record -> Optional.ofNullable(record.source)))
+            .apply(instance, DeathRecord::new));
 
     private final UUID id;
     private final GlobalPos pos;
@@ -33,13 +38,34 @@ public class DeathRecord {
     private long xp;
     private final List<CapturedEntry> entries;
     private int[] terrain;
+    private final UUID source;
 
     public DeathRecord(UUID id, GlobalPos pos, long gameTime, long epochMillis, String cause, long xp, List<CapturedEntry> entries) {
         this(id, pos, gameTime, epochMillis, cause, xp, entries, new int[0]);
     }
 
-    public DeathRecord(UUID id, GlobalPos pos, long gameTime, long epochMillis, String cause, long xp,
-                       List<CapturedEntry> entries, int[] terrain) {
+    public DeathRecord(
+            UUID id,
+            GlobalPos pos,
+            long gameTime,
+            long epochMillis,
+            String cause,
+            long xp,
+            List<CapturedEntry> entries,
+            int[] terrain) {
+        this(id, pos, gameTime, epochMillis, cause, xp, entries, terrain, Optional.empty());
+    }
+
+    public DeathRecord(
+            UUID id,
+            GlobalPos pos,
+            long gameTime,
+            long epochMillis,
+            String cause,
+            long xp,
+            List<CapturedEntry> entries,
+            int[] terrain,
+            Optional<UUID> source) {
         this.id = id;
         this.pos = pos;
         this.gameTime = gameTime;
@@ -48,10 +74,15 @@ public class DeathRecord {
         this.xp = xp;
         this.entries = new ArrayList<>(entries);
         this.terrain = terrain;
+        this.source = source.orElse(null);
     }
 
     public UUID id() {
         return id;
+    }
+
+    public UUID sourceId() {
+        return source != null ? source : id;
     }
 
     public GlobalPos pos() {

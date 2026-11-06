@@ -13,7 +13,13 @@ public interface InventoryHook {
     default void prepareDrops(ServerPlayer player, DamageSource source) {
     }
 
+    default void finishDrops(ServerPlayer player) {}
+
     List<CapturedEntry> capture(ServerPlayer player, DamageSource source);
+
+    default CapturedEntry dropEntry(ServerPlayer player, ItemStack stack) {
+        return null;
+    }
 
     /**
      * Restores into the original destination, leaving fallback until all original slots are tried.

@@ -41,6 +41,11 @@ repositories {
         content { includeGroupAndSubgroups('fuzs') }
     }
     maven {
+        name = 'Nucleoid'
+        url = 'https://maven.nucleoid.xyz'
+        content { includeGroup 'eu.pb4' }
+    }
+    maven {
         name = 'CurseForge'
         url = 'https://cursemaven.com'
         content { includeGroup 'curse.maven' }

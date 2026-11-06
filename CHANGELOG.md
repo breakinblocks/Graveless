@@ -1,9 +1,36 @@
 # Changelog
 
+## 1.4.3
+
+- Added Trinkets Updated support: trinkets go into the grave and return to their original slots instead of dropping on Fabric. (breakinblocks/Graveless#1)
+- Backups now show whether their grave is live, claimed, deleted or dropped at the grave limit, in `/graveless backups` and the browser. (breakinblocks/Graveless#5)
+- Fixed long button labels running past their borders in some languages, such as Brazilian Portuguese.
+- Fixed curios kept on death, such as with the Curios `keepCurios` option, keeping a hidden Graveless marker that could stop them stacking.
+
+## 1.4.2
+
+- Fixed graves storing negative xp and returning nothing for players above about 21,800 levels. (breakinblocks/Graveless#3)
+- Added Brazilian Portuguese translation (thanks PrincessStellar).
+
+## 1.4.1
+
+- Fixed soulbound items going into the grave instead of staying with the player on NeoForge. Graveless emptied the inventory as soon as the player died, so mods that keep soulbound gear by pulling it out of the death drops, such as Ars Elemental, found nothing to keep. The inventory is now collected from the death drops after other mods have taken what they keep, and each item still returns to its original slot.
+- Fixed items being duplicated when a player was killed with a magnetic weapon, such as Irregular Implements' Magnetic enchantment. The magnet put the drops into the killer's inventory and the grave saved a second copy of them. Graveless now takes the death drops before lowest-priority magnets see them, and leaves out any drop that was already picked up.
+- Items taken into a grave are now emptied out of the death drops, so a mod that spawns cancelled drops anyway can no longer duplicate them.
+- A death whose drops never arrive is now saved to a grave at the end of the same tick instead of on respawn, before any respawn handler can copy items from the old inventory.
+
+## 1.4.0
+
+- Added Armor Cosmetic support. Cosmetic armor now goes into the grave and is restored to its original cosmetic slots when claimed. If a slot is already filled, that piece goes to the main inventory. Before this, NeoForge restored cosmetic armor to the main inventory, and Fabric left it on the ground at the death spot instead of saving it to the grave.
+
+## 1.3.4
+
+- Fixed a grave's items and xp being lost when it was claimed just as the player died, such as clicking the ghost the moment a mob dealt the killing blow. The claim put everything into the dead player's inventory, which is thrown away on respawn. Claims, extractions and xp reclaims from a dead player are now ignored and the grave stays put.
+- Admin restores and `/graveless restore` now refuse while the target player is dead instead of handing the grave to them.
+
 ## 1.3.3
 
 - Fixed a death losing every item when the drop event never arrived, such as a disconnect or crash between dying and the grave being written. The pending items are now saved on respawn or logout instead of discarded.
-- Fixed graves storing negative xp and returning nothing for players above about 21,800 levels. (breakinblocks/Graveless#3)
 
 ## 1.3.2
 

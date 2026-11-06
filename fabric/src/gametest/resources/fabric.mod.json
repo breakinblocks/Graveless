@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "id": "graveless-gametest",
+    "version": "1.0.0",
+    "name": "Graveless Game Tests",
+    "environment": "*",
+    "entrypoints": {
+        "fabric-gametest": [
+            "com.breakinblocks.graveless.gametest.TrinketsGameTests"
+        ]
+    },
+    "depends": {
+        "graveless": "*",
+        "trinkets_updated": "*"
+    }
+}

@@ -114,7 +114,7 @@ limit on demand, or a one-off limit if you pass a keep count.
 
 Minecraft 26.3 on either NeoForge or Fabric, with Java 25. Works in singleplayer and on servers.
 
-Curios is supported on NeoForge when present.
+Curios is supported on NeoForge when present. Trinkets Updated is supported on both loaders when present.
 
 ## License
 
